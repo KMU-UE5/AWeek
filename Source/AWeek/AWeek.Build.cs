@@ -8,7 +8,25 @@ public class AWeek : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
+		PublicDependencyModuleNames.AddRange(new string[] 
+        {
+            "Core", 
+            "CoreUObject", 
+            "Engine", 
+            "InputCore", 
+            "EnhancedInput",
+            
+            // Other Plugins
+            "GameplayTags",
+            "GameplayTasks",
+            "GameplayAbilities",
+            "ModularGameplay",
+            "GameFeatures",
+            "CommonUI",
+            "UMG",
+            "Slate",
+            "SlateCore",
+        });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
