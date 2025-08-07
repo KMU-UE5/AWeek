@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CommonPlayerController.h"
 #include "GameFramework/PlayerController.h"
 #include "AWeekPlayerController.generated.h"
 
@@ -10,7 +11,7 @@
  * 
  */
 UCLASS()
-class AWEEK_API AAWeekPlayerController : public APlayerController
+class AWEEK_API AAWeekPlayerController : public ACommonPlayerController
 {
 	GENERATED_BODY()
 public:

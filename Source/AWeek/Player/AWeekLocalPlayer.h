@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CommonLocalPlayer.h"
 #include "Engine/LocalPlayer.h"
 #include "AWeekLocalPlayer.generated.h"
 
@@ -10,7 +11,7 @@
  * 
  */
 UCLASS()
-class AWEEK_API UAWeekLocalPlayer : public ULocalPlayer
+class AWEEK_API UAWeekLocalPlayer : public UCommonLocalPlayer
 {
 	GENERATED_BODY()
 public:

@@ -5,11 +5,15 @@
 
 #include "GameUIPolicy.h"
 
+UGameUIManagerSubsystem::UGameUIManagerSubsystem()
+{
+}
+
 void UGameUIManagerSubsystem::SwitchToPolicy(UGameUIPolicy* InPolicy)
 {
-	if (CurrentUIPolicy != InPolicy)
+	if (CurrentPolicy != InPolicy)
 	{
-		CurrentUIPolicy = InPolicy;
+		CurrentPolicy = InPolicy;
 	}
 }
 
@@ -17,7 +21,7 @@ void UGameUIManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-	if (!CurrentUIPolicy && !DefaultUIPolicyClass.IsNull())
+	if (!CurrentPolicy && !DefaultUIPolicyClass.IsNull())
 	{
 		TSubclassOf<UGameUIPolicy> PolicyClass = DefaultUIPolicyClass.LoadSynchronous();
 		SwitchToPolicy(NewObject<UGameUIPolicy>(this, PolicyClass));
@@ -42,4 +46,28 @@ bool UGameUIManagerSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 	}
 
 	return false;
+}
+
+void UGameUIManagerSubsystem::NotifyPlayerAdded(UCommonLocalPlayer* LocalPlayer)
+{
+	if (ensure(LocalPlayer) && CurrentPolicy)
+	{
+		CurrentPolicy->NotifyPlayerAdded(LocalPlayer);
+	}
+}
+
+void UGameUIManagerSubsystem::NotifyPlayerRemoved(UCommonLocalPlayer* LocalPlayer)
+{
+	if (LocalPlayer && CurrentPolicy)
+	{
+		CurrentPolicy->NotifyPlayerRemoved(LocalPlayer);
+	}
+}
+
+void UGameUIManagerSubsystem::NotifyPlayerDestroyed(UCommonLocalPlayer* LocalPlayer)
+{
+	if (LocalPlayer && CurrentPolicy)
+	{
+		CurrentPolicy->NotifyPlayerDestroyed(LocalPlayer);
+	}
 }

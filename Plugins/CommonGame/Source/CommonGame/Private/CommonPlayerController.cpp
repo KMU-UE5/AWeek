@@ -3,3 +3,14 @@
 
 #include "CommonPlayerController.h"
 
+#include "CommonLocalPlayer.h"
+
+void ACommonPlayerController::ReceivedPlayer()
+{
+	Super::ReceivedPlayer();
+
+	if (UCommonLocalPlayer* LocalPlayer = Cast<UCommonLocalPlayer>(Player))
+	{
+		LocalPlayer->OnPlayerControllerSet.Broadcast(LocalPlayer, this);
+	}
+}

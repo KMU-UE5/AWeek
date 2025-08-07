@@ -13,5 +13,9 @@ UCLASS(Abstract)
 class COMMONGAME_API UCommonGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
-	
+public:
+	virtual int32 AddLocalPlayer(ULocalPlayer* NewPlayer, FPlatformUserId UserId) override;
+	virtual bool RemoveLocalPlayer(ULocalPlayer* ExistingPlayer) override;
+
+	TWeakObjectPtr<ULocalPlayer> PrimaryPlayer;
 };
