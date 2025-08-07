@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract, Blueprintable)
 class COMMONGAME_API UGameUIPolicy : public UObject
 {
 	GENERATED_BODY()

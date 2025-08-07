@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/GameInstance.h"
-#include "CommonGameInstance.generated.h"
+#include "CommonGameInstance.h"
+#include "AWeekGameInstance.generated.h"
 
 /**
  * 
  */
-UCLASS(Abstract)
-class COMMONGAME_API UCommonGameInstance : public UGameInstance
+UCLASS()
+class AWEEK_API UAWeekGameInstance : public UCommonGameInstance
 {
 	GENERATED_BODY()
 	
