@@ -24,6 +24,7 @@ public class AWeek : ModuleRules
             "GameFeatures",
             "CommonUI",
             "CommonGame",
+            "UIExtension",
             "UMG",
             "Slate",
             "SlateCore",

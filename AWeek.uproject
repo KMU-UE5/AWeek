@@ -11,7 +11,8 @@
 			"AdditionalDependencies": [
 				"Engine",
 				"CommonGame",
-				"ModularGameplay"
+				"ModularGameplay",
+				"CommonUI"
 			]
 		}
 	],
