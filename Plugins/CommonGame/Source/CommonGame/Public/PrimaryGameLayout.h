@@ -5,9 +5,10 @@
 #include "CoreMinimal.h"
 #include "CommonUserWidget.h"
 #include "GameplayTagContainer.h"
+#include "Widgets/CommonActivatableWidgetContainer.h"
 #include "PrimaryGameLayout.generated.h"
 
-class UCommonActivatableWidgetContainerBase;
+class UCommonActivatableWidget;
 /**
  * 
  */
@@ -17,9 +18,31 @@ class COMMONGAME_API UPrimaryGameLayout : public UCommonUserWidget
 	GENERATED_BODY()
 public:
 	UPrimaryGameLayout(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	UCommonActivatableWidgetContainerBase* GetLayerWidget(FGameplayTag LayerName);
+	
+	template <typename ActivatableWidgetT = UCommonActivatableWidget>
+	ActivatableWidgetT* PushWidgetToLayerStack(FGameplayTag LayerName, UClass* ActivatableWidgetClass)
+	{
+		return PushWidgetToLayerStack<ActivatableWidgetT>(LayerName, ActivatableWidgetClass, [](ActivatableWidgetT&) {});
+	}
+
+	template <typename ActivatableWidgetT = UCommonActivatableWidget>
+	ActivatableWidgetT* PushWidgetToLayerStack(FGameplayTag LayerName, UClass* ActivatableWidgetClass, TFunctionRef<void(ActivatableWidgetT&)> InitInstanceFunc)
+	{
+		static_assert(TIsDerivedFrom<ActivatableWidgetT, UCommonActivatableWidget>::IsDerived, "only CommonActivatableWidgets!!!!!!");
+
+		if (UCommonActivatableWidgetContainerBase* Layer = GetLayerWidget(LayerName))
+		{
+			return Layer->AddWidget<ActivatableWidgetT>(ActivatableWidgetClass, InitInstanceFunc);
+		}
+
+		return nullptr;
+	}
+	
 	UFUNCTION(BlueprintCallable, Category = "Layer")
 	void RegisterLayer(FGameplayTag LayerTag, UCommonActivatableWidgetContainerBase* LayerWidget);
-
+	
 	UPROPERTY(Transient, meta = (Categories = "UI.Layer"))
 	TMap<FGameplayTag, TObjectPtr<UCommonActivatableWidgetContainerBase>> Layers;
 };
