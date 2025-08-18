@@ -33,6 +33,34 @@ UCommonActivatableWidget* UCommonUIExtensions::PushContentToLayer_ForPlayer(cons
 	return nullptr;
 }
 
+
+void UCommonUIExtensions::PushStreamedContentToLayer_ForPlayerWithDelegate(const ULocalPlayer* LocalPlayer, FGameplayTag LayerName,
+                                                               TSoftClassPtr<UCommonActivatableWidget> WidgetClass, FOnWidgetPushedDyn OnPushedWidget)
+{
+	if (!ensure(LocalPlayer) || !ensure(!WidgetClass.IsNull()))
+	{
+		return;
+	}
+
+	if (UGameUIManagerSubsystem* UIManager = LocalPlayer->GetGameInstance()->GetSubsystem<UGameUIManagerSubsystem>())
+	{
+		if (UGameUIPolicy* Policy = UIManager->GetCurrentUIPolicy())
+		{
+			if (UPrimaryGameLayout* RootLayout = Policy->GetRootLayout(CastChecked<UCommonLocalPlayer>(LocalPlayer)))
+			{
+				const bool bSuspendInputUntilComplete = true;
+				RootLayout->PushWidgetToLayerStackAsync(LayerName, bSuspendInputUntilComplete, WidgetClass, OnPushedWidget);
+			}
+		}
+	}
+}
+
+void UCommonUIExtensions::PushStreamedContentToLayer_ForPlayer(const ULocalPlayer* LocalPlayer, FGameplayTag LayerName,
+	TSoftClassPtr<UCommonActivatableWidget> WidgetClass)
+{
+	PushStreamedContentToLayer_ForPlayerWithDelegate(LocalPlayer, LayerName, WidgetClass, FOnWidgetPushedDyn());
+}
+
 FName UCommonUIExtensions::SuspendInputForPlayer(APlayerController* PlayerController, FName SuspendReason)
 {
 	return SuspendInputForPlayer(PlayerController ? PlayerController->GetLocalPlayer() : nullptr, SuspendReason);

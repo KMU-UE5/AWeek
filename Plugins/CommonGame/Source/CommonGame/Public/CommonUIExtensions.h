@@ -8,6 +8,8 @@
 #include "CommonUIExtensions.generated.h"
 
 class UCommonActivatableWidget;
+DECLARE_DYNAMIC_DELEGATE_OneParam(FOnWidgetPushedDyn, UCommonActivatableWidget*, Widget);
+
 /**
  * 
  */
@@ -20,6 +22,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	static UCommonActivatableWidget* PushContentToLayer_ForPlayer(const ULocalPlayer* LocalPlayer, FGameplayTag LayerName, TSubclassOf<UCommonActivatableWidget> WidgetClass);
+
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic)
+	static void PushStreamedContentToLayer_ForPlayerWithDelegate(const ULocalPlayer* LocalPlayer, FGameplayTag LayerName, TSoftClassPtr<UCommonActivatableWidget> WidgetClass, FOnWidgetPushedDyn OnPushedWidget);
+
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic)
+	static void PushStreamedContentToLayer_ForPlayer(const ULocalPlayer* LocalPlayer, FGameplayTag LayerName, TSoftClassPtr<UCommonActivatableWidget> WidgetClass);
 
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic)
 	static FName SuspendInputForPlayer(APlayerController* PlayerController, FName SuspendReason);
