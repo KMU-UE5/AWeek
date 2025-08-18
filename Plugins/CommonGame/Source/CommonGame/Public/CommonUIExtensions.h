@@ -20,4 +20,17 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	static UCommonActivatableWidget* PushContentToLayer_ForPlayer(const ULocalPlayer* LocalPlayer, FGameplayTag LayerName, TSubclassOf<UCommonActivatableWidget> WidgetClass);
+
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic)
+	static FName SuspendInputForPlayer(APlayerController* PlayerController, FName SuspendReason);
+
+	static FName SuspendInputForPlayer(ULocalPlayer* LocalPlayer, FName SuspendReason);
+
+	UFUNCTION(BlueprintCallable, BlueprintCosmetic)
+	static void ResumeInputForPlayer(APlayerController* PlayerController, FName SuspendToken);
+
+	static void ResumeInputForPlayer(ULocalPlayer* LocalPlayer, FName SuspendToken);
+
+private:
+	static int32 InputSuspensions;
 };
