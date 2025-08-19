@@ -15,4 +15,10 @@ class AWEEK_API AAWeekPlayerController : public APlayerController
 	GENERATED_BODY()
 public:
 	AAWeekPlayerController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+protected:
+	TSubclassOf<UUserWidget> mMainWidget;
+
+protected:
+	virtual void BeginPlay() override;
 };
