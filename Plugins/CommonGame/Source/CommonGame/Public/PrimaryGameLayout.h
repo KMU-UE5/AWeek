@@ -47,7 +47,7 @@ public:
 	                                           TFunctionRef<void(ActivatableWidgetT&)> InitInstanceFunc)
 	{
 		static_assert(TIsDerivedFrom<ActivatableWidgetT, UCommonActivatableWidget>::IsDerived,
-		              "only CommonActivatableWidgets!!!!!!");
+					  "only CommonActivatableWidgets!!!!!!");
 
 		if (UCommonActivatableWidgetContainerBase* Layer = GetLayerWidget(LayerName))
 		{
@@ -55,24 +55,6 @@ public:
 		}
 
 		return nullptr;
-	}
-
-	template <typename ActivatableWidgetT = UCommonActivatableWidget>
-	TSharedPtr<FStreamableHandle> PushWidgetToLayerStackAsync(FGameplayTag LayerName, bool bSuspendInputUntilComplete,
-	                                                          TSoftClassPtr<UCommonActivatableWidget>
-	                                                          ActivatableWidgetClass,
-	                                                          FOnWidgetPushedDyn OnPushedWidget = FOnWidgetPushedDyn())
-	{
-		return PushWidgetToLayerStackAsync<ActivatableWidgetT>(LayerName, bSuspendInputUntilComplete,
-		                                                       ActivatableWidgetClass,
-		                                                       [&OnPushedWidget](
-		                                                       EAsyncWidgetLayerState State, ActivatableWidgetT* Widget)
-		                                                       {
-			                                                       if (State == EAsyncWidgetLayerState::AfterPush)
-			                                                       {
-				                                                       OnPushedWidget.ExecuteIfBound(Widget);
-			                                                       }
-		                                                       });
 	}
 
 	template <typename ActivatableWidgetT = UCommonActivatableWidget>

@@ -19,6 +19,7 @@ UCommonActivatableWidget* UCommonUIExtensions::PushContentToLayer_ForPlayer(cons
                                                                      FGameplayTag LayerName,
                                                                      TSubclassOf<UCommonActivatableWidget> WidgetClass)
 {
+	
 	if (UGameUIManagerSubsystem* UIManager = LocalPlayer->GetGameInstance()->GetSubsystem<UGameUIManagerSubsystem>())
 	{
 		if (UGameUIPolicy* Policy = UIManager->GetCurrentUIPolicy())
@@ -49,7 +50,14 @@ void UCommonUIExtensions::PushStreamedContentToLayer_ForPlayerWithDelegate(const
 			if (UPrimaryGameLayout* RootLayout = Policy->GetRootLayout(CastChecked<UCommonLocalPlayer>(LocalPlayer)))
 			{
 				const bool bSuspendInputUntilComplete = true;
-				RootLayout->PushWidgetToLayerStackAsync(LayerName, bSuspendInputUntilComplete, WidgetClass, OnPushedWidget);
+				RootLayout->PushWidgetToLayerStackAsync<UCommonActivatableWidget>(LayerName, bSuspendInputUntilComplete, WidgetClass,
+					[&OnPushedWidget](EAsyncWidgetLayerState State, UCommonActivatableWidget* Widget)
+				{
+						if (State == EAsyncWidgetLayerState::AfterPush)
+						{
+							OnPushedWidget.ExecuteIfBound(Widget);
+						}
+				});
 			}
 		}
 	}
