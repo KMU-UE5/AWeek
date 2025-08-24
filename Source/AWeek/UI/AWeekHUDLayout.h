@@ -13,5 +13,12 @@ UCLASS()
 class AWEEK_API UAWeekHUDLayout : public UAWeekActivatableWidget
 {
 	GENERATED_BODY()
+public:
+	virtual void NativeOnInitialized() override;
+	virtual void NativeDestruct() override;
+protected:
+	void HandleEscapeAction();
 	
+	UPROPERTY(EditDefaultsOnly)
+	TSoftClassPtr<UCommonActivatableWidget> EscapeMenuClass;
 };

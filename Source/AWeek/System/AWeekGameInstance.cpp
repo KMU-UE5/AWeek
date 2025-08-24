@@ -3,3 +3,10 @@
 
 #include "AWeekGameInstance.h"
 
+#include "AWeek/AWeekGameplayTags.h"
+
+void UAWeekGameInstance::Init()
+{
+	Super::Init();
+	FAWeekGameplayTags::InitializeNativeTags();
+}
