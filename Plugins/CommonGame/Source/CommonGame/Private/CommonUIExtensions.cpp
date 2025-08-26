@@ -1,0 +1,113 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "CommonUIExtensions.h"
+
+#include "CommonActivatableWidget.h"
+#include "CommonInputSubsystem.h"
+#include "CommonInputTypeEnum.h"
+#include "CommonLocalPlayer.h"
+#include "GameUIManagerSubsystem.h"
+#include "GameUIPolicy.h"
+#include "PrimaryGameLayout.h"
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(CommonUIExtensions)
+
+int32 UCommonUIExtensions::InputSuspensions = 0;
+
+UCommonActivatableWidget* UCommonUIExtensions::PushContentToLayer_ForPlayer(const ULocalPlayer* LocalPlayer,
+                                                                     FGameplayTag LayerName,
+                                                                     TSubclassOf<UCommonActivatableWidget> WidgetClass)
+{
+	
+	if (UGameUIManagerSubsystem* UIManager = LocalPlayer->GetGameInstance()->GetSubsystem<UGameUIManagerSubsystem>())
+	{
+		if (UGameUIPolicy* Policy = UIManager->GetCurrentUIPolicy())
+		{
+			if (UPrimaryGameLayout* RootLayout = Policy->GetRootLayout(CastChecked<UCommonLocalPlayer>(LocalPlayer)))
+			{
+				return RootLayout->PushWidgetToLayerStack(LayerName, WidgetClass);
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+
+void UCommonUIExtensions::PushStreamedContentToLayer_ForPlayerWithDelegate(const ULocalPlayer* LocalPlayer, FGameplayTag LayerName,
+                                                               TSoftClassPtr<UCommonActivatableWidget> WidgetClass, FOnWidgetPushedDyn OnPushedWidget)
+{
+	if (!ensure(LocalPlayer) || !ensure(!WidgetClass.IsNull()))
+	{
+		return;
+	}
+
+	if (UGameUIManagerSubsystem* UIManager = LocalPlayer->GetGameInstance()->GetSubsystem<UGameUIManagerSubsystem>())
+	{
+		if (UGameUIPolicy* Policy = UIManager->GetCurrentUIPolicy())
+		{
+			if (UPrimaryGameLayout* RootLayout = Policy->GetRootLayout(CastChecked<UCommonLocalPlayer>(LocalPlayer)))
+			{
+				const bool bSuspendInputUntilComplete = true;
+				RootLayout->PushWidgetToLayerStackAsync<UCommonActivatableWidget>(LayerName, bSuspendInputUntilComplete, WidgetClass,
+					[&OnPushedWidget](EAsyncWidgetLayerState State, UCommonActivatableWidget* Widget)
+				{
+						if (State == EAsyncWidgetLayerState::AfterPush)
+						{
+							OnPushedWidget.ExecuteIfBound(Widget);
+						}
+				});
+			}
+		}
+	}
+}
+
+void UCommonUIExtensions::PushStreamedContentToLayer_ForPlayer(const ULocalPlayer* LocalPlayer, FGameplayTag LayerName,
+	TSoftClassPtr<UCommonActivatableWidget> WidgetClass)
+{
+	PushStreamedContentToLayer_ForPlayerWithDelegate(LocalPlayer, LayerName, WidgetClass, FOnWidgetPushedDyn());
+}
+
+FName UCommonUIExtensions::SuspendInputForPlayer(APlayerController* PlayerController, FName SuspendReason)
+{
+	return SuspendInputForPlayer(PlayerController ? PlayerController->GetLocalPlayer() : nullptr, SuspendReason);
+}
+
+FName UCommonUIExtensions::SuspendInputForPlayer(ULocalPlayer* LocalPlayer, FName SuspendReason)
+{
+	if (UCommonInputSubsystem* CommonInputSubsystem = UCommonInputSubsystem::Get(LocalPlayer))
+	{
+		InputSuspensions++;
+		FName SuspendToken = SuspendReason;
+		SuspendToken.SetNumber(InputSuspensions);
+
+		CommonInputSubsystem->SetInputTypeFilter(ECommonInputType::MouseAndKeyboard, SuspendToken, true);
+		CommonInputSubsystem->SetInputTypeFilter(ECommonInputType::Gamepad, SuspendToken, true);
+		CommonInputSubsystem->SetInputTypeFilter(ECommonInputType::Touch, SuspendToken, true);
+
+		return SuspendToken;
+	}
+
+	return NAME_None;
+}
+
+void UCommonUIExtensions::ResumeInputForPlayer(APlayerController* PlayerController, FName SuspendToken)
+{
+	ResumeInputForPlayer(PlayerController ? PlayerController->GetLocalPlayer() : nullptr, SuspendToken);
+}
+
+void UCommonUIExtensions::ResumeInputForPlayer(ULocalPlayer* LocalPlayer, FName SuspendToken)
+{
+	if (SuspendToken == NAME_None)
+	{
+		return;
+	}
+
+	if (UCommonInputSubsystem* CommonInputSubsystem = UCommonInputSubsystem::Get(LocalPlayer))
+	{
+		CommonInputSubsystem->SetInputTypeFilter(ECommonInputType::MouseAndKeyboard, SuspendToken, false);
+		CommonInputSubsystem->SetInputTypeFilter(ECommonInputType::Gamepad, SuspendToken, false);
+		CommonInputSubsystem->SetInputTypeFilter(ECommonInputType::Touch, SuspendToken, false);
+	}
+}

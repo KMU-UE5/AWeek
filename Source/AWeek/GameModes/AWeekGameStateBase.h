@@ -6,6 +6,8 @@
 #include "GameFramework/GameStateBase.h"
 #include "AWeekGameStateBase.generated.h"
 
+class UAWeekExperienceManagerComponent;
+class UAWeekExperienceDefinition;
 /**
  * 
  */
@@ -15,4 +17,7 @@ class AWEEK_API AAWeekGameStateBase : public AGameStateBase
 	GENERATED_BODY()
 public:
 	AAWeekGameStateBase(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	UPROPERTY()
+	TObjectPtr<UAWeekExperienceManagerComponent> ExperienceManagerComponent;
 };
