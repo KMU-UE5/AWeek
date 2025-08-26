@@ -15,4 +15,6 @@ class AWEEK_API UAWeekGameInstance : public UCommonGameInstance
 	GENERATED_BODY()
 
 	virtual void Init() override;
+
+	virtual void Shutdown() override;
 };
