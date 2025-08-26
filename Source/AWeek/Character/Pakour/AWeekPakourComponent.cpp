@@ -19,9 +19,13 @@ UAWeekPakourComponent::UAWeekPakourComponent()
 void UAWeekPakourComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	mOwner = Cast<AAWeekCharacter>(GetOwner());
 
+	if (mOwner)
+	{
+		mOwnerMWC = mOwner->GetMWC();
+	}
 	// ...
-	
 }
 
 
@@ -49,10 +53,10 @@ FHitResult UAWeekPakourComponent::DetectWall()
 
 	for(int i=0; i<7; i++)
 	{
-		FVector SphereLoc = GetOwner()->GetActorLocation();
+		FVector SphereLoc = mOwner->GetActorLocation();
 		SphereLoc.Z += (-60 + i*20);
-		FVector Start = SphereLoc - (GetOwner()->GetActorForwardVector() * 20); 
-		FVector End = SphereLoc + (GetOwner()->GetActorForwardVector() * 200); 
+		FVector Start = SphereLoc - (mOwner->GetActorForwardVector() * 20);
+		FVector End = SphereLoc + (mOwner->GetActorForwardVector() * 200);
 
 		WallHit = WallTracing(ETraceType::Sphere, Start, End);
 
@@ -83,16 +87,13 @@ void UAWeekPakourComponent::ScanWall(FHitResult Hit)
 	if (!mFirstWallHit.bBlockingHit)
 		return;
 
-	MeasureWall();
-
 	// 2: 벽 두께를 탐색하면서 처음 맞은부분과 마지막에 맞은 부분 탐색
-	FVector WallRotation = -mFirstWallHit.Normal.GetSafeNormal();
-	FVector WallLocation = mFirstWallHit.Location;
+	mWallRotation = -mFirstWallHit.Normal.GetSafeNormal();
 	for (int i = 0; i < 10; i++)
 	{
 		// 처음 맞은 위치에서 앞으로 20센티미터씩 늘려나가면서 탐색한다
-		FVector Start = WallLocation + WallRotation * 20*i;
-		FVector End = WallLocation + WallRotation * 20*i;
+		FVector Start = mFirstWallHit.Location + mWallRotation * 20*i;
+		FVector End = mFirstWallHit.Location + mWallRotation * 20*i;
 		Start.Z += 10;
 
 		FHitResult HitResult = WallTracing(ETraceType::Sphere, Start, End, FColor::Cyan);
@@ -115,25 +116,47 @@ void UAWeekPakourComponent::ScanWall(FHitResult Hit)
 
 	// 3: 벽 두께 끝부분의 ImpactPoint를 얻어와서 벽의 끝부분을 탐색한다.
 	mEndOfWallHit = WallTracing(ETraceType::Sphere,
-		mLastTopHit.ImpactPoint + WallRotation * 20,
+		mLastTopHit.ImpactPoint + mWallRotation * 20,
 		mLastTopHit.ImpactPoint, FColor::Yellow);
 
 	if (!mEndOfWallHit.bBlockingHit)
 		return;
 
 	// 4: 벽 끝부분에서 플레이어의 키만큼 밑으로 탐색하면서 볼트 착지 위치를 얻는다.
-	FVector Start = mEndOfWallHit.ImpactPoint + WallRotation * 60;
-	FVector End = mEndOfWallHit.ImpactPoint + WallRotation * 60;
-	End.Z -= 180;
-	mVaultHit = WallTracing(ETraceType::Sphere,
+	FVector Start = mEndOfWallHit.ImpactPoint + mWallRotation * 60;
+	FVector End = mEndOfWallHit.ImpactPoint + mWallRotation * 60;
+	float Height = mOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.0f;
+	End.Z -= Height;
+	mVaultLandHit = WallTracing(ETraceType::Sphere,
 		Start,
 		End, FColor::Red);
+
+	if (mVaultLandHit.bBlockingHit)
+		TryVault();
 }
 
-void UAWeekPakourComponent::MeasureWall()
+void UAWeekPakourComponent::SetMotionWarping()
 {
-	AAWeekCharacter* Chara = Cast<AAWeekCharacter>(GetOwner());
-	float GroundHeight = Chara->GetMesh()->GetComponentLocation().Z;
+	FVector Start = mFirstTopHit.Location;
+	Start.Z -= 70;
+	FVector End = mVaultLandHit.Location;
+
+	mOwnerMWC->AddOrUpdateWarpTargetFromLocationAndRotation(
+		FName("VaultStart"),
+		Start,
+		mWallRotation.Rotation()
+	);
+
+	mOwnerMWC->AddOrUpdateWarpTargetFromLocationAndRotation(
+		FName("VaultEnd"),
+		End,
+		mWallRotation.Rotation()
+	);
+}
+
+void UAWeekPakourComponent::TryVault()
+{
+	float GroundHeight = mOwner->GetMesh()->GetComponentLocation().Z;
 
 	if (mFirstWallHit.bBlockingHit)
 		mDetectedWallHeight = mFirstWallHit.Location.Z - GroundHeight;
@@ -144,13 +167,7 @@ void UAWeekPakourComponent::MeasureWall()
 	}
 	else
 	{
-		TryVault();
+		SetMotionWarping();
+		mOwner->VaultStart();
 	}
 }
-
-void UAWeekPakourComponent::TryVault()
-{
-	AAWeekCharacter* Chara = Cast<AAWeekCharacter>(GetOwner());
-	Chara->VaultStart();
-}
-

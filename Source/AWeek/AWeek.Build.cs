@@ -29,6 +29,7 @@ public class AWeek : ModuleRules
 
             "Niagara",
             "UMG",
+            "MotionWarping"
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

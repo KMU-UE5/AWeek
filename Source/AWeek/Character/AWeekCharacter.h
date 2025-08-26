@@ -4,6 +4,7 @@
 
 #include "EngineMinimal.h"
 #include "GameFramework/Character.h"
+#include "MotionWarpingComponent.h"
 #include "AWeekCharacter.generated.h"
 
 UCLASS()
@@ -19,6 +20,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UMotionWarpingComponent> mMWC;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -29,5 +33,9 @@ public:
 public:
 	virtual void VaultStart();
 	virtual void VaultEnd();
+	TObjectPtr<UMotionWarpingComponent> GetMWC()
+	{
+		return mMWC;
+	}
 
 };

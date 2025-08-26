@@ -61,6 +61,11 @@ public:
 		mOneHandVaultMontage = FindAnimMontage(TEXT("OneHandVault"));
 	}
 
+	FName GetCurrentOverride()
+	{
+		return mStatusKey;
+	}
+
 	void PlayRunToStopMontage()
 	{
 		Montage_Play(mRunToStopMontage);

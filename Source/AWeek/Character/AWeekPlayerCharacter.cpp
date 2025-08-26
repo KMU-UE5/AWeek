@@ -26,7 +26,7 @@ AAWeekPlayerCharacter::AAWeekPlayerCharacter()
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
-	GetCharacterMovement()->JumpZVelocity = 700.f;
+	GetCharacterMovement()->JumpZVelocity = mJumpVelocity;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = mWalkSpeed;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
@@ -73,7 +73,7 @@ void AAWeekPlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bSprint)
+	if (bSprint && mPakour->bCanPakour)
 	{
 		if (mState->UseStamina(EStaminaUseType::Sprint) == false || GetVelocity().Size() < 50)
 		{
@@ -168,11 +168,18 @@ void AAWeekPlayerCharacter::Jump()
 
 void AAWeekPlayerCharacter::Attack(const FInputActionValue& Value)
 {
+	if (mAnimInst->GetCurrentOverride() == FName("Default"))
+		mAnimInst->ChangeAnimOverride(TEXT("Rifle"));
+	else
+		mAnimInst->ChangeAnimOverride(TEXT("Default"));
 }
 
 void AAWeekPlayerCharacter::SprintStart(const FInputActionValue& Value)
 {
-	if (GetMovementComponent()->IsFalling() || GetVelocity().Size() < 50 || mState->GetStamina() < mSprintMinimumStamina)
+	if (GetMovementComponent()->IsFalling() || 
+		GetVelocity().Size() < 50 || 
+		mState->GetStamina() < mSprintMinimumStamina ||
+		!mPakour->bCanPakour)
 		return;
 	GetCharacterMovement()->MaxWalkSpeed = mSprintSpeed;
 	bSprint = true;
@@ -182,9 +189,11 @@ void AAWeekPlayerCharacter::SprintCompleted()
 {
 	GetCharacterMovement()->MaxWalkSpeed = mWalkSpeed;
 
-	bool Fall = GetCharacterMovement()->IsFalling();
-
-	if (!Fall && bSprint && mSprintTime > mRunToStopTime && GetVelocity().Size() >= 50)
+	if (!GetCharacterMovement()->IsFalling() &&
+		bSprint &&
+		mSprintTime > mRunToStopTime &&
+		GetVelocity().Size() >= 50 &&
+		mPakour->bCanPakour)
 	{
 		mAnimInst->PlayRunToStopMontage();
 	}
@@ -195,19 +204,19 @@ void AAWeekPlayerCharacter::SprintCompleted()
 
 void AAWeekPlayerCharacter::VaultStart()
 {
-	if (GetVelocity().Size() < 10 || GetCharacterMovement()->IsFalling())
+	if (GetVelocity().Size() < 50 || GetCharacterMovement()->IsFalling())
 		return;
 
 	mState->UseStamina(EStaminaUseType::Vault);
 	mAnimInst->PlayVaultMontage();
-	mPakour->SetCanPakour(false);
+	mPakour->bCanPakour = false;
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
 }
 
 void AAWeekPlayerCharacter::VaultEnd()
 {
-	mPakour->SetCanPakour(true);
+	mPakour->bCanPakour = true;
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 }

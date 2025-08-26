@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "MotionWarpingComponent.h"
 #include "Components/ActorComponent.h"
 #include "AWeekPakourComponent.generated.h"
 
@@ -27,8 +28,8 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	float mDetectedWallHeight = -1;
 
-	UPROPERTY(VisibleAnywhere)
-	bool bCanPakour = true;
+	TObjectPtr<class AAWeekCharacter> mOwner;
+	TObjectPtr<UMotionWarpingComponent> mOwnerMWC;
 
 	// 벽 맨 위쪽
 	FHitResult mFirstWallHit;
@@ -43,7 +44,10 @@ protected:
 	FHitResult mEndOfWallHit;
 
 	// 벽 맨 뒷쪽의 ImpactPoint에서 플레이어 키만큼 떨군지점 즉, 볼트 착지지점
-	FHitResult mVaultHit;
+	FHitResult mVaultLandHit;
+
+	// 벽의 역노말 벡터
+	FVector mWallRotation = FVector::ZeroVector;
 
 protected:
 	// Called when the game starts
@@ -54,15 +58,14 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
+	UPROPERTY(VisibleAnywhere)
+	bool bCanPakour = true;
+
 	void TriggerPakour();
 	FHitResult DetectWall();
 	void ScanWall(FHitResult Hit);
-	void MeasureWall();
+	void SetMotionWarping();
 	void TryVault();
-	void SetCanPakour(bool CanPakour)
-	{
-		bCanPakour = CanPakour;
-	}
 
 protected:
 	// Utility Functions

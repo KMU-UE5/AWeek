@@ -3,12 +3,15 @@
 #pragma once
 
 #include "EngineMinimal.h"
-#include "InputActionValue.h"
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
+
 #include "AWeekCharacter.h"
 #include "../Player/AWeekPlayerState.h"
 #include "../Player/AWeekPlayerAnimInstance.h"
+
+#include "InputActionValue.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+
 #include "AWeekPlayerCharacter.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(AWeekPlayerCharacter, Warning, All);
@@ -40,10 +43,13 @@ protected:
 	float mWalkSpeed = 300.f;
 
 	UPROPERTY(EditAnywhere)
-	float mSprintSpeed = 600.f;
+	float mSprintSpeed = 500.f;
 
 	UPROPERTY(EditAnywhere)
 	float mRunToStopTime = 0.75f;
+
+	UPROPERTY(EditAnywhere)
+	float mJumpVelocity = 550.f;
 
 	UPROPERTY(EditAnywhere)
 	float mSprintMinimumStamina = 25.f;
