@@ -5,16 +5,15 @@
 #include "EngineMinimal.h"
 
 #include "AWeekCharacter.h"
-#include "../Player/AWeekPlayerState.h"
 #include "../Player/AWeekPlayerAnimInstance.h"
 
 #include "InputActionValue.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
-#include "AWeekPlayerCharacter.generated.h"
+#include "Kismet/KismetSystemLibrary.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(AWeekPlayerCharacter, Warning, All);
+#include "AWeekPlayerCharacter.generated.h"
 
 UCLASS()
 class AWEEK_API AAWeekPlayerCharacter : public AAWeekCharacter
@@ -30,11 +29,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
-	TObjectPtr<AAWeekPlayerState> mState;
 	TObjectPtr<UAWeekPlayerAnimInstance> mAnimInst;
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UAWeekPakourComponent> mPakour;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UAWeekStaminaComponent> mStamina;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bSprint = false;
@@ -79,12 +80,17 @@ public:
 	void Look(const FInputActionValue& Value);
 	void Jump();
 	void Attack(const FInputActionValue& Value);
-	void SprintStart(const FInputActionValue& Value);
+	void SprintStart();
 	void SprintCompleted();
 
 protected:
 	virtual void VaultStart();
 	virtual void VaultEnd();
+	virtual void LedgeStart();
+	virtual void LedgeEnd();
+	virtual void ClimbStart();
+	UFUNCTION()
+	virtual void ClimbEnd();
 
 public:
 	UFUNCTION(BlueprintCallable)

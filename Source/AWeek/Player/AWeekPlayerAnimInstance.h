@@ -3,9 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "../Character/AWeekCharacter.h"
 #include "../Data/AWeekPlayerAnimInfo.h"
 #include "Animation/AnimInstance.h"
 #include "AWeekPlayerAnimInstance.generated.h"
+
+UENUM(BlueprintType)
+enum class EPlayerMoveState : uint8
+{
+	Ground,
+	Ledge,
+	Climb
+};
 
 UCLASS()
 class AWEEK_API UAWeekPlayerAnimInstance : public UAnimInstance
@@ -13,11 +22,17 @@ class AWEEK_API UAWeekPlayerAnimInstance : public UAnimInstance
 	GENERATED_BODY()
 	
 protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<AAWeekCharacter> mOwner;
+
 	UPROPERTY(EditAnywhere)
 	FName mStatusKey = TEXT("Default");
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TMap<FName, FPlayerAnimInfo> mAnimMap;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	EPlayerMoveState mMoveState = EPlayerMoveState::Ground;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TMap<FName, TObjectPtr<UAnimSequence>>	mSequenceMap;
@@ -29,8 +44,9 @@ protected:
 	TMap<FName, TObjectPtr<UAnimMontage>>	mMontageMap;
 
 	UAnimMontage* mRunToStopMontage;
-
 	UAnimMontage* mOneHandVaultMontage;
+	UAnimMontage* mLedgeMontage;
+	UAnimMontage* mClimbMontage;
 
 public:
 	virtual void NativeBeginPlay();
@@ -59,11 +75,22 @@ public:
 
 		mRunToStopMontage = FindAnimMontage(TEXT("RunToStop"));
 		mOneHandVaultMontage = FindAnimMontage(TEXT("OneHandVault"));
+		mLedgeMontage = FindAnimMontage(TEXT("Ledge"));
+		mClimbMontage = FindAnimMontage(TEXT("Climb"));
 	}
 
 	FName GetCurrentOverride()
 	{
 		return mStatusKey;
+	}
+
+	EPlayerMoveState GetPlayerMoveState()
+	{
+		return mMoveState;
+	}
+	void SetPlayerMoveState(EPlayerMoveState MoveState)
+	{
+		mMoveState = MoveState;
 	}
 
 	void PlayRunToStopMontage()
@@ -79,6 +106,26 @@ public:
 	void PlayVaultMontage()
 	{
 		Montage_Play(mOneHandVaultMontage);
+	}
+
+	void PlayLedgeMontage()
+	{
+		Montage_Play(mLedgeMontage);
+	}
+
+	bool IsPlayingLedgeMontage()
+	{
+		return Montage_IsPlaying(mLedgeMontage);
+	}
+
+	void PlayClimbMontage()
+	{
+		Montage_Play(mClimbMontage);
+	}
+
+	bool IsPlayingClimbMontage()
+	{
+		return Montage_IsPlaying(mClimbMontage);
 	}
 
 protected:

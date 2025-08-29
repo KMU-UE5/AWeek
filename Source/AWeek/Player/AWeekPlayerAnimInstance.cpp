@@ -10,6 +10,8 @@ void UAWeekPlayerAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
 
+	mOwner = Cast<AAWeekCharacter>(GetOwningActor());
+
 	// 애니메이션 데이터테이블 전체를 갖고옴
 	UDataTable* AnimInfoDT = UAWeekAssetManager::Get().FindDataTable(TEXT("DT_PlayerAnimInfo"));
 	if (!AnimInfoDT) return;
@@ -74,7 +76,11 @@ void UAWeekPlayerAnimInstance::MontageEnd(UAnimMontage* Montage, bool bInterrupt
 {
 	if (Montage == mOneHandVaultMontage)
 	{
-		AAWeekCharacter* Chara = Cast<AAWeekCharacter>(GetOwningActor());
-		Chara->VaultEnd();
+		mOwner->VaultEnd();
+	}
+
+	if (Montage == mLedgeMontage)
+	{
+		mOwner->LedgeEnd();
 	}
 }

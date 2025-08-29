@@ -5,15 +5,14 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Pakour/AWeekPakourComponent.h"
+#include "Stamina/AWeekStaminaComponent.h"
 #include "../Input/AWeekGameInput.h"
-
-DEFINE_LOG_CATEGORY(AWeekPlayerCharacter);
 
 AAWeekPlayerCharacter::AAWeekPlayerCharacter()
 {
-	PrimaryActorTick.bCanEverTick = true;
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCapsuleComponent()->bHiddenInGame=false;
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -45,6 +44,7 @@ AAWeekPlayerCharacter::AAWeekPlayerCharacter()
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	mPakour = CreateDefaultSubobject<UAWeekPakourComponent>(TEXT("Pakour"));
+	mStamina = CreateDefaultSubobject<UAWeekStaminaComponent>(TEXT("Stamina"));
 }
 
 // Called when the game starts or when spawned
@@ -64,7 +64,6 @@ void AAWeekPlayerCharacter::BeginPlay()
 		Subsystem->AddMappingContext(InputCDO->mContext, 0);
 	}
 
-	mState = Cast<AAWeekPlayerState>(GetPlayerState());
 	mAnimInst = Cast<UAWeekPlayerAnimInstance>(GetMesh()->GetAnimInstance());
 }
 
@@ -75,13 +74,13 @@ void AAWeekPlayerCharacter::Tick(float DeltaTime)
 
 	if (bSprint && mPakour->bCanPakour)
 	{
-		if (mState->UseStamina(EStaminaUseType::Sprint) == false || GetVelocity().Size() < 50)
+		if (mStamina->UseStamina(EStaminaUseType::Sprint) == false || GetVelocity().Size() < 50)
 		{
 			SprintCompleted();
 		}
 		else
 		{
-			mPakour->TriggerPakour();
+			mPakour->TriggerPakour(EPakourType::Vault);
 			mSprintTime += DeltaTime;
 		}
 	}
@@ -124,8 +123,17 @@ void AAWeekPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 void AAWeekPlayerCharacter::Move(const FInputActionValue& Value)
 {
-	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
+	
+	if (mAnimInst->GetPlayerMoveState() == EPlayerMoveState::Ledge && !mAnimInst->IsPlayingLedgeMontage())
+	{
+		if (MovementVector.X < 1 && MovementVector.Y > 0 && mAnimInst->GetPlayerMoveState() != EPlayerMoveState::Climb)
+		{
+			ClimbStart();
+		}
+		return;
+	}
+	// input is a Vector2D
 
 	if (Controller != nullptr)
 	{
@@ -160,7 +168,16 @@ void AAWeekPlayerCharacter::Look(const FInputActionValue& Value)
 
 void AAWeekPlayerCharacter::Jump()
 {
-	if (!mAnimInst->IsPlayingRunToStopMontage())
+	if (mAnimInst->GetPlayerMoveState() == EPlayerMoveState::Ledge && !mAnimInst->IsPlayingLedgeMontage())
+	{
+		ClimbEnd();
+	}
+	else if (!GetMovementComponent()->IsFalling() &&
+		!mAnimInst->IsPlayingLedgeMontage() &&
+		!mAnimInst->IsPlayingRunToStopMontage() && 
+		!mAnimInst->IsPlayingClimbMontage() &&
+		!mPakour->TriggerPakour(EPakourType::Ledge))
+		
 	{
 		Super::Jump();
 	}
@@ -174,11 +191,11 @@ void AAWeekPlayerCharacter::Attack(const FInputActionValue& Value)
 		mAnimInst->ChangeAnimOverride(TEXT("Default"));
 }
 
-void AAWeekPlayerCharacter::SprintStart(const FInputActionValue& Value)
+void AAWeekPlayerCharacter::SprintStart()
 {
 	if (GetMovementComponent()->IsFalling() || 
 		GetVelocity().Size() < 50 || 
-		mState->GetStamina() < mSprintMinimumStamina ||
+		mStamina->GetStamina() < mSprintMinimumStamina ||
 		!mPakour->bCanPakour)
 		return;
 	GetCharacterMovement()->MaxWalkSpeed = mSprintSpeed;
@@ -207,8 +224,9 @@ void AAWeekPlayerCharacter::VaultStart()
 	if (GetVelocity().Size() < 50 || GetCharacterMovement()->IsFalling())
 		return;
 
-	mState->UseStamina(EStaminaUseType::Vault);
+	mStamina->UseStamina(EStaminaUseType::Vault);
 	mAnimInst->PlayVaultMontage();
+	
 	mPakour->bCanPakour = false;
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
@@ -221,10 +239,64 @@ void AAWeekPlayerCharacter::VaultEnd()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 }
 
+void AAWeekPlayerCharacter::LedgeStart()
+{
+	mAnimInst->PlayLedgeMontage();
+	mAnimInst->SetPlayerMoveState(EPlayerMoveState::Ledge);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	CameraBoom->bDoCollisionTest = false;
+}
+
+void AAWeekPlayerCharacter::LedgeEnd()
+{
+	GetMovementComponent()->StopMovementImmediately();
+	CameraBoom->bDoCollisionTest = true;
+}
+
+void AAWeekPlayerCharacter::ClimbStart()
+{
+	mAnimInst->PlayClimbMontage();
+
+	// Motion Warping didnt work... why???????
+	// so i move character immediatley
+	mAnimInst->SetPlayerMoveState(EPlayerMoveState::Climb);
+	CameraBoom->bDoCollisionTest = false;
+
+	FVector Dest = mPakour->GetFirstTopHitLocation();
+	Dest.Z+=90;
+
+	FLatentActionInfo LatentActionInfo;
+	LatentActionInfo.UUID = 0;
+	LatentActionInfo.Linkage = 0;
+	LatentActionInfo.CallbackTarget = this;
+	LatentActionInfo.ExecutionFunction = FName("ClimbEnd");
+
+	UKismetSystemLibrary::MoveComponentTo(
+		GetCapsuleComponent(),
+		Dest,
+		GetActorRotation(),
+		false,
+		false,
+		1,
+		false,
+		EMoveComponentAction::Move,
+		LatentActionInfo
+	);
+}
+
+void AAWeekPlayerCharacter::ClimbEnd()
+{
+	mAnimInst->SetPlayerMoveState(EPlayerMoveState::Ground);
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	CameraBoom->bDoCollisionTest = true;
+}
+
 
 void AAWeekPlayerCharacter::FootStepEffect(FName SocketName)
 {
 	FVector	Position = GetMesh()->GetSocketLocation(SocketName);
-	UNiagaraSystem* FootStepVFX = LoadObject<UNiagaraSystem>(GetWorld(), TEXT("/Script/Niagara.NiagaraSystem'/Game/A_Surface_Footstep/Niagara_FX/ParticleSystems/PSN_General1_Surface.PSN_General1_Surface'"));
+	UNiagaraSystem* FootStepVFX = LoadObject<UNiagaraSystem>(GetWorld(), TEXT("/Script/Niagara.NiagaraSystem'/Game/ThirdParty/A_Surface_Footstep/Niagara_FX/ParticleSystems/PSN_General1_Surface.PSN_General1_Surface'"));
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), FootStepVFX, Position);
 }

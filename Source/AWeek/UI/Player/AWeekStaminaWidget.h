@@ -20,7 +20,6 @@ public:
 protected:
 	TObjectPtr<UProgressBar> mProgress;
 	class UWidgetAnimation* mAnim;
-	FWidgetAnimationDynamicEvent mAnimFinishDelegate;
 
 protected:
 	virtual void NativeConstruct();

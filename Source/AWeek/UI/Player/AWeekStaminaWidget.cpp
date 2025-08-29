@@ -15,11 +15,12 @@ void UAWeekStaminaWidget::NativeConstruct()
 	HideWidget();
 	mAnim = GetWidgetAnimation(TEXT("StaminaDisappear"));
 	mProgress = Cast<UProgressBar>(GetWidgetFromName(TEXT("StaminaProgress")));
-	mAnimFinishDelegate.BindDynamic(this, &UAWeekStaminaWidget::HideWidget);
+	FWidgetAnimationDynamicEvent AnimFinishDelegate;
+	AnimFinishDelegate.BindDynamic(this, &UAWeekStaminaWidget::HideWidget);
 
 	if (mAnim)
 	{
-		BindToAnimationFinished(mAnim, mAnimFinishDelegate);
+		BindToAnimationFinished(mAnim, AnimFinishDelegate);
 	}
 }
 
