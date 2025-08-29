@@ -171,16 +171,18 @@ void AAWeekPlayerCharacter::Jump()
 	if (mAnimInst->GetPlayerMoveState() == EPlayerMoveState::Ledge && !mAnimInst->IsPlayingLedgeMontage())
 	{
 		ClimbEnd();
+		return;
 	}
-	else if (!GetMovementComponent()->IsFalling() &&
-		!mAnimInst->IsPlayingLedgeMontage() &&
-		!mAnimInst->IsPlayingRunToStopMontage() && 
-		!mAnimInst->IsPlayingClimbMontage() &&
-		!mPakour->TriggerPakour(EPakourType::Ledge))
-		
+
+	if (mPakour->TriggerPakour(EPakourType::Ledge) ||
+		GetMovementComponent()->IsFalling() ||
+		mAnimInst->IsPlayingLedgeMontage() ||
+		mAnimInst->IsPlayingRunToStopMontage() ||
+		mAnimInst->IsPlayingClimbMontage())
 	{
-		Super::Jump();
+		return;
 	}
+	Super::Jump();
 }
 
 void AAWeekPlayerCharacter::Attack(const FInputActionValue& Value)

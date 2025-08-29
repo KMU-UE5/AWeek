@@ -174,7 +174,7 @@ bool UAWeekPakourComponent::TryLedge()
 	float WallHeight = mFirstWallHit.Location.Z - GroundHeight;
 
 	if (FVector::Dist(mFirstTopHit.Location, mLastTopHit.Location) > 60 &&
-		WallHeight >= 230 && WallHeight < 300)
+		WallHeight >= 220 && WallHeight <= 300)
 	{
 		SetLedgeMotionWarping(WallHeight);
 		SetClimbMotionWarping();
@@ -207,10 +207,9 @@ void UAWeekPakourComponent::SetVaultMotionWarping()
 void UAWeekPakourComponent::SetLedgeMotionWarping(float WallHeight)
 {
 	FVector Dest = mFirstTopHit.ImpactPoint - mOwner->GetActorForwardVector()*50;
-	// Destination set to more lower value as wall height is short
-	float ratio = 0.6f;
-	float bias = (600/WallHeight * 20);
-	Dest.Z -= (WallHeight*ratio)+bias;
+
+	Dest.Z-=180;
+
 	mOwnerMWC->AddOrUpdateWarpTargetFromLocationAndRotation(
 		FName("Ledge"),
 		Dest,
