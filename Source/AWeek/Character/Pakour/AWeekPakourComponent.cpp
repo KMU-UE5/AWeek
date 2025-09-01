@@ -208,7 +208,7 @@ void UAWeekPakourComponent::SetLedgeMotionWarping(float WallHeight)
 {
 	FVector Dest = mFirstTopHit.ImpactPoint - mOwner->GetActorForwardVector()*50;
 
-	Dest.Z-=180;
+	Dest.Z-=210;
 
 	mOwnerMWC->AddOrUpdateWarpTargetFromLocationAndRotation(
 		FName("Ledge"),

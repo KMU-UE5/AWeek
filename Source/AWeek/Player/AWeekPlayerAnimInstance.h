@@ -43,11 +43,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TMap<FName, TObjectPtr<UAnimMontage>>	mMontageMap;
 
-	UAnimMontage* mRunToStopMontage;
-	UAnimMontage* mOneHandVaultMontage;
-	UAnimMontage* mLedgeMontage;
-	UAnimMontage* mClimbMontage;
-
 public:
 	virtual void NativeBeginPlay();
 	virtual void NativeInitializeAnimation();
@@ -72,11 +67,6 @@ public:
 		mSequenceMap = mAnimMap[mStatusKey].SequenceMap;
 		mBlendSpaceMap = mAnimMap[mStatusKey].BlendSpaceMap;
 		mMontageMap = mAnimMap[mStatusKey].MontageMap;
-
-		mRunToStopMontage = FindAnimMontage(TEXT("RunToStop"));
-		mOneHandVaultMontage = FindAnimMontage(TEXT("OneHandVault"));
-		mLedgeMontage = FindAnimMontage(TEXT("Ledge"));
-		mClimbMontage = FindAnimMontage(TEXT("Climb"));
 	}
 
 	FName GetCurrentOverride()
@@ -93,39 +83,24 @@ public:
 		mMoveState = MoveState;
 	}
 
-	void PlayRunToStopMontage()
+	void PlayMontageByName(FName Name, float PlayRate = 1.0f)
 	{
-		Montage_Play(mRunToStopMontage);
+		UAnimMontage* Montage = FindAnimMontage(Name);
+		if (Montage)
+		{
+			Montage_Play(Montage, PlayRate);
+		}
 	}
 
-	bool IsPlayingRunToStopMontage()
+	bool IsPlayingMontageByName(FName Name)
 	{
-		return Montage_IsPlaying(mRunToStopMontage);
-	}
-
-	void PlayVaultMontage()
-	{
-		Montage_Play(mOneHandVaultMontage);
-	}
-
-	void PlayLedgeMontage()
-	{
-		Montage_Play(mLedgeMontage);
-	}
-
-	bool IsPlayingLedgeMontage()
-	{
-		return Montage_IsPlaying(mLedgeMontage);
-	}
-
-	void PlayClimbMontage()
-	{
-		Montage_Play(mClimbMontage);
-	}
-
-	bool IsPlayingClimbMontage()
-	{
-		return Montage_IsPlaying(mClimbMontage);
+		UAnimMontage* Montage = FindAnimMontage(Name);
+		if (Montage)
+		{
+			return Montage_IsPlaying(Montage);
+		}
+		
+		return false;
 	}
 
 protected:

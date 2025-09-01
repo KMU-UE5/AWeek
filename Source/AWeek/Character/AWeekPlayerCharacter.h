@@ -6,6 +6,7 @@
 
 #include "AWeekCharacter.h"
 #include "../Player/AWeekPlayerAnimInstance.h"
+#include "../Player/Weapon/AWeekWeapon.h"
 
 #include "InputActionValue.h"
 #include "EnhancedInputComponent.h"
@@ -62,7 +63,9 @@ protected:
 	float mSprintStaminaUsage = 25; // 달리기 초당 스태미나 소모량
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float mVaultStaminaUsage = 20; 
+	float mVaultStaminaUsage = 20;
+
+	TObjectPtr<AAWeekWeapon> mTest;
 
 protected:
 	// Called when the game starts or when spawned
@@ -75,13 +78,14 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-public:
+protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Jump();
 	void Attack(const FInputActionValue& Value);
 	void SprintStart();
 	void SprintCompleted();
+	void ChangeWeaponModel();
 
 protected:
 	virtual void VaultStart();

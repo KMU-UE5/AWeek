@@ -55,12 +55,24 @@ UAnimSequence* UAWeekPlayerAnimInstance::FindAnimSequence(const FName& Name)
 {
 	TObjectPtr<UAnimSequence>* Sequence = mSequenceMap.Find(Name);
 
+	if (!Sequence)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Sequence %s is not found"), *Name.ToString());
+		return nullptr;
+	}
+
 	return Sequence->Get();
 }
 
 UBlendSpace* UAWeekPlayerAnimInstance::FindBlendSpace(const FName& Name)
 {
 	TObjectPtr<UBlendSpace>* BlendSpace = mBlendSpaceMap.Find(Name);
+
+	if (!BlendSpace)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BS %s is not found"), *Name.ToString());
+		return nullptr;
+	}
 
 	return BlendSpace->Get();
 }
@@ -69,17 +81,23 @@ UAnimMontage* UAWeekPlayerAnimInstance::FindAnimMontage(const FName& Name)
 {
 	TObjectPtr<UAnimMontage>* Montage = mMontageMap.Find(Name);
 
+	if (!Montage)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Montage %s is not found"), *Name.ToString());
+		return nullptr;
+	}
+
 	return Montage->Get();
 }
 
 void UAWeekPlayerAnimInstance::MontageEnd(UAnimMontage* Montage, bool bInterrupted)
 {
-	if (Montage == mOneHandVaultMontage)
+	if (Montage == FindAnimMontage(TEXT("Vault")))
 	{
 		mOwner->VaultEnd();
 	}
 
-	if (Montage == mLedgeMontage)
+	if (Montage == FindAnimMontage(TEXT("Ledge")))
 	{
 		mOwner->LedgeEnd();
 	}

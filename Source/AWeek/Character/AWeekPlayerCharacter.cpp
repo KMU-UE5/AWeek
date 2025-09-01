@@ -84,6 +84,12 @@ void AAWeekPlayerCharacter::Tick(float DeltaTime)
 			mSprintTime += DeltaTime;
 		}
 	}
+
+	if (mAnimInst->GetPlayerMoveState() == EPlayerMoveState::Ledge)
+	{
+		if (!mStamina->UseStamina(EStaminaUseType::Ledge))
+			ClimbEnd();
+	}
 }
 
 // Called to bind functionality to input
@@ -125,7 +131,7 @@ void AAWeekPlayerCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
 	
-	if (mAnimInst->GetPlayerMoveState() == EPlayerMoveState::Ledge && !mAnimInst->IsPlayingLedgeMontage())
+	if (mAnimInst->GetPlayerMoveState() == EPlayerMoveState::Ledge && !mAnimInst->IsPlayingMontageByName(TEXT("Ledge")))
 	{
 		if (MovementVector.X < 1 && MovementVector.Y > 0 && mAnimInst->GetPlayerMoveState() != EPlayerMoveState::Climb)
 		{
@@ -168,7 +174,7 @@ void AAWeekPlayerCharacter::Look(const FInputActionValue& Value)
 
 void AAWeekPlayerCharacter::Jump()
 {
-	if (mAnimInst->GetPlayerMoveState() == EPlayerMoveState::Ledge && !mAnimInst->IsPlayingLedgeMontage())
+	if (mAnimInst->GetPlayerMoveState() == EPlayerMoveState::Ledge && !mAnimInst->IsPlayingMontageByName(TEXT("Ledge")))
 	{
 		ClimbEnd();
 		return;
@@ -176,9 +182,9 @@ void AAWeekPlayerCharacter::Jump()
 
 	if (mPakour->TriggerPakour(EPakourType::Ledge) ||
 		GetMovementComponent()->IsFalling() ||
-		mAnimInst->IsPlayingLedgeMontage() ||
-		mAnimInst->IsPlayingRunToStopMontage() ||
-		mAnimInst->IsPlayingClimbMontage())
+		mAnimInst->IsPlayingMontageByName(TEXT("Ledge")) ||
+		mAnimInst->IsPlayingMontageByName(TEXT("RunToStop")) ||
+		mAnimInst->IsPlayingMontageByName(TEXT("Climb")))
 	{
 		return;
 	}
@@ -187,6 +193,7 @@ void AAWeekPlayerCharacter::Jump()
 
 void AAWeekPlayerCharacter::Attack(const FInputActionValue& Value)
 {
+	ChangeWeaponModel();
 	if (mAnimInst->GetCurrentOverride() == FName("Default"))
 		mAnimInst->ChangeAnimOverride(TEXT("Rifle"));
 	else
@@ -214,11 +221,24 @@ void AAWeekPlayerCharacter::SprintCompleted()
 		GetVelocity().Size() >= 50 &&
 		mPakour->bCanPakour)
 	{
-		mAnimInst->PlayRunToStopMontage();
+		mAnimInst->PlayMontageByName(TEXT("RunToStop"));
 	}
 
 	mSprintTime = 0;
 	bSprint = false;
+}
+
+void AAWeekPlayerCharacter::ChangeWeaponModel()
+{
+	AAWeekWeapon* NewWeapon = GetWorld()->SpawnActor<AAWeekWeapon>();
+	if (NewWeapon)
+	{
+		NewWeapon->AttachToComponent(
+			GetMesh(),
+			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+			FName("weapon")
+		);
+	}
 }
 
 void AAWeekPlayerCharacter::VaultStart()
@@ -226,12 +246,14 @@ void AAWeekPlayerCharacter::VaultStart()
 	if (GetVelocity().Size() < 50 || GetCharacterMovement()->IsFalling())
 		return;
 
-	mStamina->UseStamina(EStaminaUseType::Vault);
-	mAnimInst->PlayVaultMontage();
-	
-	mPakour->bCanPakour = false;
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	if (mStamina->UseStamina(EStaminaUseType::Vault))
+	{
+		mAnimInst->PlayMontageByName(TEXT("Vault"));
+
+		mPakour->bCanPakour = false;
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	}
 }
 
 void AAWeekPlayerCharacter::VaultEnd()
@@ -243,7 +265,9 @@ void AAWeekPlayerCharacter::VaultEnd()
 
 void AAWeekPlayerCharacter::LedgeStart()
 {
-	mAnimInst->PlayLedgeMontage();
+	if (!mStamina->UseStamina(EStaminaUseType::LedgeStart))
+		return;
+	mAnimInst->PlayMontageByName(TEXT("Ledge"));
 	mAnimInst->SetPlayerMoveState(EPlayerMoveState::Ledge);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
@@ -258,7 +282,7 @@ void AAWeekPlayerCharacter::LedgeEnd()
 
 void AAWeekPlayerCharacter::ClimbStart()
 {
-	mAnimInst->PlayClimbMontage();
+	mAnimInst->PlayMontageByName(TEXT("Climb"));
 
 	// Motion Warping didnt work... why???????
 	// so i move character immediatley

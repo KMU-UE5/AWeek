@@ -10,7 +10,9 @@ UENUM()
 enum class EStaminaUseType
 {
 	Sprint,
-	Vault
+	Vault,
+	Ledge,
+	LedgeStart
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -53,6 +55,12 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float mVaultUsage = 10;
+
+	UPROPERTY(EditAnywhere)
+	float mLedgeUsage = 10; // 초당 소모량
+
+	UPROPERTY(EditAnywhere)
+	float mLedgeStartUsage = 10;
 
 protected:
 	// Called when the game starts
