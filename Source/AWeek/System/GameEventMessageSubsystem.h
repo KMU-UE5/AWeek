@@ -104,6 +104,12 @@ public:
 
 	void UnregisterListener(FGameEventMessageListenerHandle Handle);
 
+protected:
+	UFUNCTION(BlueprintCallable, CustomThunk, meta = (CustomStructureParam="Message", AllowAbstract="false", DisplayName="Broadcast Message"))
+	void K2_BroadcastMessage(FGameplayTag Channel, const int32& Message);
+
+	DECLARE_FUNCTION(execK2_BroadcastMessage);
+
 private:
 	void BroadcastMessageInternal(FGameplayTag Channel, const UScriptStruct* StructType, const void* MessageBytes);
 

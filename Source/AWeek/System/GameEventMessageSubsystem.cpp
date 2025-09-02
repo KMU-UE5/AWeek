@@ -36,6 +36,28 @@ void UGameEventMessageSubsystem::UnregisterListener(FGameEventMessageListenerHan
 	}
 }
 
+void UGameEventMessageSubsystem::K2_BroadcastMessage(FGameplayTag Channel, const int32& Message)
+{
+	checkNoEntry();
+}
+
+DEFINE_FUNCTION(UGameEventMessageSubsystem::execK2_BroadcastMessage)
+{
+	P_GET_STRUCT(FGameplayTag, Channel);
+
+	Stack.MostRecentPropertyAddress = nullptr;
+	Stack.StepCompiledIn<FStructProperty>(nullptr);
+	void* MessagePtr = Stack.MostRecentPropertyAddress;
+	FStructProperty* StructProp = CastField<FStructProperty>(Stack.MostRecentProperty);
+
+	P_FINISH;
+
+	if (ensure((StructProp != nullptr) && (StructProp->Struct != nullptr) && (MessagePtr != nullptr)))
+	{
+		P_THIS->BroadcastMessageInternal(Channel, StructProp->Struct, MessagePtr);
+	}
+}
+
 void UGameEventMessageSubsystem::BroadcastMessageInternal(FGameplayTag Channel, const UScriptStruct* StructType,
                                                           const void* MessageBytes)
 {
