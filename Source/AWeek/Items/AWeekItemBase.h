@@ -29,22 +29,22 @@ public:
 	FName ID;
 
 	UPROPERTY(VisibleAnywhere, Category = "Item")
-	EItemType ItemType;
+	EAWeekItemType ItemType;
 
 	UPROPERTY(VisibleAnywhere, Category = "Item")
-	EItemQuality ItemQuality;
+	EAWeekItemQuality ItemQuality;
 
 	UPROPERTY(VisibleAnywhere, Category = "Item")
-	FItemStatistics ItemStatistics;
+	FAWeekItemStatistics ItemStatistics;
 
 	UPROPERTY(VisibleAnywhere, Category = "Item")
-	FItemTextData TextData;
+	FAWeekItemTextData TextData;
 
 	UPROPERTY(VisibleAnywhere, Category = "Item")
-	FItemNumericData NumericData;
+	FAWeekItemNumericData NumericData;
 
 	UPROPERTY(VisibleAnywhere, Category = "Item")
-	FItemAssetData AssetData;
+	FAWeekItemAssetData AssetData;
 
 	bool bIsCopy;
 	bool bIsPickup;

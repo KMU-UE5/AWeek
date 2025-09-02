@@ -9,7 +9,7 @@
 class AAWeekPlayerCharacter;
 
 UENUM()
-enum class EInteractableType : uint8
+enum class EAWeekInteractableType : uint8
 {
 	Pickup UMETA(DisplayName = "Pickup"),
 	NonplayerCharacter UMETA(DisplayName = "NonplayerCharacter"),
@@ -18,12 +18,12 @@ enum class EInteractableType : uint8
 	Chest UMETA(DisplayName = "Chest")
 };
 USTRUCT()
-struct FInteractableData
+struct FAWeekInteractableData
 {
 	GENERATED_BODY()
 
-	FInteractableData() :
-		InteractableType(EInteractableType::Pickup),
+	FAWeekInteractableData() :
+		InteractableType(EAWeekInteractableType::Pickup),
 		Name(FText::GetEmpty()),
 		Action(FText::GetEmpty()),
 		Quantity(0),
@@ -33,7 +33,7 @@ struct FInteractableData
 	}
 
 	UPROPERTY(EditInstanceOnly)
-	EInteractableType InteractableType;
+	EAWeekInteractableType InteractableType;
 
 	UPROPERTY(EditInstanceOnly)
 	FText Name;
@@ -52,12 +52,12 @@ struct FInteractableData
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UInteractionInterface : public UInterface
+class UAWeekInteractionInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class AWEEK_API IInteractionInterface
+class AWEEK_API IAWeekInteractionInterface
 {
 	GENERATED_BODY()
 
@@ -69,5 +69,5 @@ public:
 	virtual void EndInteract();
 	virtual void Interact(TObjectPtr<AAWeekPlayerCharacter> PlayerCharacter);
 
-	FInteractableData InteractableData;
+	FAWeekInteractableData InteractableData;
 };

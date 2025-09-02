@@ -4,25 +4,25 @@
 #include "AWeek/Interfaces/AWeekInteractionInterface.h"
 #include "AWeek/Character/AWeekPlayerCharacter.h"
 
-// Add default functionality here for any IInteractionInterface functions that are not pure virtual.
+// Add default functionality here for any IAWeekInteractionInterface functions that are not pure virtual.
 
-void IInteractionInterface::BeginFocus()
+void IAWeekInteractionInterface::BeginFocus()
 {
 
 }
-void IInteractionInterface::EndFocus()
+void IAWeekInteractionInterface::EndFocus()
 {
 
 }
-void IInteractionInterface::BeginInteract()
+void IAWeekInteractionInterface::BeginInteract()
 {
 
 }
-void IInteractionInterface::EndInteract()
+void IAWeekInteractionInterface::EndInteract()
 {
 
 }
-void IInteractionInterface::Interact(TObjectPtr<AAWeekPlayerCharacter> PlayerCharacter)
+void IAWeekInteractionInterface::Interact(TObjectPtr<AAWeekPlayerCharacter> PlayerCharacter)
 {
 
 }

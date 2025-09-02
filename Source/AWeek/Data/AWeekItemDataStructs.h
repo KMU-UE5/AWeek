@@ -5,7 +5,7 @@
 #include "AWeekItemDataStructs.generated.h"
 
 UENUM()
-enum class EItemQuality : uint8
+enum class EAWeekItemQuality : uint8
 {
 	Shoddy UMETA(DisplayName = "Shoddy"),
 	Common UMETA(DisplayName = "Common"),
@@ -15,7 +15,7 @@ enum class EItemQuality : uint8
 };
 
 UENUM()
-enum class EItemType : uint8
+enum class EAWeekItemType : uint8
 {
 	Armor UMETA(DisplayName = "Armor"),
 	Weapon UMETA(DisplayName = "Weapon"),
@@ -27,7 +27,7 @@ enum class EItemType : uint8
 };
 
 USTRUCT()
-struct FItemStatistics
+struct FAWeekItemStatistics
 {
 	GENERATED_BODY()
 
@@ -45,7 +45,7 @@ struct FItemStatistics
 };
 
 USTRUCT()
-struct FItemTextData
+struct FAWeekItemTextData
 {
 	GENERATED_BODY()
 
@@ -63,7 +63,7 @@ struct FItemTextData
 };
 
 USTRUCT()
-struct FItemAssetData
+struct FAWeekItemAssetData
 {
 	GENERATED_BODY()
 
@@ -75,7 +75,7 @@ struct FItemAssetData
 };
 
 USTRUCT()
-struct FItemNumericData
+struct FAWeekItemNumericData
 {
 	GENERATED_BODY()
 
@@ -90,7 +90,7 @@ struct FItemNumericData
 };
 
 USTRUCT()
-struct FItemData : public FTableRowBase
+struct FAWeekItemData : public FTableRowBase
 {
 	GENERATED_BODY()
 
@@ -98,20 +98,20 @@ struct FItemData : public FTableRowBase
 	FName ID;
 
 	UPROPERTY(EditAnywhere, Category = "Item Data")
-	EItemType ItemType;
+	EAWeekItemType ItemType;
 
 	UPROPERTY(EditAnywhere, Category = "Item Data")
-	EItemQuality ItemQuality;
+	EAWeekItemQuality ItemQuality;
 
 	UPROPERTY(EditAnywhere, Category = "Item Data")
-	FItemStatistics ItemStatistics;
+	FAWeekItemStatistics ItemStatistics;
 
 	UPROPERTY(EditAnywhere, Category = "Item Data")
-	FItemTextData TextData;
+	FAWeekItemTextData TextData;
 
 	UPROPERTY(EditAnywhere, Category = "Item Data")
-	FItemNumericData NumericData;
+	FAWeekItemNumericData NumericData;
 
 	UPROPERTY(EditAnywhere, Category = "Item Data")
-	FItemAssetData AssetData;
+	FAWeekItemAssetData AssetData;
 };
