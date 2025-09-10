@@ -15,8 +15,8 @@ public:
 	// Sets default values for this actor's properties
 	AAWeekWeapon();
 
-protected:
-	TObjectPtr<UStaticMeshComponent> mMesh;
+public:
+	TObjectPtr<UStaticMeshComponent> mMeshComponent;
 
 protected:
 	// Called when the game starts or when spawned

@@ -26,8 +26,6 @@ public:
 
 protected:
 protected:
-	float mDeltaTime = 0;
-
 	UPROPERTY(EditAnywhere)
 	float mMaxStamina = 100; // ¿ø·¡°ª 100
 

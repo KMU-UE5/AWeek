@@ -6,6 +6,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Pakour/AWeekPakourComponent.h"
 #include "Stamina/AWeekStaminaComponent.h"
+#include "../Player/Weapon/AWeekWeaponComponent.h"
 #include "../Input/AWeekGameInput.h"
 
 AAWeekPlayerCharacter::AAWeekPlayerCharacter()
@@ -45,6 +46,7 @@ AAWeekPlayerCharacter::AAWeekPlayerCharacter()
 
 	mPakour = CreateDefaultSubobject<UAWeekPakourComponent>(TEXT("Pakour"));
 	mStamina = CreateDefaultSubobject<UAWeekStaminaComponent>(TEXT("Stamina"));
+	mWeapon = CreateDefaultSubobject<UAWeekWeaponComponent>(TEXT("Weapon"));
 }
 
 // Called when the game starts or when spawned
@@ -124,6 +126,15 @@ void AAWeekPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 		EnhancedInput->BindAction(InputCDO->mAttack, ETriggerEvent::Started,
 			this, &AAWeekPlayerCharacter::Attack);
+
+		EnhancedInput->BindAction(InputCDO->mAttack, ETriggerEvent::Triggered,
+			this, &AAWeekPlayerCharacter::Fire);
+
+		EnhancedInput->BindAction(InputCDO->mAttack, ETriggerEvent::Completed,
+			this, &AAWeekPlayerCharacter::EndFire);
+
+		EnhancedInput->BindAction(InputCDO->mChangeWeapon, ETriggerEvent::Started,
+			this, &AAWeekPlayerCharacter::ChangeWeapon);
 	}
 }
 
@@ -193,11 +204,28 @@ void AAWeekPlayerCharacter::Jump()
 
 void AAWeekPlayerCharacter::Attack(const FInputActionValue& Value)
 {
-	ChangeWeaponModel();
-	if (mAnimInst->GetCurrentOverride() == FName("Default"))
-		mAnimInst->ChangeAnimOverride(TEXT("Rifle"));
-	else
-		mAnimInst->ChangeAnimOverride(TEXT("Default"));
+	if (mAnimInst->GetCurrentOverride() == FName("Rifle"))
+		return;
+	mAnimInst->PlayMontageByName(TEXT("Attack"));
+
+	// Get Weapon Damage from Weapon Component
+	// Apply damage later..
+}
+
+void AAWeekPlayerCharacter::Fire()
+{
+	if (mAnimInst->GetCurrentOverride() != FName("Rifle"))
+		return;
+
+	//mAnimInst->ChangeAnimOverride(TEXT("Rifle_Firing"));
+}
+
+void AAWeekPlayerCharacter::EndFire()
+{
+	if (mAnimInst->GetCurrentOverride() != FName("Rifle"))
+		return;
+
+	//mAnimInst->ChangeAnimOverride(TEXT("Rifle"));
 }
 
 void AAWeekPlayerCharacter::SprintStart()
@@ -228,17 +256,24 @@ void AAWeekPlayerCharacter::SprintCompleted()
 	bSprint = false;
 }
 
-void AAWeekPlayerCharacter::ChangeWeaponModel()
+void AAWeekPlayerCharacter::ChangeWeapon()
 {
-	AAWeekWeapon* NewWeapon = GetWorld()->SpawnActor<AAWeekWeapon>();
-	if (NewWeapon)
+	if (mAnimInst->GetCurrentOverride() == FName("Default"))
 	{
-		NewWeapon->AttachToComponent(
-			GetMesh(),
-			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-			FName("weapon")
-		);
+		mWeapon->ChangeWeapon(TEXT("Bat"));
+		mAnimInst->ChangeAnimOverride(TEXT("Bat"));
 	}
+	else if (mAnimInst->GetCurrentOverride() == FName("Bat"))
+	{
+		mWeapon->ChangeWeapon(TEXT("Rifle"));
+		mAnimInst->ChangeAnimOverride(TEXT("Rifle"));
+	}
+	else
+	{
+		mWeapon->ChangeWeapon(TEXT("Default"));
+		mAnimInst->ChangeAnimOverride(TEXT("Default"));
+	}
+		
 }
 
 void AAWeekPlayerCharacter::VaultStart()

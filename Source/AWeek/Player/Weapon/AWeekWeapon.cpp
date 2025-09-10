@@ -7,25 +7,18 @@
 AAWeekWeapon::AAWeekWeapon()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
-	mMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	SetRootComponent(mMesh);
+	mMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
+	SetRootComponent(mMeshComponent);
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh>
-		MeshAsset(TEXT("/Script/Engine.StaticMesh'/Game/ThirdParty/mp-44-assault-rifle/source/MP441.MP441'"));
-	
-	if (MeshAsset.Succeeded())
-		mMesh->SetStaticMesh(MeshAsset.Object);
-
-	mMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	mMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 // Called when the game starts or when spawned
 void AAWeekWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame

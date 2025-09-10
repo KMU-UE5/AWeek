@@ -21,8 +21,6 @@ void UAWeekStaminaComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	mDeltaTime = DeltaTime;
-
 	if (bStaminaRecovery && mStamina < mMaxStamina)
 	{
 		mStamina = FMath::Min(mStamina + mStaminaRecoveryRate * DeltaTime, mMaxStamina);
@@ -33,17 +31,18 @@ void UAWeekStaminaComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 bool UAWeekStaminaComponent::UseStamina(EStaminaUseType StaminaUseType)
 {
 	float Usage = 0;
+	float DeltaTime = GetWorld()->DeltaTimeSeconds;
 
 	switch (StaminaUseType)
 	{
 	case EStaminaUseType::Sprint:
-		Usage = mSprintUsage * mDeltaTime;
+		Usage = mSprintUsage * DeltaTime;
 		break;
 	case EStaminaUseType::Vault:
 		Usage = mVaultUsage;
 		break;
 	case EStaminaUseType::Ledge:
-		Usage = mLedgeUsage * mDeltaTime;
+		Usage = mLedgeUsage * DeltaTime;
 		break;
 	case EStaminaUseType::LedgeStart:
 		Usage = mLedgeStartUsage;

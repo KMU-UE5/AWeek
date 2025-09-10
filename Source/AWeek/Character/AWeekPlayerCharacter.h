@@ -6,8 +6,6 @@
 
 #include "AWeekCharacter.h"
 #include "../Player/AWeekPlayerAnimInstance.h"
-#include "../Player/Weapon/AWeekWeapon.h"
-
 #include "InputActionValue.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -15,6 +13,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 
 #include "AWeekPlayerCharacter.generated.h"
+
+
 
 UCLASS()
 class AWEEK_API AAWeekPlayerCharacter : public AAWeekCharacter
@@ -37,6 +37,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UAWeekStaminaComponent> mStamina;
+	
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UAWeekWeaponComponent> mWeapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bSprint = false;
@@ -65,8 +68,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float mVaultStaminaUsage = 20;
 
-	TObjectPtr<AAWeekWeapon> mTest;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -83,9 +84,11 @@ protected:
 	void Look(const FInputActionValue& Value);
 	void Jump();
 	void Attack(const FInputActionValue& Value);
+	void Fire();
+	void EndFire();
 	void SprintStart();
 	void SprintCompleted();
-	void ChangeWeaponModel();
+	void ChangeWeapon();
 
 protected:
 	virtual void VaultStart();
