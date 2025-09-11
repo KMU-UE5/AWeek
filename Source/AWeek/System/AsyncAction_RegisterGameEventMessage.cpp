@@ -52,8 +52,33 @@ void UAsyncAction_RegisterGameEventMessage::SetReadyToDestroy()
 	Super::SetReadyToDestroy();
 }
 
+bool UAsyncAction_RegisterGameEventMessage::GetPayload(int32& OutPayload)
+{
+	checkNoEntry();
+	return false;
+}
+
+DEFINE_FUNCTION(UAsyncAction_RegisterGameEventMessage::execGetPayload)
+{
+	Stack.MostRecentPropertyAddress = nullptr;
+	Stack.StepCompiledIn<FStructProperty>(nullptr);
+	void* MessagePtr = Stack.MostRecentPropertyAddress;
+	FStructProperty* StructProp = CastField<FStructProperty>(Stack.MostRecentProperty);
+	P_FINISH;
+
+	bool bSuccess = false;
+
+	if ((StructProp != nullptr) && (StructProp->Struct != nullptr) && (MessagePtr != nullptr) && (StructProp->Struct == P_THIS->MessageStructType.Get()) && (P_THIS->ReceivedMessagePayloadPtr != nullptr))
+	{
+		StructProp->Struct->CopyScriptStruct(MessagePtr, P_THIS->ReceivedMessagePayloadPtr);
+		bSuccess = true;
+	}
+
+	*(bool*)RESULT_PARAM = bSuccess;
+}
+
 void UAsyncAction_RegisterGameEventMessage::HandleMessageReceived(FGameplayTag Channel, const UScriptStruct* StructType,
-	const void* Payload)
+                                                                  const void* Payload)
 {
 	if (!MessageStructType.Get() || (MessageStructType.Get() == StructType))
 	{

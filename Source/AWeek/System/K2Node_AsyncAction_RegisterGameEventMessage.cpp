@@ -6,11 +6,17 @@
 #include "AsyncAction_RegisterGameEventMessage.h"
 #include "BlueprintActionDatabaseRegistrar.h"
 #include "BlueprintFunctionNodeSpawner.h"
+#include "K2Node_AssignmentStatement.h"
+#include "K2Node_CallFunction.h"
+#include "K2Node_TemporaryVariable.h"
+#include "KismetCompiler.h"
 
 namespace UK2Node_AsyncAction_RegisterGameEventMessagesName
 {
 	static FName PayloadPinName = "Payload";
 	static FName PayloadTypePinName = "PayloadType";
+	static FName ActualChannelPinName = "ActualChannel";
+	static FName ProxyPinName = "Proxy";
 }
 
 void UK2Node_AsyncAction_RegisterGameEventMessage::PostReconstructNode()
@@ -77,13 +83,94 @@ void UK2Node_AsyncAction_RegisterGameEventMessage::AllocateDefaultPins()
 
 	// WildCard 형식으로 Pin 생성 Payload 타입이 변경되므로
 	CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Wildcard, UK2Node_AsyncAction_RegisterGameEventMessagesName::PayloadPinName);
+
+	UEdGraphPin* ProxyPin = FindPin(UK2Node_AsyncAction_RegisterGameEventMessagesName::ProxyPinName);
+	if (ProxyPin)
+	{
+		ProxyPin->bHidden = true;
+	}
 }
 
 bool UK2Node_AsyncAction_RegisterGameEventMessage::HandleDelegates(
 	const TArray<FBaseAsyncTaskHelper::FOutputPinAndLocalVariable>& VariableOutputs, UEdGraphPin* ProxyObjectPin,
 	UEdGraphPin*& InOutLastThenPin, UEdGraph* SourceGraph, FKismetCompilerContext& CompilerContext)
 {
-	return Super::HandleDelegates(VariableOutputs, ProxyObjectPin, InOutLastThenPin, SourceGraph, CompilerContext);
+	// 부모 HandleDelegates 함수 그대로 +) 확장 HandleDelegateImplementation 추가
+	bool bIsErrorFree = true;
+	for (TFieldIterator<FMulticastDelegateProperty> PropertyIt(ProxyClass); PropertyIt && bIsErrorFree; ++PropertyIt)
+	{
+		UEdGraphPin* LastActivatedThenPin = nullptr;
+		bIsErrorFree &= FBaseAsyncTaskHelper::HandleDelegateImplementation(*PropertyIt, VariableOutputs, ProxyObjectPin, InOutLastThenPin, LastActivatedThenPin, this, SourceGraph, CompilerContext);
+		bIsErrorFree &= HandlePayloadImplementation(*PropertyIt, VariableOutputs[0], VariableOutputs[2], VariableOutputs[1], LastActivatedThenPin, SourceGraph, CompilerContext);
+	}
+	return bIsErrorFree;
+}
+
+bool UK2Node_AsyncAction_RegisterGameEventMessage::HandlePayloadImplementation(
+	FMulticastDelegateProperty* CurrentProperty, const FBaseAsyncTaskHelper::FOutputPinAndLocalVariable& ProxyObjectVar,
+	const FBaseAsyncTaskHelper::FOutputPinAndLocalVariable& PayloadVar,
+	const FBaseAsyncTaskHelper::FOutputPinAndLocalVariable& ActualChannelVar, UEdGraphPin*& InOutLastActivatedThenPin,
+	UEdGraph* SourceGraph, FKismetCompilerContext& CompilerContext)
+{
+	bool bIsErrorFree = true;
+	const UEdGraphPin* PayloadPin = GetPayloadPin();
+	const UEdGraphSchema_K2* Schema = CompilerContext.GetSchema();
+
+	check(CurrentProperty && SourceGraph && Schema);
+
+	const FEdGraphPinType& PinType = PayloadPin->PinType;
+
+	// PinType이 아직 Wildcard면 Refresh가 안됐다는 뜻 그래서 설정 x 바로 return
+	if (PinType.PinCategory == UEdGraphSchema_K2::PC_Wildcard)
+	{
+		// 연결 된게 없으면 그냥 무시
+		if (PayloadPin->LinkedTo.Num() == 0)
+		{
+			return true;
+		}
+
+		// 연결 된게 있으면 실행되면 안되므로 error - return false
+		return false;
+	}
+
+	// Payload 담을 임시 노드 생성
+	UK2Node_TemporaryVariable* TempVarOutput = CompilerContext.SpawnInternalVariable(
+		this, PinType.PinCategory, PinType.PinSubCategory, PinType.PinSubCategoryObject.Get(),
+		PinType.ContainerType, PinType.PinValueType);
+
+	
+	UK2Node_CallFunction* const CallGetPayloadNode = CompilerContext.SpawnIntermediateNode<UK2Node_CallFunction>(this, SourceGraph);
+	CallGetPayloadNode->FunctionReference.SetExternalMember(TEXT("GetPayload"), CurrentProperty->GetOwnerClass());
+	CallGetPayloadNode->AllocateDefaultPins();
+
+	UEdGraphPin* GetPayloadCallSelfPin = Schema->FindSelfPin(*CallGetPayloadNode, EGPD_Input);
+	if (GetPayloadCallSelfPin)
+	{
+		bIsErrorFree &= Schema->TryCreateConnection(GetPayloadCallSelfPin, ProxyObjectVar.TempVar->GetVariablePin());
+
+		UEdGraphPin* GetPayloadExecPin = CallGetPayloadNode->FindPinChecked(UEdGraphSchema_K2::PN_Execute);
+		UEdGraphPin* GetPayloadThenPin = CallGetPayloadNode->FindPinChecked(UEdGraphSchema_K2::PN_Then);
+
+		UEdGraphPin* GetPayloadPin = CallGetPayloadNode->FindPinChecked(TEXT("OutPayload"));
+		bIsErrorFree &= Schema->TryCreateConnection(TempVarOutput->GetVariablePin(), GetPayloadPin);
+
+		UK2Node_AssignmentStatement* AssignNode = CompilerContext.SpawnIntermediateNode<UK2Node_AssignmentStatement>(this, SourceGraph);
+		AssignNode->AllocateDefaultPins();
+		bIsErrorFree &= Schema->TryCreateConnection(GetPayloadThenPin, AssignNode->GetExecPin());
+		bIsErrorFree &= Schema->TryCreateConnection(PayloadVar.TempVar->GetVariablePin(), AssignNode->GetVariablePin());
+		AssignNode->NotifyPinConnectionListChanged(AssignNode->GetVariablePin());
+		bIsErrorFree &= Schema->TryCreateConnection(AssignNode->GetValuePin(), TempVarOutput->GetVariablePin());
+		AssignNode->NotifyPinConnectionListChanged(AssignNode->GetValuePin());
+
+
+		bIsErrorFree &= CompilerContext.MovePinLinksToIntermediate(*InOutLastActivatedThenPin, *AssignNode->GetThenPin()).CanSafeConnect();
+		bIsErrorFree &= Schema->TryCreateConnection(InOutLastActivatedThenPin, GetPayloadExecPin);
+
+		UEdGraphPin* OutActualChannelPin = GetOutputChannelPin();
+		bIsErrorFree &= CompilerContext.MovePinLinksToIntermediate(*OutActualChannelPin, *ActualChannelVar.TempVar->GetVariablePin()).CanSafeConnect();
+	}
+
+	return bIsErrorFree;
 }
 
 void UK2Node_AsyncAction_RegisterGameEventMessage::RefreshOutputPin()
@@ -118,6 +205,14 @@ UEdGraphPin* UK2Node_AsyncAction_RegisterGameEventMessage::GetPayloadTypePin() c
 {
 	UEdGraphPin* PayloadTypePin = FindPinChecked(UK2Node_AsyncAction_RegisterGameEventMessagesName::PayloadTypePinName);
 	check(PayloadTypePin->Direction == EGPD_Input)
+
+	return PayloadTypePin;
+}
+
+UEdGraphPin* UK2Node_AsyncAction_RegisterGameEventMessage::GetOutputChannelPin() const
+{
+	UEdGraphPin* PayloadTypePin = FindPinChecked(UK2Node_AsyncAction_RegisterGameEventMessagesName::ActualChannelPinName);
+	check(PayloadTypePin->Direction == EGPD_Output)
 
 	return PayloadTypePin;
 }

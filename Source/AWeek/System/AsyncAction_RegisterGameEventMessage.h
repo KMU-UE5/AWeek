@@ -24,6 +24,10 @@ public:
 	virtual void Activate() override;
 	virtual void SetReadyToDestroy() override;
 
+	UFUNCTION(BlueprintCallable, CustomThunk, meta = (CustomStructureParam = "OutPayload"))
+	bool GetPayload(UPARAM(ref) int32& OutPayload);
+	DECLARE_FUNCTION(execGetPayload);
+
 	UPROPERTY(BlueprintAssignable)
 	FAsyncGameEventMessageDelegate OnReceived;
 

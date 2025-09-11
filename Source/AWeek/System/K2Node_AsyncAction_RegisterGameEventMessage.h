@@ -31,12 +31,22 @@ private:
 	virtual void AllocateDefaultPins() override;
 
 protected:
-	// 부모(UK2Node_AsyncAction)이 비동기 Delegate를 구성할때 호출 OnMessageReceived 
+	// 부모(UK2Node_AsyncAction)이 비동기 Delegate를 구성할때 호출 OnMessageReceived 등등
+	// 블루프린트 컴파일시 Iterator를 순회해서 Wildcard에 연결
 	virtual bool HandleDelegates(const TArray<FBaseAsyncTaskHelper::FOutputPinAndLocalVariable>& VariableOutputs, UEdGraphPin* ProxyObjectPin, UEdGraphPin*& InOutLastThenPin, UEdGraph* SourceGraph, FKismetCompilerContext& CompilerContext) override;
+private:
+	// HandleDelegate에서 호출 Payload연결
+	bool HandlePayloadImplementation(
+		FMulticastDelegateProperty* CurrentProperty,
+		const FBaseAsyncTaskHelper::FOutputPinAndLocalVariable& ProxyObjectVar,
+		const FBaseAsyncTaskHelper::FOutputPinAndLocalVariable& PayloadVar,
+		const FBaseAsyncTaskHelper::FOutputPinAndLocalVariable& ActualChannelVar,
+		UEdGraphPin*& InOutLastActivatedThenPin, UEdGraph* SourceGraph, FKismetCompilerContext& CompilerContext);
 
 private:
 	void RefreshOutputPin();
 
 	UEdGraphPin* GetPayloadPin() const;
 	UEdGraphPin* GetPayloadTypePin() const;
+	UEdGraphPin* GetOutputChannelPin() const;
 };
