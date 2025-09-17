@@ -52,6 +52,11 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	FVector GetWeaponMuzzle()
+	{
+		return mWeapon->mMeshComponent->GetSocketLocation(FName("Muzzle"));
+	}
+
 public:
 	void ChangeWeapon(FName WeaponKey);
 };

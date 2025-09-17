@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../Character/AWeekCharacter.h"
 #include "../Data/AWeekPlayerAnimInfo.h"
 #include "Animation/AnimInstance.h"
 #include "AWeekPlayerAnimInstance.generated.h"
@@ -16,6 +15,13 @@ enum class EPlayerMoveState : uint8
 	Climb
 };
 
+UENUM(BlueprintType)
+enum class EPlayerWeaponState : uint8
+{
+	Default,
+	Gun
+};
+
 UCLASS()
 class AWEEK_API UAWeekPlayerAnimInstance : public UAnimInstance
 {
@@ -23,7 +29,7 @@ class AWEEK_API UAWeekPlayerAnimInstance : public UAnimInstance
 	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	TObjectPtr<AAWeekCharacter> mOwner;
+	TObjectPtr<class AAWeekPlayerCharacter> mOwner;
 
 	UPROPERTY(EditAnywhere)
 	FName mStatusKey = TEXT("Default");
@@ -33,6 +39,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	EPlayerMoveState mMoveState = EPlayerMoveState::Ground;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	EPlayerWeaponState mWeaponState = EPlayerWeaponState::Default;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TMap<FName, TObjectPtr<UAnimSequence>>	mSequenceMap;
@@ -63,6 +72,7 @@ public:
 	void ChangeAnimOverride(FName State)
 	{
 		mStatusKey = State;
+		mWeaponState = EPlayerWeaponState::Default;
 
 		mSequenceMap = mAnimMap[mStatusKey].SequenceMap;
 		mBlendSpaceMap = mAnimMap[mStatusKey].BlendSpaceMap;
@@ -83,12 +93,31 @@ public:
 		mMoveState = MoveState;
 	}
 
+	EPlayerWeaponState GetPlayerWeaponState()
+	{
+		return mWeaponState;
+	}
+
+	void SetPlayerWeaponState(EPlayerWeaponState WeaponState)
+	{
+		mWeaponState = WeaponState;
+	}
+
 	void PlayMontageByName(FName Name, float PlayRate = 1.0f)
 	{
 		UAnimMontage* Montage = FindAnimMontage(Name);
 		if (Montage)
 		{
 			Montage_Play(Montage, PlayRate);
+		}
+	}
+
+	void StopMontageByName(FName Name, float BlendRate = 1.0f)
+	{
+		UAnimMontage* Montage = FindAnimMontage(Name);
+		if (Montage)
+		{
+			Montage_Stop(BlendRate, Montage);
 		}
 	}
 
@@ -106,4 +135,10 @@ public:
 protected:
 	UFUNCTION()
 	void MontageEnd(UAnimMontage* Montage, bool bInterrupted);
+
+	UFUNCTION()
+	void AnimNotify_MeeleAttack();
+
+	UFUNCTION()
+	void AnimNotify_Fire();
 };

@@ -7,6 +7,7 @@
 #include "Pakour/AWeekPakourComponent.h"
 #include "Stamina/AWeekStaminaComponent.h"
 #include "../Player/Weapon/AWeekWeaponComponent.h"
+#include "../System/DamageSystemComponent.h"
 #include "../Input/AWeekGameInput.h"
 
 AAWeekPlayerCharacter::AAWeekPlayerCharacter()
@@ -47,6 +48,7 @@ AAWeekPlayerCharacter::AAWeekPlayerCharacter()
 	mPakour = CreateDefaultSubobject<UAWeekPakourComponent>(TEXT("Pakour"));
 	mStamina = CreateDefaultSubobject<UAWeekStaminaComponent>(TEXT("Stamina"));
 	mWeapon = CreateDefaultSubobject<UAWeekWeaponComponent>(TEXT("Weapon"));
+	mDamageSystem = CreateDefaultSubobject<UDamageSystemComponent>(TEXT("DamageSystem"));
 }
 
 // Called when the game starts or when spawned
@@ -67,6 +69,8 @@ void AAWeekPlayerCharacter::BeginPlay()
 	}
 
 	mAnimInst = Cast<UAWeekPlayerAnimInstance>(GetMesh()->GetAnimInstance());
+
+	mDamageSystem->OnDeath.AddDynamic(this, &AAWeekPlayerCharacter::Die);
 }
 
 // Called every frame
@@ -204,6 +208,8 @@ void AAWeekPlayerCharacter::Jump()
 
 void AAWeekPlayerCharacter::Attack(const FInputActionValue& Value)
 {
+	if (mAnimInst->IsAnyMontagePlaying())
+		return;
 	if (mAnimInst->GetCurrentOverride() == FName("Rifle"))
 		return;
 	mAnimInst->PlayMontageByName(TEXT("Attack"));
@@ -217,6 +223,14 @@ void AAWeekPlayerCharacter::Fire()
 	if (mAnimInst->GetCurrentOverride() != FName("Rifle"))
 		return;
 
+	GetCharacterMovement()->MaxWalkSpeed = mFiringSpeed;
+
+	if (mAnimInst->GetPlayerWeaponState() == EPlayerWeaponState::Default)
+	{
+		mAnimInst->SetPlayerWeaponState(EPlayerWeaponState::Gun);
+		mAnimInst->PlayMontageByName(TEXT("Fire"));
+	}
+
 	//mAnimInst->ChangeAnimOverride(TEXT("Rifle_Firing"));
 }
 
@@ -224,6 +238,10 @@ void AAWeekPlayerCharacter::EndFire()
 {
 	if (mAnimInst->GetCurrentOverride() != FName("Rifle"))
 		return;
+
+	GetCharacterMovement()->MaxWalkSpeed = mWalkSpeed;
+	mAnimInst->SetPlayerWeaponState(EPlayerWeaponState::Default);
+	mAnimInst->StopMontageByName(TEXT("Fire"));
 
 	//mAnimInst->ChangeAnimOverride(TEXT("Rifle"));
 }
@@ -233,7 +251,8 @@ void AAWeekPlayerCharacter::SprintStart()
 	if (GetMovementComponent()->IsFalling() || 
 		GetVelocity().Size() < 50 || 
 		mStamina->GetStamina() < mSprintMinimumStamina ||
-		!mPakour->bCanPakour)
+		!mPakour->bCanPakour ||
+		mAnimInst->GetPlayerWeaponState()==EPlayerWeaponState::Gun)
 		return;
 	GetCharacterMovement()->MaxWalkSpeed = mSprintSpeed;
 	bSprint = true;
@@ -352,6 +371,100 @@ void AAWeekPlayerCharacter::ClimbEnd()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	CameraBoom->bDoCollisionTest = true;
+}
+
+void AAWeekPlayerCharacter::AttackImpact()
+{
+	FVector	Forward = GetActorForwardVector();
+
+	FVector	HitStart = GetActorLocation() + Forward * 50.f;
+	FVector	Center = GetActorLocation() + Forward * (25.f + 200 / 2.f);
+
+	TArray<FHitResult>	Result;
+
+	FCollisionQueryParams	param;
+	param.AddIgnoredActor(this);
+	param.bTraceComplex = false;
+
+	bool Collision = GetWorld()->SweepMultiByChannel(Result, Center, Center,
+		FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel3,
+		FCollisionShape::MakeSphere(100.f), param);
+
+	DrawDebugSphere(
+		GetWorld(),
+		Center,             // 중심
+		100.f,              // 반지름 (MakeSphere에서 준 값)
+		16,                 // 세그먼트 (디테일 정도)
+		FColor::Green,      // 색
+		false,              // 지속 여부 (true면 무한 지속)
+		1.0f                // 지속 시간 (1초)
+	);
+
+
+	if (Collision)
+	{
+		float	Origin = FMath::Cos(FMath::DegreesToRadians(45.f));
+
+		for (auto& Hit : Result)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%d"), Result.Num());
+			FVector	HitLocation = Hit.GetActor()->GetActorLocation();
+
+			FVector	Dir = HitLocation - HitStart;
+			AActor* HitActor = Hit.GetActor();
+			Dir.Normalize();
+			float Angle = Dir.Dot(Forward);
+
+			if (Angle >= Origin)
+			{
+				// When hit actor implements DamageAble Interface
+				if (HitActor->GetClass()->ImplementsInterface(UDamageAble::StaticClass()))
+				{
+					FDamageInfo DamageInfo;
+					DamageInfo.Amount = 10.0f;
+					bool bDamaged = IDamageAble::Execute_TakeDamage(HitActor, DamageInfo);
+					if (bDamaged)
+						UE_LOG(LogTemp, Warning, TEXT("Hit Someone"));
+				}
+			}
+		}
+	}
+}
+
+void AAWeekPlayerCharacter::FireBullet()
+{
+	FVector	MuzzleLoctaion = mWeapon->GetWeaponMuzzle();
+
+	if (FireEffect)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			FireEffect,
+			MuzzleLoctaion,
+			GetActorRotation(),
+			FVector(1.0f)
+		);
+	}
+
+	if (FireSound)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), FireSound, MuzzleLoctaion);
+	}
+	
+	FActorSpawnParameters Param;
+	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	//AASeedTestBullet* Bullet = GetWorld()->SpawnActor<AASeedTestBullet>(MuzzleLoctaion, GetActorRotation(), Param);
+}
+
+void AAWeekPlayerCharacter::Die()
+{
+	mAnimInst->PlayMontageByName(TEXT("Die"));
+}
+
+void AAWeekPlayerCharacter::TakeDamage(FDamageInfo DamageInfo)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Ouch"));
 }
 
 

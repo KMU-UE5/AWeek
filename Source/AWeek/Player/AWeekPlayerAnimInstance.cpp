@@ -3,6 +3,7 @@
 
 #include "AWeekPlayerAnimInstance.h"
 #include "../Data/AWeekPlayerAnimInfo.h"
+#include "../Character/AWeekPlayerCharacter.h"
 #include "../AWeekAssetManager.h"
 #include "../Character/AWeekPlayerCharacter.h"
 
@@ -10,7 +11,7 @@ void UAWeekPlayerAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
 
-	mOwner = Cast<AAWeekCharacter>(GetOwningActor());
+	mOwner = Cast<AAWeekPlayerCharacter>(GetOwningActor());
 
 	// 애니메이션 데이터테이블 전체를 갖고옴
 	UDataTable* AnimInfoDT = UAWeekAssetManager::Get().FindDataTable(TEXT("DT_PlayerAnimInfo"));
@@ -92,6 +93,9 @@ UAnimMontage* UAWeekPlayerAnimInstance::FindAnimMontage(const FName& Name)
 
 void UAWeekPlayerAnimInstance::MontageEnd(UAnimMontage* Montage, bool bInterrupted)
 {
+	if (mWeaponState==EPlayerWeaponState::Gun && Montage != FindAnimMontage(TEXT("Fire")))
+		PlayMontageByName(TEXT("Fire"));
+
 	if (Montage == FindAnimMontage(TEXT("Vault")))
 	{
 		mOwner->VaultEnd();
@@ -101,4 +105,14 @@ void UAWeekPlayerAnimInstance::MontageEnd(UAnimMontage* Montage, bool bInterrupt
 	{
 		mOwner->LedgeEnd();
 	}
+}
+
+void UAWeekPlayerAnimInstance::AnimNotify_MeeleAttack()
+{
+	mOwner->AttackImpact();
+}
+
+void UAWeekPlayerAnimInstance::AnimNotify_Fire()
+{
+	mOwner->FireBullet();
 }

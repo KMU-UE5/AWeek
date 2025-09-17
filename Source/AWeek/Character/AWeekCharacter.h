@@ -41,5 +41,4 @@ public:
 	{
 		return mMWC;
 	}
-
 };

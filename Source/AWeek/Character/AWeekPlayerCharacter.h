@@ -6,6 +6,10 @@
 
 #include "AWeekCharacter.h"
 #include "../Player/AWeekPlayerAnimInstance.h"
+
+#include "../System/DamageInfo.h"
+#include "../System/IDamageAble.h"
+
 #include "InputActionValue.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -17,35 +21,59 @@
 
 
 UCLASS()
-class AWEEK_API AAWeekPlayerCharacter : public AAWeekCharacter
+class AWEEK_API AAWeekPlayerCharacter : public AAWeekCharacter, public IDamageAble
 {
 	GENERATED_BODY()
 public:
 	AAWeekPlayerCharacter();
 
 protected:
+	/*--------------CAMERA--------------*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
+	/*--------------ANIMINST--------------*/
 	TObjectPtr<UAWeekPlayerAnimInstance> mAnimInst;
 
+	/*--------------PAKOUR--------------*/
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UAWeekPakourComponent> mPakour;
 
+	/*--------------STAMINA--------------*/
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UAWeekStaminaComponent> mStamina;
 	
+	/*--------------WEAPON--------------*/
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UAWeekWeaponComponent> mWeapon;
 
+	/*--------------DAMAGE--------------*/
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UDamageSystemComponent> mDamageSystem;
+
+	/*--------------PARTICLES--------------*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Effects, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UParticleSystemComponent> ParticleComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Effects, meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* FireEffect;
+
+	/*--------------SOUNDS--------------*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds, meta = (AllowPrivateAccess = "true"))
+	USoundBase* FireSound;
+
+	/*--------------VARIABLES--------------*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bSprint = false;
 
 	UPROPERTY(EditAnywhere)
 	float mWalkSpeed = 300.f;
+
+	UPROPERTY(EditAnywhere)
+	float mFiringSpeed = 200.f;
 
 	UPROPERTY(EditAnywhere)
 	float mSprintSpeed = 500.f;
@@ -90,14 +118,23 @@ protected:
 	void SprintCompleted();
 	void ChangeWeapon();
 
-protected:
+public:
 	virtual void VaultStart();
 	virtual void VaultEnd();
 	virtual void LedgeStart();
 	virtual void LedgeEnd();
 	virtual void ClimbStart();
+
 	UFUNCTION()
 	virtual void ClimbEnd();
+
+	void AttackImpact();
+	void FireBullet();
+
+	UFUNCTION()
+	void Die();
+
+	virtual void TakeDamage(FDamageInfo DamageInfo);
 
 public:
 	UFUNCTION(BlueprintCallable)
