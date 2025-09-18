@@ -134,8 +134,6 @@ public:
 	UFUNCTION()
 	void Die();
 
-	virtual void TakeDamage(FDamageInfo DamageInfo);
-
 public:
 	UFUNCTION(BlueprintCallable)
 	void FootStepEffect(FName SocketName);

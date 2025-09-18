@@ -9,6 +9,7 @@
 #include "../Player/Weapon/AWeekWeaponComponent.h"
 #include "../System/DamageSystemComponent.h"
 #include "../Input/AWeekGameInput.h"
+#include "../System/DaySystem/AWeekDaySystem.h"
 
 AAWeekPlayerCharacter::AAWeekPlayerCharacter()
 {
@@ -20,6 +21,8 @@ AAWeekPlayerCharacter::AAWeekPlayerCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
+
+	GetMesh()->SetCollisionProfileName(TEXT("Player"));
 
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
@@ -69,6 +72,7 @@ void AAWeekPlayerCharacter::BeginPlay()
 	}
 
 	mAnimInst = Cast<UAWeekPlayerAnimInstance>(GetMesh()->GetAnimInstance());
+	mWeapon->ChangeWeapon(TEXT("Default"));
 
 	mDamageSystem->OnDeath.AddDynamic(this, &AAWeekPlayerCharacter::Die);
 }
@@ -292,7 +296,6 @@ void AAWeekPlayerCharacter::ChangeWeapon()
 		mWeapon->ChangeWeapon(TEXT("Default"));
 		mAnimInst->ChangeAnimOverride(TEXT("Default"));
 	}
-		
 }
 
 void AAWeekPlayerCharacter::VaultStart()
@@ -376,8 +379,6 @@ void AAWeekPlayerCharacter::ClimbEnd()
 void AAWeekPlayerCharacter::AttackImpact()
 {
 	FVector	Forward = GetActorForwardVector();
-
-	FVector	HitStart = GetActorLocation() + Forward * 50.f;
 	FVector	Center = GetActorLocation() + Forward * (25.f + 200 / 2.f);
 
 	TArray<FHitResult>	Result;
@@ -388,7 +389,7 @@ void AAWeekPlayerCharacter::AttackImpact()
 
 	bool Collision = GetWorld()->SweepMultiByChannel(Result, Center, Center,
 		FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel3,
-		FCollisionShape::MakeSphere(100.f), param);
+		FCollisionShape::MakeBox(FVector(100)), param);
 
 	DrawDebugSphere(
 		GetWorld(),
@@ -403,29 +404,19 @@ void AAWeekPlayerCharacter::AttackImpact()
 
 	if (Collision)
 	{
-		float	Origin = FMath::Cos(FMath::DegreesToRadians(45.f));
 
 		for (auto& Hit : Result)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%d"), Result.Num());
-			FVector	HitLocation = Hit.GetActor()->GetActorLocation();
-
-			FVector	Dir = HitLocation - HitStart;
 			AActor* HitActor = Hit.GetActor();
-			Dir.Normalize();
-			float Angle = Dir.Dot(Forward);
 
-			if (Angle >= Origin)
+			// When hit actor implements DamageAble Interface
+			if (HitActor->GetClass()->ImplementsInterface(UDamageAble::StaticClass()))
 			{
-				// When hit actor implements DamageAble Interface
-				if (HitActor->GetClass()->ImplementsInterface(UDamageAble::StaticClass()))
-				{
-					FDamageInfo DamageInfo;
-					DamageInfo.Amount = 10.0f;
-					bool bDamaged = IDamageAble::Execute_TakeDamage(HitActor, DamageInfo);
-					if (bDamaged)
-						UE_LOG(LogTemp, Warning, TEXT("Hit Someone"));
-				}
+				FDamageInfo DamageInfo;
+				DamageInfo.Amount = mWeapon->GetWeaponDamage();
+				bool bDamaged = IDamageAble::Execute_TakeDamage(HitActor, DamageInfo);
+				if (bDamaged)
+					UE_LOG(LogTemp, Warning, TEXT("Hit Total Target: %d\t Damage Amount: %f"), Result.Num(), DamageInfo.Amount);
 			}
 		}
 	}
@@ -460,11 +451,6 @@ void AAWeekPlayerCharacter::FireBullet()
 void AAWeekPlayerCharacter::Die()
 {
 	mAnimInst->PlayMontageByName(TEXT("Die"));
-}
-
-void AAWeekPlayerCharacter::TakeDamage(FDamageInfo DamageInfo)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Ouch"));
 }
 
 
