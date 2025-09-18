@@ -54,4 +54,9 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "Damage")
     FOnDamageResponse OnDamageResponse;
 
+#if WITH_EDITOR
+    virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+
+
 };

@@ -5,8 +5,8 @@
 UDamageSystemComponent::UDamageSystemComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	Health = MaxHealth;
 }
+
 
 float UDamageSystemComponent::GetCurrentHealth_Implementation() const
 {
@@ -61,5 +61,19 @@ bool UDamageSystemComponent::TakeDamage_Implementation(FDamageInfo DamageInfo)
 void UDamageSystemComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	Health = MaxHealth;
 }
 
+
+#if WITH_EDITOR
+void UDamageSystemComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	FName PropertyName = PropertyChangedEvent.GetPropertyName();
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(UDamageSystemComponent, MaxHealth))
+	{
+		Health = MaxHealth; 
+	}
+}
+#endif
