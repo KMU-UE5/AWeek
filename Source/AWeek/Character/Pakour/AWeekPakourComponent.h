@@ -9,13 +9,21 @@
 #include "AWeekPakourComponent.generated.h"
 
 UENUM()
+enum class EPakourType
+{
+	None,
+	Vault,
+	Ledge
+};
+
+UENUM()
 enum class ETraceType
 {
 	Line,
 	Sphere
 };
 
-UCLASS( ClassGroup=(Pakour), meta=(BlueprintSpawnableComponent) )
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class AWEEK_API UAWeekPakourComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -25,11 +33,11 @@ public:
 	UAWeekPakourComponent();
 
 protected:
-	UPROPERTY(VisibleAnywhere)
-	float mDetectedWallHeight = -1;
-
 	TObjectPtr<class AAWeekCharacter> mOwner;
 	TObjectPtr<UMotionWarpingComponent> mOwnerMWC;
+
+	UPROPERTY(VisibleAnywhere)
+	EPakourType mPakourType = EPakourType::None;
 
 	// 벽 맨 위쪽
 	FHitResult mFirstWallHit;
@@ -61,11 +69,20 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	bool bCanPakour = true;
 
-	void TriggerPakour();
-	FHitResult DetectWall();
-	void ScanWall(FHitResult Hit);
-	void SetMotionWarping();
-	void TryVault();
+	bool TriggerPakour(EPakourType PakourType);
+	FVector GetFirstTopHitLocation()
+	{
+		return mFirstTopHit.Location;
+	}
+
+protected:
+	FHitResult DetectWall(float Distance);
+	bool ScanWall(FHitResult Hit);
+	void SetVaultMotionWarping();
+	void SetLedgeMotionWarping(float WallHeight);
+	void SetClimbMotionWarping();
+	bool TryVault();
+	bool TryLedge();
 
 protected:
 	// Utility Functions

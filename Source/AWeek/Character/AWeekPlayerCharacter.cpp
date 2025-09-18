@@ -5,7 +5,11 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Pakour/AWeekPakourComponent.h"
+#include "Stamina/AWeekStaminaComponent.h"
+#include "../Player/Weapon/AWeekWeaponComponent.h"
+#include "../System/DamageSystemComponent.h"
 #include "../Input/AWeekGameInput.h"
+#include "../System/DaySystem/AWeekDaySystem.h"
 
 #include "AWeek/Interfaces/AWeekInteractionInterface.h"
 #include "AWeek/Components/AWeekInventoryComponent.h"
@@ -18,14 +22,16 @@ DEFINE_LOG_CATEGORY(AWeekPlayerCharacter);
 
 AAWeekPlayerCharacter::AAWeekPlayerCharacter()
 {
-	PrimaryActorTick.bCanEverTick = true;
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCapsuleComponent()->bHiddenInGame=false;
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
+
+	GetMesh()->SetCollisionProfileName(TEXT("Player"));
 
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
@@ -57,6 +63,9 @@ AAWeekPlayerCharacter::AAWeekPlayerCharacter()
 
 	InteractionCheckFrequency = 0.1f;
 	InteractionCheckDistance = 250.0f;
+	mStamina = CreateDefaultSubobject<UAWeekStaminaComponent>(TEXT("Stamina"));
+	mWeapon = CreateDefaultSubobject<UAWeekWeaponComponent>(TEXT("Weapon"));
+	mDamageSystem = CreateDefaultSubobject<UDamageSystemComponent>(TEXT("DamageSystem"));
 }
 
 // Called when the game starts or when spawned
@@ -76,8 +85,10 @@ void AAWeekPlayerCharacter::BeginPlay()
 		Subsystem->AddMappingContext(InputCDO->mContext, 0);
 	}
 
-	mState = Cast<AAWeekPlayerState>(GetPlayerState());
 	mAnimInst = Cast<UAWeekPlayerAnimInstance>(GetMesh()->GetAnimInstance());
+	mWeapon->ChangeWeapon(TEXT("Default"));
+
+	mDamageSystem->OnDeath.AddDynamic(this, &AAWeekPlayerCharacter::Die);
 }
 
 // Called every frame
@@ -87,13 +98,13 @@ void AAWeekPlayerCharacter::Tick(float DeltaTime)
 
 	if (bSprint && mPakour->bCanPakour)
 	{
-		if (mState->UseStamina(EStaminaUseType::Sprint) == false || GetVelocity().Size() < 50)
+		if (mStamina->UseStamina(EStaminaUseType::Sprint) == false || GetVelocity().Size() < 50)
 		{
 			SprintCompleted();
 		}
 		else
 		{
-			mPakour->TriggerPakour();
+			mPakour->TriggerPakour(EPakourType::Vault);
 			mSprintTime += DeltaTime;
 		}
 	}
@@ -102,6 +113,12 @@ void AAWeekPlayerCharacter::Tick(float DeltaTime)
 	if (GetWorld()->TimeSince(InteractionData.LastInteractionCheckTime) > InteractionCheckFrequency)
 	{
 		PerformInteractionCheck();
+	}
+
+	if (mAnimInst->GetPlayerMoveState() == EPlayerMoveState::Ledge)
+	{
+		if (!mStamina->UseStamina(EStaminaUseType::Ledge))
+			ClimbEnd();
 	}
 }
 
@@ -146,13 +163,31 @@ void AAWeekPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 		
 		EnhancedInput->BindAction(InputCDO->mInventory, ETriggerEvent::Triggered,
 			this, &AAWeekPlayerCharacter::ToggleMenu);
+		EnhancedInput->BindAction(InputCDO->mAttack, ETriggerEvent::Triggered,
+			this, &AAWeekPlayerCharacter::Fire);
+
+
+		EnhancedInput->BindAction(InputCDO->mAttack, ETriggerEvent::Completed,
+			this, &AAWeekPlayerCharacter::EndFire);
+
+		EnhancedInput->BindAction(InputCDO->mChangeWeapon, ETriggerEvent::Started,
+			this, &AAWeekPlayerCharacter::ChangeWeapon);
 	}
 }
 
 void AAWeekPlayerCharacter::Move(const FInputActionValue& Value)
 {
-	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
+	
+	if (mAnimInst->GetPlayerMoveState() == EPlayerMoveState::Ledge && !mAnimInst->IsPlayingMontageByName(TEXT("Ledge")))
+	{
+		if (MovementVector.X < 1 && MovementVector.Y > 0 && mAnimInst->GetPlayerMoveState() != EPlayerMoveState::Climb)
+		{
+			ClimbStart();
+		}
+		return;
+	}
+	// input is a Vector2D
 
 	if (Controller != nullptr)
 	{
@@ -187,26 +222,70 @@ void AAWeekPlayerCharacter::Look(const FInputActionValue& Value)
 
 void AAWeekPlayerCharacter::Jump()
 {
-	if (!mAnimInst->IsPlayingRunToStopMontage())
+	if (mAnimInst->GetPlayerMoveState() == EPlayerMoveState::Ledge && !mAnimInst->IsPlayingMontageByName(TEXT("Ledge")))
 	{
-		Super::Jump();
+		ClimbEnd();
+		return;
 	}
+
+	if (mPakour->TriggerPakour(EPakourType::Ledge) ||
+		GetMovementComponent()->IsFalling() ||
+		mAnimInst->IsPlayingMontageByName(TEXT("Ledge")) ||
+		mAnimInst->IsPlayingMontageByName(TEXT("RunToStop")) ||
+		mAnimInst->IsPlayingMontageByName(TEXT("Climb")))
+	{
+		return;
+	}
+	Super::Jump();
 }
 
 void AAWeekPlayerCharacter::Attack(const FInputActionValue& Value)
 {
-	if (mAnimInst->GetCurrentOverride() == FName("Default"))
-		mAnimInst->ChangeAnimOverride(TEXT("Rifle"));
-	else
-		mAnimInst->ChangeAnimOverride(TEXT("Default"));
+	if (mAnimInst->IsAnyMontagePlaying())
+		return;
+	if (mAnimInst->GetCurrentOverride() == FName("Rifle"))
+		return;
+	mAnimInst->PlayMontageByName(TEXT("Attack"));
+
+	// Get Weapon Damage from Weapon Component
+	// Apply damage later..
 }
 
-void AAWeekPlayerCharacter::SprintStart(const FInputActionValue& Value)
+void AAWeekPlayerCharacter::Fire()
+{
+	if (mAnimInst->GetCurrentOverride() != FName("Rifle"))
+		return;
+
+	GetCharacterMovement()->MaxWalkSpeed = mFiringSpeed;
+
+	if (mAnimInst->GetPlayerWeaponState() == EPlayerWeaponState::Default)
+	{
+		mAnimInst->SetPlayerWeaponState(EPlayerWeaponState::Gun);
+		mAnimInst->PlayMontageByName(TEXT("Fire"));
+	}
+
+	//mAnimInst->ChangeAnimOverride(TEXT("Rifle_Firing"));
+}
+
+void AAWeekPlayerCharacter::EndFire()
+{
+	if (mAnimInst->GetCurrentOverride() != FName("Rifle"))
+		return;
+
+	GetCharacterMovement()->MaxWalkSpeed = mWalkSpeed;
+	mAnimInst->SetPlayerWeaponState(EPlayerWeaponState::Default);
+	mAnimInst->StopMontageByName(TEXT("Fire"));
+
+	//mAnimInst->ChangeAnimOverride(TEXT("Rifle"));
+}
+
+void AAWeekPlayerCharacter::SprintStart()
 {
 	if (GetMovementComponent()->IsFalling() || 
 		GetVelocity().Size() < 50 || 
-		mState->GetStamina() < mSprintMinimumStamina ||
-		!mPakour->bCanPakour)
+		mStamina->GetStamina() < mSprintMinimumStamina ||
+		!mPakour->bCanPakour ||
+		mAnimInst->GetPlayerWeaponState()==EPlayerWeaponState::Gun)
 		return;
 	GetCharacterMovement()->MaxWalkSpeed = mSprintSpeed;
 	bSprint = true;
@@ -222,11 +301,30 @@ void AAWeekPlayerCharacter::SprintCompleted()
 		GetVelocity().Size() >= 50 &&
 		mPakour->bCanPakour)
 	{
-		mAnimInst->PlayRunToStopMontage();
+		mAnimInst->PlayMontageByName(TEXT("RunToStop"));
 	}
 
 	mSprintTime = 0;
 	bSprint = false;
+}
+
+void AAWeekPlayerCharacter::ChangeWeapon()
+{
+	if (mAnimInst->GetCurrentOverride() == FName("Default"))
+	{
+		mWeapon->ChangeWeapon(TEXT("Bat"));
+		mAnimInst->ChangeAnimOverride(TEXT("Bat"));
+	}
+	else if (mAnimInst->GetCurrentOverride() == FName("Bat"))
+	{
+		mWeapon->ChangeWeapon(TEXT("Rifle"));
+		mAnimInst->ChangeAnimOverride(TEXT("Rifle"));
+	}
+	else
+	{
+		mWeapon->ChangeWeapon(TEXT("Default"));
+		mAnimInst->ChangeAnimOverride(TEXT("Default"));
+	}
 }
 
 void AAWeekPlayerCharacter::VaultStart()
@@ -234,11 +332,14 @@ void AAWeekPlayerCharacter::VaultStart()
 	if (GetVelocity().Size() < 50 || GetCharacterMovement()->IsFalling())
 		return;
 
-	mState->UseStamina(EStaminaUseType::Vault);
-	mAnimInst->PlayVaultMontage();
-	mPakour->bCanPakour = false;
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	if (mStamina->UseStamina(EStaminaUseType::Vault))
+	{
+		mAnimInst->PlayMontageByName(TEXT("Vault"));
+
+		mPakour->bCanPakour = false;
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	}
 }
 
 void AAWeekPlayerCharacter::VaultEnd()
@@ -248,11 +349,144 @@ void AAWeekPlayerCharacter::VaultEnd()
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 }
 
+void AAWeekPlayerCharacter::LedgeStart()
+{
+	if (!mStamina->UseStamina(EStaminaUseType::LedgeStart))
+		return;
+	mAnimInst->PlayMontageByName(TEXT("Ledge"));
+	mAnimInst->SetPlayerMoveState(EPlayerMoveState::Ledge);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+	CameraBoom->bDoCollisionTest = false;
+}
+
+void AAWeekPlayerCharacter::LedgeEnd()
+{
+	GetMovementComponent()->StopMovementImmediately();
+	CameraBoom->bDoCollisionTest = true;
+}
+
+void AAWeekPlayerCharacter::ClimbStart()
+{
+	mAnimInst->PlayMontageByName(TEXT("Climb"));
+
+	// Motion Warping didnt work... why???????
+	// so i move character immediatley
+	mAnimInst->SetPlayerMoveState(EPlayerMoveState::Climb);
+	CameraBoom->bDoCollisionTest = false;
+
+	FVector Dest = mPakour->GetFirstTopHitLocation();
+	Dest.Z+=90;
+
+	FLatentActionInfo LatentActionInfo;
+	LatentActionInfo.UUID = 0;
+	LatentActionInfo.Linkage = 0;
+	LatentActionInfo.CallbackTarget = this;
+	LatentActionInfo.ExecutionFunction = FName("ClimbEnd");
+
+	UKismetSystemLibrary::MoveComponentTo(
+		GetCapsuleComponent(),
+		Dest,
+		GetActorRotation(),
+		false,
+		false,
+		1,
+		false,
+		EMoveComponentAction::Move,
+		LatentActionInfo
+	);
+}
+
+void AAWeekPlayerCharacter::ClimbEnd()
+{
+	mAnimInst->SetPlayerMoveState(EPlayerMoveState::Ground);
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	CameraBoom->bDoCollisionTest = true;
+}
+
+void AAWeekPlayerCharacter::AttackImpact()
+{
+	FVector	Forward = GetActorForwardVector();
+	FVector	Center = GetActorLocation() + Forward * (25.f + 200 / 2.f);
+
+	TArray<FHitResult>	Result;
+
+	FCollisionQueryParams	param;
+	param.AddIgnoredActor(this);
+	param.bTraceComplex = false;
+
+	bool Collision = GetWorld()->SweepMultiByChannel(Result, Center, Center,
+		FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel3,
+		FCollisionShape::MakeBox(FVector(100)), param);
+
+	DrawDebugSphere(
+		GetWorld(),
+		Center,             // �߽�
+		100.f,              // ������ (MakeSphere���� �� ��)
+		16,                 // ���׸�Ʈ (������ ����)
+		FColor::Green,      // ��
+		false,              // ���� ���� (true�� ���� ����)
+		1.0f                // ���� �ð� (1��)
+	);
+
+
+	if (Collision)
+	{
+
+		for (auto& Hit : Result)
+		{
+			AActor* HitActor = Hit.GetActor();
+
+			// When hit actor implements DamageAble Interface
+			if (HitActor->GetClass()->ImplementsInterface(UDamageAble::StaticClass()))
+			{
+				FDamageInfo DamageInfo;
+				DamageInfo.Amount = mWeapon->GetWeaponDamage();
+				bool bDamaged = IDamageAble::Execute_TakeDamage(HitActor, DamageInfo);
+				if (bDamaged)
+					UE_LOG(LogTemp, Warning, TEXT("Hit Total Target: %d\t Damage Amount: %f"), Result.Num(), DamageInfo.Amount);
+			}
+		}
+	}
+}
+
+void AAWeekPlayerCharacter::FireBullet()
+{
+	FVector	MuzzleLoctaion = mWeapon->GetWeaponMuzzle();
+
+	if (FireEffect)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			FireEffect,
+			MuzzleLoctaion,
+			GetActorRotation(),
+			FVector(1.0f)
+		);
+	}
+
+	if (FireSound)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), FireSound, MuzzleLoctaion);
+	}
+	
+	FActorSpawnParameters Param;
+	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	//AASeedTestBullet* Bullet = GetWorld()->SpawnActor<AASeedTestBullet>(MuzzleLoctaion, GetActorRotation(), Param);
+}
+
+void AAWeekPlayerCharacter::Die()
+{
+	mAnimInst->PlayMontageByName(TEXT("Die"));
+}
+
 
 void AAWeekPlayerCharacter::FootStepEffect(FName SocketName)
 {
 	FVector	Position = GetMesh()->GetSocketLocation(SocketName);
-	UNiagaraSystem* FootStepVFX = LoadObject<UNiagaraSystem>(GetWorld(), TEXT("/Script/Niagara.NiagaraSystem'/Game/A_Surface_Footstep/Niagara_FX/ParticleSystems/PSN_General1_Surface.PSN_General1_Surface'"));
+	UNiagaraSystem* FootStepVFX = LoadObject<UNiagaraSystem>(GetWorld(), TEXT("/Script/Niagara.NiagaraSystem'/Game/ThirdParty/A_Surface_Footstep/Niagara_FX/ParticleSystems/PSN_General1_Surface.PSN_General1_Surface'"));
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), FootStepVFX, Position);
 }
 

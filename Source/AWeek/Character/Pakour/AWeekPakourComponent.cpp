@@ -37,17 +37,30 @@ void UAWeekPakourComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	// ...
 }
 
-void UAWeekPakourComponent::TriggerPakour()
+bool UAWeekPakourComponent::TriggerPakour(EPakourType PakourType)
 {
 	if (!bCanPakour)
-		return;
+		return false;
 
-	FHitResult WallHit = DetectWall();
+	mPakourType = PakourType;
+
+	FHitResult WallHit;
+	switch (mPakourType)
+	{
+	case EPakourType::Vault:
+		WallHit = DetectWall(200);
+		break;
+	case EPakourType::Ledge:
+		WallHit = DetectWall(140);
+		break;
+	}
+	
 	if (WallHit.bBlockingHit)
-		ScanWall(WallHit);
+		return ScanWall(WallHit);
+	return false;
 }
 
-FHitResult UAWeekPakourComponent::DetectWall()
+FHitResult UAWeekPakourComponent::DetectWall(float Distance)
 {
 	FHitResult WallHit;
 
@@ -56,7 +69,7 @@ FHitResult UAWeekPakourComponent::DetectWall()
 		FVector SphereLoc = mOwner->GetActorLocation();
 		SphereLoc.Z += (-60 + i*20);
 		FVector Start = SphereLoc - (mOwner->GetActorForwardVector() * 20);
-		FVector End = SphereLoc + (mOwner->GetActorForwardVector() * 200);
+		FVector End = SphereLoc + (mOwner->GetActorForwardVector() * Distance);
 
 		WallHit = WallTracing(ETraceType::Sphere, Start, End);
 
@@ -66,7 +79,7 @@ FHitResult UAWeekPakourComponent::DetectWall()
 	return WallHit;
 }
 
-void UAWeekPakourComponent::ScanWall(FHitResult Hit)
+bool UAWeekPakourComponent::ScanWall(FHitResult Hit)
 {
 	// 1: 벽이 감지되었을때 3미터 위에서 10센치씩 내려오면서 벽 윗부분을 탐색 (라인트레이싱)
 	FVector HitLocation = Hit.Location;
@@ -85,7 +98,7 @@ void UAWeekPakourComponent::ScanWall(FHitResult Hit)
 	}
 
 	if (!mFirstWallHit.bBlockingHit)
-		return;
+		return false;
 
 	// 2: 벽 두께를 탐색하면서 처음 맞은부분과 마지막에 맞은 부분 탐색
 	mWallRotation = -mFirstWallHit.Normal.GetSafeNormal();
@@ -112,7 +125,10 @@ void UAWeekPakourComponent::ScanWall(FHitResult Hit)
 	}
 
 	if (!mLastTopHit.bBlockingHit)
-		return;
+		return false;
+
+	if (mPakourType == EPakourType::Ledge)
+		return TryLedge();
 
 	// 3: 벽 두께 끝부분의 ImpactPoint를 얻어와서 벽의 끝부분을 탐색한다.
 	mEndOfWallHit = WallTracing(ETraceType::Sphere,
@@ -120,7 +136,7 @@ void UAWeekPakourComponent::ScanWall(FHitResult Hit)
 		mLastTopHit.ImpactPoint, FColor::Yellow);
 
 	if (!mEndOfWallHit.bBlockingHit)
-		return;
+		return false;
 
 	// 4: 벽 끝부분에서 플레이어의 키만큼 밑으로 탐색하면서 볼트 착지 위치를 얻는다.
 	FVector Start = mEndOfWallHit.ImpactPoint + mWallRotation * 60;
@@ -131,11 +147,45 @@ void UAWeekPakourComponent::ScanWall(FHitResult Hit)
 		Start,
 		End, FColor::Red);
 
-	if (mVaultLandHit.bBlockingHit)
-		TryVault();
+	if (mPakourType==EPakourType::Vault && mVaultLandHit.bBlockingHit)
+		return TryVault();
+
+	return false;
 }
 
-void UAWeekPakourComponent::SetMotionWarping()
+bool UAWeekPakourComponent::TryVault()
+{
+	float GroundHeight = mOwner->GetMesh()->GetComponentLocation().Z;
+	float WallHeight = mFirstWallHit.Location.Z - GroundHeight;
+
+	if (WallHeight > 40 && WallHeight < 90)
+	{
+		SetVaultMotionWarping();
+		mOwner->VaultStart();
+		return true;
+	}
+
+	return false;
+}
+
+bool UAWeekPakourComponent::TryLedge()
+{
+	float GroundHeight = mOwner->GetMesh()->GetComponentLocation().Z;
+	float WallHeight = mFirstWallHit.Location.Z - GroundHeight;
+
+	if (FVector::Dist(mFirstTopHit.Location, mLastTopHit.Location) > 60 &&
+		WallHeight >= 220 && WallHeight <= 300)
+	{
+		SetLedgeMotionWarping(WallHeight);
+		SetClimbMotionWarping();
+		mOwner->LedgeStart();
+		return true;
+	}
+
+	return false;
+}
+
+void UAWeekPakourComponent::SetVaultMotionWarping()
 {
 	FVector Start = mFirstTopHit.Location;
 	Start.Z -= 70;
@@ -154,20 +204,25 @@ void UAWeekPakourComponent::SetMotionWarping()
 	);
 }
 
-void UAWeekPakourComponent::TryVault()
+void UAWeekPakourComponent::SetLedgeMotionWarping(float WallHeight)
 {
-	float GroundHeight = mOwner->GetMesh()->GetComponentLocation().Z;
+	FVector Dest = mFirstTopHit.ImpactPoint - mOwner->GetActorForwardVector()*50;
 
-	if (mFirstWallHit.bBlockingHit)
-		mDetectedWallHeight = mFirstWallHit.Location.Z - GroundHeight;
+	Dest.Z-=210;
 
-	if (mDetectedWallHeight > 90)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("To High"));
-	}
-	else
-	{
-		SetMotionWarping();
-		mOwner->VaultStart();
-	}
+	mOwnerMWC->AddOrUpdateWarpTargetFromLocationAndRotation(
+		FName("Ledge"),
+		Dest,
+		mWallRotation.Rotation()
+	);
+}
+
+void UAWeekPakourComponent::SetClimbMotionWarping()
+{
+	FVector Dest = mFirstWallHit.Location;
+	mOwnerMWC->AddOrUpdateWarpTargetFromLocationAndRotation(
+		FName("Climb"),
+		Dest,
+		mWallRotation.Rotation()
+	);
 }

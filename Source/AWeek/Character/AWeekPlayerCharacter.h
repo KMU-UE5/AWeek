@@ -5,13 +5,17 @@
 #include "EngineMinimal.h"
 
 #include "AWeekCharacter.h"
-#include "../Player/AWeekPlayerState.h"
 #include "../Player/AWeekPlayerAnimInstance.h"
 #include "AWeek/Interfaces/AWeekInteractionInterface.h"
+
+#include "../System/DamageInfo.h"
+#include "../System/IDamageAble.h"
 
 #include "InputActionValue.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+
+#include "Kismet/KismetSystemLibrary.h"
 
 #include "AWeekPlayerCharacter.generated.h"
 
@@ -37,31 +41,61 @@ struct FAWeekInteractionData
 
 DECLARE_LOG_CATEGORY_EXTERN(AWeekPlayerCharacter, Warning, All);
 
+
 UCLASS()
-class AWEEK_API AAWeekPlayerCharacter : public AAWeekCharacter
+class AWEEK_API AAWeekPlayerCharacter : public AAWeekCharacter, public IDamageAble
 {
 	GENERATED_BODY()
 public:
 	AAWeekPlayerCharacter();
 
 protected:
+	/*--------------CAMERA--------------*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
-	TObjectPtr<AAWeekPlayerState> mState;
+	/*--------------ANIMINST--------------*/
 	TObjectPtr<UAWeekPlayerAnimInstance> mAnimInst;
 
+	/*--------------PAKOUR--------------*/
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UAWeekPakourComponent> mPakour;
 
+	/*--------------STAMINA--------------*/
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UAWeekStaminaComponent> mStamina;
+	
+	/*--------------WEAPON--------------*/
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UAWeekWeaponComponent> mWeapon;
+
+	/*--------------DAMAGE--------------*/
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UDamageSystemComponent> mDamageSystem;
+
+	/*--------------PARTICLES--------------*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Effects, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UParticleSystemComponent> ParticleComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Effects, meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* FireEffect;
+
+	/*--------------SOUNDS--------------*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds, meta = (AllowPrivateAccess = "true"))
+	USoundBase* FireSound;
+
+	/*--------------VARIABLES--------------*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bSprint = false;
 
 	UPROPERTY(EditAnywhere)
 	float mWalkSpeed = 300.f;
+
+	UPROPERTY(EditAnywhere)
+	float mFiringSpeed = 200.f;
 
 	UPROPERTY(EditAnywhere)
 	float mSprintSpeed = 500.f;
@@ -79,10 +113,10 @@ protected:
 	float mSprintTime = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float mSprintStaminaUsage = 25; // ´Þ¸®±â ÃÊ´ç ½ºÅÂ¹Ì³ª ¼Ò¸ð·®
+	float mSprintStaminaUsage = 25; // ï¿½Þ¸ï¿½ï¿½ï¿½ ï¿½Ê´ï¿½ ï¿½ï¿½ï¿½Â¹Ì³ï¿½ ï¿½Ò¸ï¿½
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float mVaultStaminaUsage = 20; 
+	float mVaultStaminaUsage = 20;
 
 	// =====================================================
 	// INVENTORY SYSTEM
@@ -119,13 +153,16 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-public:
+protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Jump();
 	void Attack(const FInputActionValue& Value);
-	void SprintStart(const FInputActionValue& Value);
+	void Fire();
+	void EndFire();
+	void SprintStart();
 	void SprintCompleted();
+	void ChangeWeapon();
 
 
 	// =====================================================
@@ -139,9 +176,12 @@ public:
 	//void OpenChestInventory(TObjectPtr<UAWeekInventoryComponent> ChestInventory);
 	void CloseChestInventory();
 
-protected:
+public:
 	virtual void VaultStart();
 	virtual void VaultEnd();
+	virtual void LedgeStart();
+	virtual void LedgeEnd();
+	virtual void ClimbStart();
 
 	// =====================================================
 	// INVENTORY SYSTEM
@@ -154,6 +194,15 @@ protected:
 	void Interact();
 
 	void ToggleMenu();
+
+	UFUNCTION()
+	virtual void ClimbEnd();
+	void AttackImpact();
+	void FireBullet();
+
+
+	UFUNCTION()
+	void Die();
 
 public:
 	UFUNCTION(BlueprintCallable)

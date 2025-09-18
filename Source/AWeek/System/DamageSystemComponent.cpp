@@ -7,7 +7,6 @@ UDamageSystemComponent::UDamageSystemComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-
 float UDamageSystemComponent::GetCurrentHealth_Implementation() const
 {
 	return Health;
@@ -57,14 +56,6 @@ bool UDamageSystemComponent::TakeDamage_Implementation(FDamageInfo DamageInfo)
 	return true;
 }
 
-// Called when the game starts
-void UDamageSystemComponent::BeginPlay()
-{
-	Super::BeginPlay();
-	Health = MaxHealth;
-}
-
-
 #if WITH_EDITOR
 void UDamageSystemComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
@@ -73,7 +64,13 @@ void UDamageSystemComponent::PostEditChangeProperty(FPropertyChangedEvent& Prope
 	FName PropertyName = PropertyChangedEvent.GetPropertyName();
 	if (PropertyName == GET_MEMBER_NAME_CHECKED(UDamageSystemComponent, MaxHealth))
 	{
-		Health = MaxHealth; 
 	}
+		Health = MaxHealth; 
 }
 #endif
+// Called when the game starts
+void UDamageSystemComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	Health = MaxHealth;
+}

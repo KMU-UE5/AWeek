@@ -25,4 +25,5 @@ public:
 	TObjectPtr<UInputAction>			mAttack;
 	TObjectPtr<UInputAction>			mInventory;
 	TObjectPtr<UInputAction>			mInteract;
+	TObjectPtr<UInputAction>			mChangeWeapon;
 };

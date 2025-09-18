@@ -7,17 +7,41 @@
 #include "Animation/AnimInstance.h"
 #include "AWeekPlayerAnimInstance.generated.h"
 
+UENUM(BlueprintType)
+enum class EPlayerMoveState : uint8
+{
+	Ground,
+	Ledge,
+	Climb
+};
+
+UENUM(BlueprintType)
+enum class EPlayerWeaponState : uint8
+{
+	Default,
+	Gun
+};
+
 UCLASS()
 class AWEEK_API UAWeekPlayerAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 	
 protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<class AAWeekPlayerCharacter> mOwner;
+
 	UPROPERTY(EditAnywhere)
 	FName mStatusKey = TEXT("Default");
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TMap<FName, FPlayerAnimInfo> mAnimMap;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	EPlayerMoveState mMoveState = EPlayerMoveState::Ground;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	EPlayerWeaponState mWeaponState = EPlayerWeaponState::Default;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TMap<FName, TObjectPtr<UAnimSequence>>	mSequenceMap;
@@ -27,10 +51,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TMap<FName, TObjectPtr<UAnimMontage>>	mMontageMap;
-
-	UAnimMontage* mRunToStopMontage;
-
-	UAnimMontage* mOneHandVaultMontage;
 
 public:
 	virtual void NativeBeginPlay();
@@ -52,13 +72,11 @@ public:
 	void ChangeAnimOverride(FName State)
 	{
 		mStatusKey = State;
+		mWeaponState = EPlayerWeaponState::Default;
 
 		mSequenceMap = mAnimMap[mStatusKey].SequenceMap;
 		mBlendSpaceMap = mAnimMap[mStatusKey].BlendSpaceMap;
 		mMontageMap = mAnimMap[mStatusKey].MontageMap;
-
-		mRunToStopMontage = FindAnimMontage(TEXT("RunToStop"));
-		mOneHandVaultMontage = FindAnimMontage(TEXT("OneHandVault"));
 	}
 
 	FName GetCurrentOverride()
@@ -66,22 +84,61 @@ public:
 		return mStatusKey;
 	}
 
-	void PlayRunToStopMontage()
+	EPlayerMoveState GetPlayerMoveState()
 	{
-		Montage_Play(mRunToStopMontage);
+		return mMoveState;
+	}
+	void SetPlayerMoveState(EPlayerMoveState MoveState)
+	{
+		mMoveState = MoveState;
 	}
 
-	bool IsPlayingRunToStopMontage()
+	EPlayerWeaponState GetPlayerWeaponState()
 	{
-		return Montage_IsPlaying(mRunToStopMontage);
+		return mWeaponState;
 	}
 
-	void PlayVaultMontage()
+	void SetPlayerWeaponState(EPlayerWeaponState WeaponState)
 	{
-		Montage_Play(mOneHandVaultMontage);
+		mWeaponState = WeaponState;
+	}
+
+	void PlayMontageByName(FName Name, float PlayRate = 1.0f)
+	{
+		UAnimMontage* Montage = FindAnimMontage(Name);
+		if (Montage)
+		{
+			Montage_Play(Montage, PlayRate);
+		}
+	}
+
+	void StopMontageByName(FName Name, float BlendRate = 1.0f)
+	{
+		UAnimMontage* Montage = FindAnimMontage(Name);
+		if (Montage)
+		{
+			Montage_Stop(BlendRate, Montage);
+		}
+	}
+
+	bool IsPlayingMontageByName(FName Name)
+	{
+		UAnimMontage* Montage = FindAnimMontage(Name);
+		if (Montage)
+		{
+			return Montage_IsPlaying(Montage);
+		}
+		
+		return false;
 	}
 
 protected:
 	UFUNCTION()
 	void MontageEnd(UAnimMontage* Montage, bool bInterrupted);
+
+	UFUNCTION()
+	void AnimNotify_MeeleAttack();
+
+	UFUNCTION()
+	void AnimNotify_Fire();
 };

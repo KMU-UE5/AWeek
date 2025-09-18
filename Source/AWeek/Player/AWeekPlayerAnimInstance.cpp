@@ -3,12 +3,15 @@
 
 #include "AWeekPlayerAnimInstance.h"
 #include "../Data/AWeekPlayerAnimInfo.h"
+#include "../Character/AWeekPlayerCharacter.h"
 #include "../AWeekAssetManager.h"
 #include "../Character/AWeekPlayerCharacter.h"
 
 void UAWeekPlayerAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
+
+	mOwner = Cast<AAWeekPlayerCharacter>(GetOwningActor());
 
 	// 애니메이션 데이터테이블 전체를 갖고옴
 	UDataTable* AnimInfoDT = UAWeekAssetManager::Get().FindDataTable(TEXT("DT_PlayerAnimInfo"));
@@ -53,12 +56,24 @@ UAnimSequence* UAWeekPlayerAnimInstance::FindAnimSequence(const FName& Name)
 {
 	TObjectPtr<UAnimSequence>* Sequence = mSequenceMap.Find(Name);
 
+	if (!Sequence)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Sequence %s is not found"), *Name.ToString());
+		return nullptr;
+	}
+
 	return Sequence->Get();
 }
 
 UBlendSpace* UAWeekPlayerAnimInstance::FindBlendSpace(const FName& Name)
 {
 	TObjectPtr<UBlendSpace>* BlendSpace = mBlendSpaceMap.Find(Name);
+
+	if (!BlendSpace)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BS %s is not found"), *Name.ToString());
+		return nullptr;
+	}
 
 	return BlendSpace->Get();
 }
@@ -67,14 +82,37 @@ UAnimMontage* UAWeekPlayerAnimInstance::FindAnimMontage(const FName& Name)
 {
 	TObjectPtr<UAnimMontage>* Montage = mMontageMap.Find(Name);
 
+	if (!Montage)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Montage %s is not found"), *Name.ToString());
+		return nullptr;
+	}
+
 	return Montage->Get();
 }
 
 void UAWeekPlayerAnimInstance::MontageEnd(UAnimMontage* Montage, bool bInterrupted)
 {
-	if (Montage == mOneHandVaultMontage)
+	if (mWeaponState==EPlayerWeaponState::Gun && Montage != FindAnimMontage(TEXT("Fire")))
+		PlayMontageByName(TEXT("Fire"));
+
+	if (Montage == FindAnimMontage(TEXT("Vault")))
 	{
-		AAWeekCharacter* Chara = Cast<AAWeekCharacter>(GetOwningActor());
-		Chara->VaultEnd();
+		mOwner->VaultEnd();
 	}
+
+	if (Montage == FindAnimMontage(TEXT("Ledge")))
+	{
+		mOwner->LedgeEnd();
+	}
+}
+
+void UAWeekPlayerAnimInstance::AnimNotify_MeeleAttack()
+{
+	mOwner->AttackImpact();
+}
+
+void UAWeekPlayerAnimInstance::AnimNotify_Fire()
+{
+	mOwner->FireBullet();
 }
