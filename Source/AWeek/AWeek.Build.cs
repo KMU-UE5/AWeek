@@ -31,7 +31,14 @@ public class AWeek : ModuleRules
 
             "Niagara",
             "UMG",
-            "MotionWarping"
+            "MotionWarping",
+            
+            "GeometryCollectionEngine",
+            "FieldSystemEngine",
+            "Chaos",
+            "ChaosSolverEngine",
+            "NavigationSystem",
+            "AIModule"
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
