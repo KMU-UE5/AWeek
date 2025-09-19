@@ -81,7 +81,7 @@ FHitResult UAWeekPakourComponent::DetectWall(float Distance)
 
 bool UAWeekPakourComponent::ScanWall(FHitResult Hit)
 {
-	// 1: º®ÀÌ °¨ÁöµÇ¾úÀ»¶§ 3¹ÌÅÍ À§¿¡¼­ 10¼¾Ä¡¾¿ ³»·Á¿À¸é¼­ º® À­ºÎºÐÀ» Å½»ö (¶óÀÎÆ®·¹ÀÌ½Ì)
+	// 1: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½ï¿½ 3ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 10ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é¼­ ï¿½ï¿½ ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½ Å½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½Ì½ï¿½)
 	FVector HitLocation = Hit.Location;
 	HitLocation.Z += 300;
 	for (int i = 0; i < 30; i++)
@@ -100,11 +100,11 @@ bool UAWeekPakourComponent::ScanWall(FHitResult Hit)
 	if (!mFirstWallHit.bBlockingHit)
 		return false;
 
-	// 2: º® µÎ²²¸¦ Å½»öÇÏ¸é¼­ Ã³À½ ¸ÂÀººÎºÐ°ú ¸¶Áö¸·¿¡ ¸ÂÀº ºÎºÐ Å½»ö
+	// 2: ï¿½ï¿½ ï¿½Î²ï¿½ï¿½ï¿½ Å½ï¿½ï¿½ï¿½Ï¸é¼­ Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ÎºÐ°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îºï¿½ Å½ï¿½ï¿½
 	mWallRotation = -mFirstWallHit.Normal.GetSafeNormal();
 	for (int i = 0; i < 10; i++)
 	{
-		// Ã³À½ ¸ÂÀº À§Ä¡¿¡¼­ ¾ÕÀ¸·Î 20¼¾Æ¼¹ÌÅÍ¾¿ ´Ã·Á³ª°¡¸é¼­ Å½»öÇÑ´Ù
+		// Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 20ï¿½ï¿½Æ¼ï¿½ï¿½ï¿½Í¾ï¿½ ï¿½Ã·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½é¼­ Å½ï¿½ï¿½ï¿½Ñ´ï¿½
 		FVector Start = mFirstWallHit.Location + mWallRotation * 20*i;
 		FVector End = mFirstWallHit.Location + mWallRotation * 20*i;
 		Start.Z += 10;
@@ -130,7 +130,7 @@ bool UAWeekPakourComponent::ScanWall(FHitResult Hit)
 	if (mPakourType == EPakourType::Ledge)
 		return TryLedge();
 
-	// 3: º® µÎ²² ³¡ºÎºÐÀÇ ImpactPoint¸¦ ¾ò¾î¿Í¼­ º®ÀÇ ³¡ºÎºÐÀ» Å½»öÇÑ´Ù.
+	// 3: ï¿½ï¿½ ï¿½Î²ï¿½ ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½ ImpactPointï¿½ï¿½ ï¿½ï¿½ï¿½Í¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½ Å½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	mEndOfWallHit = WallTracing(ETraceType::Sphere,
 		mLastTopHit.ImpactPoint + mWallRotation * 20,
 		mLastTopHit.ImpactPoint, FColor::Yellow);
@@ -138,7 +138,7 @@ bool UAWeekPakourComponent::ScanWall(FHitResult Hit)
 	if (!mEndOfWallHit.bBlockingHit)
 		return false;
 
-	// 4: º® ³¡ºÎºÐ¿¡¼­ ÇÃ·¹ÀÌ¾îÀÇ Å°¸¸Å­ ¹ØÀ¸·Î Å½»öÇÏ¸é¼­ º¼Æ® ÂøÁö À§Ä¡¸¦ ¾ò´Â´Ù.
+	// 4: ï¿½ï¿½ ï¿½ï¿½ï¿½ÎºÐ¿ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ Å°ï¿½ï¿½Å­ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å½ï¿½ï¿½ï¿½Ï¸é¼­ ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½Â´ï¿½.
 	FVector Start = mEndOfWallHit.ImpactPoint + mWallRotation * 60;
 	FVector End = mEndOfWallHit.ImpactPoint + mWallRotation * 60;
 	float Height = mOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.0f;
