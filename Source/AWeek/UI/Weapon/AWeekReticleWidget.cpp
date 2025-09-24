@@ -3,3 +3,8 @@
 
 #include "AWeekReticleWidget.h"
 
+void UAWeekReticleWidget::Init(UAWeekWeaponComponent* InWeaponComponent)
+{
+	WeaponComponentInstance = InWeaponComponent;
+	OnInit();
+}

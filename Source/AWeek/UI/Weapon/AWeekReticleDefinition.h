@@ -16,6 +16,6 @@ class AWEEK_API UAWeekReticleDefinition : public UPrimaryDataAsset
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(BlueprintReadOnly)
-	TArray<TObjectPtr<UAWeekReticleWidget>> ReticleWidgets;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<TSubclassOf<UAWeekReticleWidget>> ReticleWidgets;
 };
