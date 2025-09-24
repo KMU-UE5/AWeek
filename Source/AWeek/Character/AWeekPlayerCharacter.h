@@ -8,6 +8,7 @@
 #include "../Player/AWeekPlayerAnimInstance.h"
 #include "AWeek/Interfaces/AWeekInteractionInterface.h"
 
+#include "../System/GameEventMessageSubsystem.h"
 #include "../System/DamageInfo.h"
 #include "../System/IDamageAble.h"
 
@@ -87,6 +88,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds, meta = (AllowPrivateAccess = "true"))
 	USoundBase* FireSound;
 
+	/*--------------EVENT--------------*/
+	FGameEventMessageListenerHandle DayChangedHandle;
+
 	/*--------------VARIABLES--------------*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bIsCombat = false;
@@ -144,6 +148,7 @@ protected:
 
 	UPROPERTY()
 	FAWeekInteractionData InteractionData;
+
 
 protected:
 	// Called when the game starts or when spawned

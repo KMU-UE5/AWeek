@@ -2,8 +2,6 @@
 
 
 #include "AWeekPlayerState.h"
-#include "../UI/Player/AWeekStaminaWidget.h"
-#include "../UI/AWeekUIManager.h"
 
 AAWeekPlayerState::AAWeekPlayerState(const FObjectInitializer& ObjectInitializer):Super(ObjectInitializer)
 {

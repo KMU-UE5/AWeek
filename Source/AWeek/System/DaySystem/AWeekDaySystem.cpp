@@ -2,6 +2,7 @@
 
 
 #include "AWeekDaySystem.h"
+#include "../GameEventMessageSubsystem.h"
 
 AAWeekDaySystem::AAWeekDaySystem()
 {
@@ -11,52 +12,45 @@ AAWeekDaySystem::AAWeekDaySystem()
 void AAWeekDaySystem::BeginPlay()
 {
     Super::BeginPlay();
+
+    if (Sun)
+    {
+        Sun->GetLightComponent()->SetIntensity(SunIntensity);
+    }
 }
 
 void AAWeekDaySystem::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    // 하루 진행도 (0~1)
-    // 6: Dawn / 12: Midnight
+    UpdateLighting();
     float DayProgress = (DeltaTime / DayLengthInSeconds) * 24.f;
     TimeOfDay += DayProgress;
     if (TimeOfDay >= 24.f) TimeOfDay -= 24.f;
-
-    UpdateLighting();
 }
 
 void AAWeekDaySystem::UpdateLighting()
 {
-    if (!Dawn && FMath::IsNearlyEqual(TimeOfDay, 6.0f, 0.01f))
+    bool bIsDay = (TimeOfDay >= 6.f && TimeOfDay < 18.f);
+
+    if (bDayChangeFlag != bIsDay)
     {
-        Dawn = true;
-        Midnight = false;
-        OnDayChanged.Broadcast(Dawn);
+        bDayChangeFlag = bIsDay;
+
+        FDayChangedMessage Msg;
+        Msg.bIsDay = bIsDay;
+
+        UGameEventMessageSubsystem::Get(this).BroadcastMessage(
+            FGameplayTag::RequestGameplayTag(FName("Event.DayChanged")),
+            Msg
+        );
     }
 
-    if (!Midnight && FMath::IsNearlyEqual(TimeOfDay, 24.f, 0.01f))
+    if (Sun)
     {
-        Dawn = false;
-        Midnight = true;
-        OnDayChanged.Broadcast(Dawn);
-    }
-
-    if (SunLight)
-    {
-        // Rotate Directional Light
         float Pitch = (TimeOfDay / 24.f) * 360.f + 90.f;
+
         FRotator SunRotation = FRotator(Pitch, -90.f, 0.f);
-        SunLight->SetActorRotation(SunRotation);
-
-        if (SunLight->GetLightComponent())
-        {
-            SunLight->GetLightComponent()->SetIntensity(Intensity);
-        }
-    }
-
-    if (SkyLightActor && SkyLightActor->GetLightComponent())
-    {
-        SkyLightActor->GetLightComponent()->RecaptureSky();
+        Sun->SetActorRotation(SunRotation);
     }
 }

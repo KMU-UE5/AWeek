@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "../../System/GameEventMessageSubsystem.h"
 #include "Components/ActorComponent.h"
 #include "AWeekStaminaComponent.generated.h"
 
@@ -15,6 +16,16 @@ enum class EStaminaUseType
 	LedgeStart
 };
 
+USTRUCT(BlueprintType)
+struct FStaminaChangedMessage
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite)
+	float Stamina;
+	float Amount;
+};
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class AWEEK_API UAWeekStaminaComponent : public UActorComponent
 {
@@ -25,7 +36,6 @@ public:
 	UAWeekStaminaComponent();
 
 protected:
-protected:
 	UPROPERTY(EditAnywhere)
 	float mMaxStamina = 100; // 원래값 100
 
@@ -33,19 +43,13 @@ protected:
 	float mStamina = 100; // 원래값 100
 
 	UPROPERTY(EditAnywhere)
-	float mStaminaRecoveryRate = 20;
+	float mRecoveryRate = 20;
 
 	UPROPERTY(EditAnywhere)
-	float mStaminaRecoveryCool = 2;
+	float mTimeToRecovery = 2;
 
-	UPROPERTY(EditAnywhere)
-	float mStaminaAnimationCool = mStaminaAnimationCool + 2;
-
-	FTimerHandle mStaminaRecoveryTimer;
-	FTimerHandle mStaminaAnimationTimer;
-	bool bStaminaRecovery = true;
-
-	class UAWeekStaminaWidget* mStaminaWidget;
+	FTimerHandle mRecoveryTimer;
+	bool bRecovery = true;
 
 protected:
 	UPROPERTY(EditAnywhere)
@@ -61,12 +65,21 @@ protected:
 	float mLedgeStartUsage = 10;
 
 protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
-public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+protected:
+	void ChangeStamina(float Amount)
+	{
+		mStamina = FMath::Min(mStamina + Amount, mMaxStamina);
+		FStaminaChangedMessage Msg;
+		Msg.Stamina = mStamina;
+		Msg.Amount = Amount;
+		UGameEventMessageSubsystem::Get(this).BroadcastMessage(
+			FGameplayTag::RequestGameplayTag(FName("Event.StaminaChanged")),
+			Msg
+		);
+	}
 
 public:
 	bool UseStamina(EStaminaUseType StaminaUseType);
@@ -76,7 +89,6 @@ public:
 	}
 	void EnableStaminaRecovery()
 	{
-		bStaminaRecovery = true;
+		bRecovery = true;
 	}
-	void PlayDisappearAnim();
 };
