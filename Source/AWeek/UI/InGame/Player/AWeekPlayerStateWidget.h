@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/ProgressBar.h"
 #include "Blueprint/UserWidget.h"
 #include "AWeekPlayerStateWidget.generated.h"
 
@@ -14,4 +15,14 @@ class AWEEK_API UAWeekPlayerStateWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
+
+public:
+	UAWeekPlayerStateWidget(const FObjectInitializer& ObjectInitializer);
+
+protected:
+	TObjectPtr<UProgressBar> HealthBar;
+	TObjectPtr<UProgressBar> HungerBar;
+
+protected:
+	virtual void NativeConstruct() override;
 };

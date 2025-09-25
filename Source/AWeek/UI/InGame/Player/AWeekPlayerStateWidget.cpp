@@ -3,3 +3,15 @@
 
 #include "AWeekPlayerStateWidget.h"
 
+UAWeekPlayerStateWidget::UAWeekPlayerStateWidget(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
+{
+}
+
+void UAWeekPlayerStateWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	/*--------------INIT--------------*/
+	HealthBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("HealthBar")));
+	HungerBar = Cast<UProgressBar>(GetWidgetFromName(TEXT("HungerBar")));
+}
