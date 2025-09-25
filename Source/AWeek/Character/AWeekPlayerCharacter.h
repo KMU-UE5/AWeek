@@ -172,6 +172,33 @@ public:
 	void SprintCompleted();
 	void ChangeWeapon();
 
+	UFUNCTION()
+	virtual void ClimbEnd();
+	void AttackImpact();
+	void FireBullet();
+
+	UFUNCTION()
+	void OnHit(EDamageResponse Response)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OUCH!"));
+	}
+
+	UFUNCTION()
+	void Die();
+
+	virtual void VaultStart();
+	virtual void VaultEnd();
+	virtual void LedgeStart();
+	virtual void LedgeEnd();
+	virtual void ClimbStart();
+	void SetCombatBool(bool Bool)
+	{
+		// Combat True -> Orient False
+		GetCharacterMovement()->bOrientRotationToMovement = !Bool;
+		bIsCombat = Bool;
+	}
+
+	bool TakeDamage_Implementation(EDamageResponse DamageResponse);
 
 	// =====================================================
 	// INVENTORY SYSTEM
@@ -185,18 +212,6 @@ public:
 	void CloseChestInventory();
 
 public:
-	virtual void VaultStart();
-	virtual void VaultEnd();
-	virtual void LedgeStart();
-	virtual void LedgeEnd();
-	virtual void ClimbStart();
-	void SetCombatBool(bool Bool)
-	{
-		// Combat True -> Orient False
-		GetCharacterMovement()->bOrientRotationToMovement = !Bool;
-		bIsCombat = Bool;
-	}
-
 	// =====================================================
 	// INVENTORY SYSTEM
 	// =====================================================
@@ -208,15 +223,6 @@ public:
 	void Interact();
 
 	void ToggleMenu();
-
-	UFUNCTION()
-	virtual void ClimbEnd();
-	void AttackImpact();
-	void FireBullet();
-
-
-	UFUNCTION()
-	void Die();
 
 public:
 	UFUNCTION(BlueprintCallable)

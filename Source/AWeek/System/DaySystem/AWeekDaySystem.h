@@ -18,6 +18,9 @@ struct FDayChangedMessage
 
     UPROPERTY(BlueprintReadWrite)
     bool bIsDay = true;
+
+    UPROPERTY(BlueprintReadWrite)
+    int32 Day;
 };
 
 UCLASS()
@@ -33,13 +36,14 @@ protected:
     virtual void Tick(float DeltaTime) override;
 
 protected:
+    int32 Day = 0;
     bool bDayChangeFlag = false;
-    // 하루 길이 (초 단위, 예: 300초 = 5분)
+    
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DaySystem")
     float DayLengthInSeconds = 300.f;
 
     // 현재 시간 (0 ~ 24)
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "DaySystem")
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DaySystem")
     float TimeOfDay = 6.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DaySystem")

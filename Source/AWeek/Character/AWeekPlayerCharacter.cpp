@@ -89,6 +89,7 @@ void AAWeekPlayerCharacter::BeginPlay()
 	mAnimInst = Cast<UAWeekPlayerAnimInstance>(GetMesh()->GetAnimInstance());
 	mWeapon->ChangeWeapon(TEXT("Default"));
 
+	mDamageSystem->OnDamageResponse.AddDynamic(this, &AAWeekPlayerCharacter::OnHit);
 	mDamageSystem->OnDeath.AddDynamic(this, &AAWeekPlayerCharacter::Die);
 
 	DayChangedHandle = UGameEventMessageSubsystem::Get(this).RegisterListener<FDayChangedMessage>(
@@ -207,9 +208,9 @@ void AAWeekPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 		
 		EnhancedInput->BindAction(InputCDO->mInventory, ETriggerEvent::Triggered,
 			this, &AAWeekPlayerCharacter::ToggleMenu);
+
 		EnhancedInput->BindAction(InputCDO->mAttack, ETriggerEvent::Triggered,
 			this, &AAWeekPlayerCharacter::Fire);
-
 
 		EnhancedInput->BindAction(InputCDO->mAttack, ETriggerEvent::Completed,
 			this, &AAWeekPlayerCharacter::EndFire);
@@ -289,6 +290,7 @@ void AAWeekPlayerCharacter::Attack(const FInputActionValue& Value)
 		return;
 	SetCombatBool(true);
 	mAnimInst->PlayMontageByName(TEXT("Attack"));
+	//UE_LOG(LogTemp, Warning, TEXT("%f"), mDamageSystem->GetCurrentHealth_Implementation());
 
 	// Get Weapon Damage from Weapon Component
 	// Apply damage later..
@@ -517,6 +519,8 @@ void AAWeekPlayerCharacter::Die()
 {
 	mAnimInst->PlayMontageByName(TEXT("Die"));
 }
+
+
 
 
 void AAWeekPlayerCharacter::FootStepEffect(FName SocketName)

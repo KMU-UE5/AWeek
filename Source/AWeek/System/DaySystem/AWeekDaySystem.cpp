@@ -37,8 +37,12 @@ void AAWeekDaySystem::UpdateLighting()
     {
         bDayChangeFlag = bIsDay;
 
+        if (bIsDay)
+            Day++;
+
         FDayChangedMessage Msg;
         Msg.bIsDay = bIsDay;
+        Msg.Day = Day;
 
         UGameEventMessageSubsystem::Get(this).BroadcastMessage(
             FGameplayTag::RequestGameplayTag(FName("Event.DayChanged")),
