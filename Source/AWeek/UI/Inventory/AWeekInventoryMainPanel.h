@@ -9,9 +9,9 @@
 class AAWeekPlayerCharacter;
 class UAWeekInventoryPanel;
 class UAWeekInventoryComponent;
-class UAWeekDragItemVisual;
+class UAWeekHeldItemVisual;
 
-struct FAWeekItemSlot;
+struct FAWeekInventorySlotData;
 
 UCLASS()
 class AWEEK_API UAWeekInventoryMainPanel : public UAWeekActivatableWidget

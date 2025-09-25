@@ -10,7 +10,9 @@
 #include "../System/DamageSystemComponent.h"
 #include "../Input/AWeekGameInput.h"
 #include "../System/DaySystem/AWeekDaySystem.h"
+#include "AWeek/Components/AWeekCraftingComponent.h"
 
+#include "AWeek/UI/AWeekGameUIManager.h"
 #include "AWeek/Interfaces/AWeekInteractionInterface.h"
 #include "AWeek/Components/AWeekInventoryComponent.h"
 #include "AWeek/World/AWeekPickupItem.h"
@@ -60,7 +62,8 @@ AAWeekPlayerCharacter::AAWeekPlayerCharacter()
 	mPakour = CreateDefaultSubobject<UAWeekPakourComponent>(TEXT("Pakour"));
 
 	PlayerInventory = CreateDefaultSubobject<UAWeekInventoryComponent>(TEXT("PlayerInventory"));
-
+	CraftingComponent = CreateDefaultSubobject<UAWeekCraftingComponent>(TEXT("CraftingComponent"));
+	
 	InteractionCheckFrequency = 0.1f;
 	InteractionCheckDistance = 250.0f;
 	mStamina = CreateDefaultSubobject<UAWeekStaminaComponent>(TEXT("Stamina"));
@@ -75,6 +78,15 @@ void AAWeekPlayerCharacter::BeginPlay()
 
 	UIController = Cast<AAWeekUIController>(GetController());
 
+	if (UGameInstance* GameInstance = GetGameInstance())
+	{
+		UIManager = GameInstance->GetSubsystem<UAWeekGameUIManager>();
+		UIManager->InitializeUIManager();
+	}
+
+	// temporary function
+	CraftingComponent->InitializeComponent();
+	
 	if (IsValid(UIController))
 	{
 		UEnhancedInputLocalPlayerSubsystem* Subsystem =
@@ -115,6 +127,18 @@ void AAWeekPlayerCharacter::Tick(float DeltaTime)
 		PerformInteractionCheck();
 	}
 
+	// update held item ui position
+	if (UIManager)
+	{
+		if (UIManager->IsHoldingItem())
+		{
+			FVector2D MousePos;
+			if (UIController->GetMousePosition(MousePos.X, MousePos.Y))
+			{
+				UIManager->UpdateHeldItemPosition(MousePos);
+			}
+		}
+	}
 	if (mAnimInst->GetPlayerMoveState() == EPlayerMoveState::Ledge)
 	{
 		if (!mStamina->UseStamina(EStaminaUseType::Ledge))
@@ -162,7 +186,7 @@ void AAWeekPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 			this, &AAWeekPlayerCharacter::EndInteract);
 		
 		EnhancedInput->BindAction(InputCDO->mInventory, ETriggerEvent::Triggered,
-			this, &AAWeekPlayerCharacter::ToggleMenu);
+			this, &AAWeekPlayerCharacter::ToggleInventoryMainPanel);
 		EnhancedInput->BindAction(InputCDO->mAttack, ETriggerEvent::Triggered,
 			this, &AAWeekPlayerCharacter::Fire);
 
@@ -551,7 +575,7 @@ void AAWeekPlayerCharacter::FoundInteractable(TObjectPtr<AActor> NewInteractable
 	TargetInteractable = NewInteractable;
 
 	
-	UIController->UpdateInteractionWidget(&TargetInteractable->InteractableData);
+	UIManager->UpdateInteractionWidget(&TargetInteractable->InteractableData);
 	TargetInteractable->BeginFocus();
 }
 
@@ -569,7 +593,7 @@ void AAWeekPlayerCharacter::NoInteractableFound()
 			TargetInteractable->EndFocus();
 		}
 
-		UIController->HideInteractionWidget();
+		UIManager->HideInteractionWidget();
 
 		InteractionData.CurrentInteractable = nullptr;
 		TargetInteractable = nullptr;
@@ -628,17 +652,18 @@ void AAWeekPlayerCharacter::UpdateInteractionWidget() const
 {
 	if (IsValid(TargetInteractable.GetObject()))
 	{
-		UIController->UpdateInteractionWidget(&TargetInteractable->InteractableData);
+		UIManager->UpdateInteractionWidget(&TargetInteractable->InteractableData);
 	}
 }
 
-void AAWeekPlayerCharacter::ToggleMenu()
+void AAWeekPlayerCharacter::ToggleInventoryMainPanel()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Toggle Menu"));
-	UIController->ToggleMainPanel();
+	UIManager->ToggleInventoryMainPanel();
+	// test
+	// ToggleCraftingMainPanel();
 }
 
-void AAWeekPlayerCharacter::DropItemFromItemSlot(const FAWeekItemSlot& ItemSlot, const int32 QuantityToDrop)
+void AAWeekPlayerCharacter::DropItemFromItemSlot(const FAWeekInventorySlotData& ItemSlot, const int32 QuantityToDrop)
 {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
@@ -659,15 +684,26 @@ void AAWeekPlayerCharacter::DropItemFromItemSlot(const FAWeekItemSlot& ItemSlot,
 
 void AAWeekPlayerCharacter::ToggleChestInventory(TObjectPtr<UAWeekInventoryComponent> ChestInventory)
 {
-	UIController->ToggleChestInventory(ChestInventory);
+	UIManager->ToggleChestInventory(ChestInventory);
 }
 
 //void AAWeekPlayerCharacter::OpenChestInventory(TObjectPtr<UAWeekInventoryComponent> ChestInventory)
 //{
-//	UIController->ActivateChestInventory(ChestInventory);
+//	UIManager->ActivateChestInventory(ChestInventory);
 //}
 
 void AAWeekPlayerCharacter::CloseChestInventory()
 {
-	UIController->DeactivateChestInventory();
+	UIManager->DeactivateChestInventory();
 }
+
+void AAWeekPlayerCharacter::ToggleCraftingMainPanel()
+{
+	UIManager->ToggleCraftingMainPanel();
+}
+
+void AAWeekPlayerCharacter::CloseCraftingMainPanel()
+{
+	UIManager->HideCraftingMainPanel();
+}
+
