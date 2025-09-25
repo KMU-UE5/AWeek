@@ -17,7 +17,7 @@ class AWEEK_API UAWeekReticleWidgetHost : public UCommonUserWidget
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void ChangeWeapon(UAWeekReticleDefinition* ReticleDefinition);
 	
 	UFUNCTION(BlueprintImplementableEvent)

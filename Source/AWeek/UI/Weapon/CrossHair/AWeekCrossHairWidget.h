@@ -27,4 +27,11 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UAWeekCrossHairMarkerWidget> CrossHairMarker;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DebugFinalSpreadAngle = 45.0f;
+
+	UFUNCTION(BlueprintCallable)
+	void SetFinalSpreadAngle(float NewFinalSpreadAngle);
 };
