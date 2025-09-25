@@ -87,7 +87,7 @@ protected:
 protected:
 	// Utility Functions
 	FHitResult WallTracing(ETraceType TraceType, FVector Start, FVector End, FColor Color=FColor::Green, bool Debug = true,
-	ECollisionChannel CollisionChannel = ECollisionChannel::ECC_Visibility, float Radius = 10)
+	ECollisionChannel CollisionChannel = ECollisionChannel::ECC_GameTraceChannel7, float Radius = 10)
 	{
 		FHitResult HitResult;
 		bool bHit;
@@ -98,7 +98,7 @@ protected:
 				HitResult,
 				Start,
 				End,
-				ECollisionChannel::ECC_Visibility,
+				CollisionChannel,
 				FCollisionQueryParams(),
 				FCollisionResponseParams()
 			);
@@ -111,7 +111,7 @@ protected:
 				Start,
 				End,
 				FQuat::Identity,
-				ECollisionChannel::ECC_Visibility,
+				CollisionChannel,
 				Sphere,
 				FCollisionQueryParams(),
 				FCollisionResponseParams()

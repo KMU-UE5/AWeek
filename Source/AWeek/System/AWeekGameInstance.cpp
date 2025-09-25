@@ -4,7 +4,6 @@
 #include "AWeekGameInstance.h"
 
 #include "AWeek/AWeekGameplayTags.h"
-#include "AWeek/UI/AWeekUIManager.h"
 
 void UAWeekGameInstance::Init()
 {
@@ -15,6 +14,4 @@ void UAWeekGameInstance::Init()
 void UAWeekGameInstance::Shutdown()
 {
 	Super::Shutdown();
-
-	CAWeekUIManager::DestroyInst();
 }

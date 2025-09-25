@@ -8,6 +8,7 @@
 #include "../Player/AWeekPlayerAnimInstance.h"
 #include "AWeek/Interfaces/AWeekInteractionInterface.h"
 
+#include "../System/GameEventMessageSubsystem.h"
 #include "../System/DamageInfo.h"
 #include "../System/IDamageAble.h"
 
@@ -89,6 +90,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds, meta = (AllowPrivateAccess = "true"))
 	USoundBase* FireSound;
 
+	/*--------------EVENT--------------*/
+	FGameEventMessageListenerHandle DayChangedHandle;
+
 	/*--------------VARIABLES--------------*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bIsCombat = false;
@@ -153,6 +157,7 @@ protected:
 	UPROPERTY()
 	FAWeekInteractionData InteractionData;
 
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -175,6 +180,33 @@ public:
 	void SprintCompleted();
 	void ChangeWeapon();
 
+	UFUNCTION()
+	virtual void ClimbEnd();
+	void AttackImpact();
+	void FireBullet();
+
+	UFUNCTION()
+	void OnHit(EDamageResponse Response)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OUCH!"));
+	}
+
+	UFUNCTION()
+	void Die();
+
+	virtual void VaultStart();
+	virtual void VaultEnd();
+	virtual void LedgeStart();
+	virtual void LedgeEnd();
+	virtual void ClimbStart();
+	void SetCombatBool(bool Bool)
+	{
+		// Combat True -> Orient False
+		GetCharacterMovement()->bOrientRotationToMovement = !Bool;
+		bIsCombat = Bool;
+	}
+
+	bool TakeDamage_Implementation(EDamageResponse DamageResponse);
 
 	// =====================================================
 	// INVENTORY SYSTEM
@@ -191,18 +223,6 @@ public:
 	void CloseCraftingMainPanel();
 
 public:
-	virtual void VaultStart();
-	virtual void VaultEnd();
-	virtual void LedgeStart();
-	virtual void LedgeEnd();
-	virtual void ClimbStart();
-	void SetCombatBool(bool Bool)
-	{
-		// Combat True -> Orient False
-		GetCharacterMovement()->bOrientRotationToMovement = !Bool;
-		bIsCombat = Bool;
-	}
-
 	// =====================================================
 	// INVENTORY SYSTEM
 	// =====================================================
@@ -213,15 +233,6 @@ public:
 	void EndInteract();
 	void Interact();
 
-
-	UFUNCTION()
-	virtual void ClimbEnd();
-	void AttackImpact();
-	void FireBullet();
-
-
-	UFUNCTION()
-	void Die();
 
 public:
 	UFUNCTION(BlueprintCallable)

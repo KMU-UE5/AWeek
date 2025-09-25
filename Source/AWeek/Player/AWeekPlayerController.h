@@ -19,9 +19,6 @@ public:
 	AAWeekPlayerController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 protected:
-	TSubclassOf<UUserWidget> mMainWidget;
-
-
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 

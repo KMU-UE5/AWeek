@@ -7,11 +7,12 @@
 #include "Pakour/AWeekPakourComponent.h"
 #include "Stamina/AWeekStaminaComponent.h"
 #include "../Player/Weapon/AWeekWeaponComponent.h"
+#include "../Player/Weapon/AWeekWeaponProjectile.h"
+
 #include "../System/DamageSystemComponent.h"
 #include "../Input/AWeekGameInput.h"
 #include "../System/DaySystem/AWeekDaySystem.h"
 #include "AWeek/Components/AWeekCraftingComponent.h"
-
 #include "AWeek/UI/AWeekGameUIManager.h"
 #include "AWeek/Interfaces/AWeekInteractionInterface.h"
 #include "AWeek/Components/AWeekInventoryComponent.h"
@@ -33,7 +34,7 @@ AAWeekPlayerCharacter::AAWeekPlayerCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	GetMesh()->SetCollisionProfileName(TEXT("Player"));
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Player"));
 
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
@@ -100,7 +101,23 @@ void AAWeekPlayerCharacter::BeginPlay()
 	mAnimInst = Cast<UAWeekPlayerAnimInstance>(GetMesh()->GetAnimInstance());
 	mWeapon->ChangeWeapon(TEXT("Default"));
 
+	mDamageSystem->OnDamageResponse.AddDynamic(this, &AAWeekPlayerCharacter::OnHit);
 	mDamageSystem->OnDeath.AddDynamic(this, &AAWeekPlayerCharacter::Die);
+
+	DayChangedHandle = UGameEventMessageSubsystem::Get(this).RegisterListener<FDayChangedMessage>(
+		FGameplayTag::RequestGameplayTag(FName("Event.DayChanged")),
+		[this](FGameplayTag Channel, const FDayChangedMessage& Msg)
+		{
+			if (Msg.bIsDay)
+			{
+				UE_LOG(LogTemp, Log, TEXT("Good Morning!"));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Log, TEXT("Good Night!"));
+			}
+		}
+	);
 }
 
 // Called every frame
@@ -218,7 +235,6 @@ void AAWeekPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 		EnhancedInput->BindAction(InputCDO->mAttack, ETriggerEvent::Triggered,
 			this, &AAWeekPlayerCharacter::Fire);
 
-
 		EnhancedInput->BindAction(InputCDO->mAttack, ETriggerEvent::Completed,
 			this, &AAWeekPlayerCharacter::EndFire);
 
@@ -297,6 +313,7 @@ void AAWeekPlayerCharacter::Attack(const FInputActionValue& Value)
 		return;
 	SetCombatBool(true);
 	mAnimInst->PlayMontageByName(TEXT("Attack"));
+	//UE_LOG(LogTemp, Warning, TEXT("%f"), mDamageSystem->GetCurrentHealth_Implementation());
 
 	// Get Weapon Damage from Weapon Component
 	// Apply damage later..
@@ -363,6 +380,9 @@ void AAWeekPlayerCharacter::SprintCompleted()
 
 void AAWeekPlayerCharacter::ChangeWeapon()
 {
+	if (mAnimInst->IsAnyMontagePlaying())
+		return;
+
 	if (mAnimInst->GetCurrentOverride() == FName("Default"))
 	{
 		mWeapon->ChangeWeapon(TEXT("Bat"));
@@ -471,22 +491,12 @@ void AAWeekPlayerCharacter::AttackImpact()
 
 	bool Collision = GetWorld()->SweepMultiByChannel(Result, Center, Center,
 		FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel5,
-		FCollisionShape::MakeBox(FVector(100)), param);
+		FCollisionShape::MakeSphere(100), param);
 
-	DrawDebugSphere(
-		GetWorld(),
-		Center,             // �߽�
-		100.f,              // ������ (MakeSphere���� �� ��)
-		16,                 // ���׸�Ʈ (������ ����)
-		FColor::Green,      // ��
-		false,              // ���� ���� (true�� ���� ����)
-		1.0f                // ���� �ð� (1��)
-	);
-
+	DrawDebugSphere(GetWorld(), Center, 100, 20, FColor::Red, false, 0.5f);
 
 	if (Collision)
 	{
-
 		for (auto& Hit : Result)
 		{
 			AActor* HitActor = Hit.GetActor();
@@ -496,9 +506,7 @@ void AAWeekPlayerCharacter::AttackImpact()
 			{
 				FDamageInfo DamageInfo;
 				DamageInfo.Amount = mWeapon->GetWeaponDamage();
-				bool bDamaged = IDamageAble::Execute_TakeDamage(HitActor, DamageInfo);
-				if (bDamaged)
-					UE_LOG(LogTemp, Warning, TEXT("Hit Total Target: %d\t Damage Amount: %f"), Result.Num(), DamageInfo.Amount);
+				IDamageAble::Execute_TakeDamage(HitActor, DamageInfo);
 			}
 		}
 	}
@@ -526,14 +534,16 @@ void AAWeekPlayerCharacter::FireBullet()
 	
 	FActorSpawnParameters Param;
 	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	//AASeedTestBullet* Bullet = GetWorld()->SpawnActor<AASeedTestBullet>(MuzzleLoctaion, GetActorRotation(), Param);
+	AAWeekWeaponProjectile* Bullet = GetWorld()->SpawnActor<AAWeekWeaponProjectile>(MuzzleLoctaion, GetActorRotation(), Param);
+	Bullet->SetDamage(mWeapon->GetWeaponDamage());
 }
 
 void AAWeekPlayerCharacter::Die()
 {
 	mAnimInst->PlayMontageByName(TEXT("Die"));
 }
+
+
 
 
 void AAWeekPlayerCharacter::FootStepEffect(FName SocketName)

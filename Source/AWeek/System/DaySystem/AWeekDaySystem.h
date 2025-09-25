@@ -11,7 +11,17 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "AWeekDaySystem.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDayChanged, bool, IsDawn);
+USTRUCT(BlueprintType)
+struct FDayChangedMessage
+{
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadWrite)
+    bool bIsDay = true;
+
+    UPROPERTY(BlueprintReadWrite)
+    int32 Day;
+};
 
 UCLASS()
 class AWEEK_API AAWeekDaySystem : public AActor
@@ -26,31 +36,22 @@ protected:
     virtual void Tick(float DeltaTime) override;
 
 protected:
-    bool Dawn = false;
-    bool Midnight = false;
-
-    // 하루 길이 (초 단위, 예: 300초 = 5분)
+    int32 Day = 0;
+    bool bDayChangeFlag = false;
+    
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DaySystem")
     float DayLengthInSeconds = 300.f;
 
     // 현재 시간 (0 ~ 24)
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DaySystem")
-    float TimeOfDay = 6;
-
-    // 빛 세기
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DaySystem")
-    float Intensity = 3;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DaySystem")
+    float TimeOfDay = 6.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DaySystem")
-    ADirectionalLight* SunLight;
+    ADirectionalLight* Sun;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DaySystem")
-    ASkyLight* SkyLightActor;
+    float SunIntensity = 4.f;
 
 private:
     void UpdateLighting();
-
-public:
-    UPROPERTY(BlueprintAssignable, Category = "DaySystem")
-    FOnDayChanged OnDayChanged;
 };
