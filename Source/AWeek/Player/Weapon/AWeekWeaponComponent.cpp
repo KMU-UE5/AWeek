@@ -128,101 +128,97 @@ void UAWeekWeaponComponent::ChangeWeaponPos(FName SocketName)
 
 FVector UAWeekWeaponComponent::GetFireDirection()
 {
-    if (!mOwner)
-        return FVector::ForwardVector;
+	if (!mOwner)
+		return FVector::ForwardVector;
 
-    // 플레이어 카메라 가져오기
-    APlayerController* PC = Cast<APlayerController>(mOwner->GetController());
-    if (!PC)
-        return FVector::ForwardVector;
+	APlayerController* PC = Cast<APlayerController>(mOwner->GetController());
+	if (!PC)
+		return FVector::ForwardVector;
 
-    // 화면 중앙 좌표
-    int32 ViewportSizeX, ViewportSizeY;
-    PC->GetViewportSize(ViewportSizeX, ViewportSizeY);
-    FVector2D ScreenCenter(ViewportSizeX / 2.0f, ViewportSizeY / 2.0f);
+	int32 ViewportSizeX, ViewportSizeY;
+	PC->GetViewportSize(ViewportSizeX, ViewportSizeY);
+	FVector2D ScreenCenter(ViewportSizeX / 2.0f, ViewportSizeY / 2.0f);
 
-    // 화면 중앙에서 월드 공간으로 변환
-    FVector WorldLocation, WorldDirection;
-    PC->DeprojectScreenPositionToWorld(ScreenCenter.X, ScreenCenter.Y, WorldLocation, WorldDirection);
+	FVector CameraLocation, CameraDirection;
+	PC->DeprojectScreenPositionToWorld(ScreenCenter.X, ScreenCenter.Y, CameraLocation, CameraDirection);
 
-    return WorldDirection;
+	return CameraDirection;
 }
 
 void UAWeekWeaponComponent::Fire()
 {
-    if (bIsReloading)
-        return;
-    if (mCurrentBullet < mBulletUsagePerSingle)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Out of ammo! Reloading..."));
-        //Reload();
-        return;
-    }
+	// ... 탄약 체크 ...
 
-    mCurrentBullet -= mBulletUsagePerSingle;
+		// 카메라 위치에서 트레이스 시작
+	APlayerController* PC = Cast<APlayerController>(mOwner->GetController());
+	if (!PC)
+		return;
 
-    // === 총알 발사 로직 ===
-    FVector MuzzleLocation = GetMuzzleLocation();
-    FVector FireDirection = GetFireDirection();
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
 
-    // Line Trace로 맞은 위치 확인
-    FVector TraceStart = MuzzleLocation;
-    FVector TraceEnd = TraceStart + (FireDirection * 10000.0f); // 10000 유닛 거리
+	FVector FireDirection = GetFireDirection();
 
-    FHitResult HitResult;
-    FCollisionQueryParams QueryParams;
-    QueryParams.AddIgnoredActor(mOwner);
-    QueryParams.AddIgnoredActor(mWeapon);
+	// 카메라 위치에서 먼저 트레이스해서 목표 지점 찾기
+	FVector TraceStart = CameraLocation;
+	FVector TraceEnd = TraceStart + (FireDirection * 10000.0f);
 
-    bool bHit = GetWorld()->LineTraceSingleByChannel(
-        HitResult,
-        TraceStart,
-        TraceEnd,
-        ECC_EngineTraceChannel5,
-        QueryParams
-    );
+	FHitResult HitResult;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(mOwner);
+	QueryParams.AddIgnoredActor(mWeapon);
 
-    // 디버그 라인 그리기 (개발용)
-    DrawDebugLine(
-        GetWorld(),
-        TraceStart,
-        bHit ? HitResult.Location : TraceEnd,
-        bHit ? FColor::Red : FColor::Green,
-        false,
-        2.0f,
-        0,
-        2.0f
-    );
+	bool bHit = GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		TraceStart,
+		TraceEnd,
+		ECC_Visibility,
+		QueryParams
+	);
 
-    if (bHit)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Hit: %s at %s"),
-            *HitResult.GetActor()->GetName(),
-            *HitResult.Location.ToString());
+	// 맞은 지점 (또는 최대 거리 지점)
+	FVector TargetPoint = bHit ? HitResult.Location : TraceEnd;
 
-        // TODO: 데미지 처리
-        // TODO: 피격 이펙트 생성
+	// 총구에서 그 지점으로 방향 계산
+	FVector MuzzleLocation = GetMuzzleLocation();
+	FVector MuzzleToTarget = (TargetPoint - MuzzleLocation).GetSafeNormal();
 
-        // 임시 이펙트 (구체 그리기)
-        DrawDebugSphere(
-            GetWorld(),
-            HitResult.Location,
-            10.0f,
-            12,
-            FColor::Orange,
-            false,
-            2.0f
-        );
-    }
+	// 총구에서 실제 발사 (시각적으로만)
+	DrawDebugLine(
+		GetWorld(),
+		MuzzleLocation,
+		TargetPoint,
+		FColor::Red,
+		false,
+		2.0f,
+		0,
+		2.0f
+	);
 
-	FVector	MuzzleLoctaion = GetMuzzleLocation();
+	if (bHit)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Hit: %s at %s"),
+			*HitResult.GetActor()->GetName(),
+			*HitResult.Location.ToString());
+
+		DrawDebugSphere(
+			GetWorld(),
+			HitResult.Location,
+			10.0f,
+			12,
+			FColor::Orange,
+			false,
+			2.0f
+		);
+	}
 
 	if (mFireEffect)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(
 			GetWorld(),
 			mFireEffect,
-			MuzzleLoctaion,
+			GetMuzzleLocation(),
 			FireDirection.Rotation(),
 			FVector(1.0f)
 		);
