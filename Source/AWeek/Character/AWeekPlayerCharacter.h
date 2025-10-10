@@ -133,6 +133,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UAWeekGameUIManager> UIManager;
 	
+	
 	UPROPERTY()
 	TObjectPtr<AAWeekPlayerController> PlayerController;
 
@@ -215,6 +216,7 @@ public:
 	FORCEINLINE TObjectPtr<UAWeekInventoryComponent> GetInventory() const { return PlayerInventory; }
 	void UpdateInteractionWidget() const;
 	void ToggleInventoryMainPanel();
+	void ToggleMainWidget();
 	void DropItemFromItemSlot(const FAWeekInventorySlotData& ItemSlot, const int32 QuantityToDrop);
 	void ToggleChestInventory(TObjectPtr<UAWeekInventoryComponent> ChestInventory);
 	//void OpenChestInventory(TObjectPtr<UAWeekInventoryComponent> ChestInventory);

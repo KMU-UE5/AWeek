@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AWeek/Grid/TestWidget/ButtonPanelWidget.h"
+#include "AWeek/UI/MainWidget/ButtonPanelWidget.h"
 
 #include "CommonUIExtensions.h"
 #include "AWeek/Player/AWeekUIController.h"

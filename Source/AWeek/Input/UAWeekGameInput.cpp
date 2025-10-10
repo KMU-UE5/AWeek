@@ -34,6 +34,10 @@ UAWeekGameInput::UAWeekGameInput()
 	mInventory = InventoryAction.Object;
 
 	static ConstructorHelpers::FObjectFinder<UInputAction>
+		MainWidgetAction(TEXT("/Script/EnhancedInput.InputAction'/Game/Player/Input/Actions/IA_MainWidget.IA_MainWidget'"));
+	mMainWidget = MainWidgetAction.Object;
+
+	static ConstructorHelpers::FObjectFinder<UInputAction>
 		ChangeWeaponAction(TEXT("/Script/EnhancedInput.InputAction'/Game/Player/Input/Actions/IA_Test_ChangeWeapon.IA_Test_ChangeWeapon'"));
 	mChangeWeapon = ChangeWeaponAction.Object;
 

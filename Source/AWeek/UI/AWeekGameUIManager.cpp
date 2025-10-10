@@ -7,6 +7,7 @@
 #include "AWeek/UI/Interaction/AWeekInteractionWidget.h"
 #include "AWeek/UI/Inventory/AWeekHeldItemVisual.h"
 #include "AWeek/UI/Inventory/AWeekHeldItem.h"
+#include "AWeek/UI/MainWidget/MainUIWidget.h"
 #include "AWeek/Components/AWeekInventoryComponent.h"
 #include "AWeek/Items/AWeekItemBase.h"
 #include "CommonUIExtensions.h"
@@ -34,6 +35,7 @@ void UAWeekGameUIManager::InitializeUIManager()
 			CraftingMainPanelClass = UIDataAsset->CraftingMainPanelClass;
 			InteractionWidgetClass = UIDataAsset->InteractionWidgetClass;
 			HeldItemVisualClass = UIDataAsset->HeldItemVisualClass;
+			MainUIWidgetClass = UIDataAsset->MainWidgetClass;
             
 			UE_LOG(LogTemp, Log, TEXT("UI DataAsset loaded from: %s"), *UIDataAssetPath.ToString());
 		}
@@ -67,6 +69,24 @@ void UAWeekGameUIManager::ShowInventoryMainPanel()
 				FGameplayTag::RequestGameplayTag("UI.Layer.GameMenu"), InventoryMainPanelClass));
 	}
 }
+
+void UAWeekGameUIManager::ShowMainWidget()
+{
+	UE_LOG(LogTemp, Log, TEXT("1asdf"));
+	if (MainUIWidgetClass)
+	{
+		UE_LOG(LogTemp, Log, TEXT("2asdf"));
+		MainUIWidget = Cast<UMainUIWidget, UCommonActivatableWidget>(
+		UCommonUIExtensions::PushContentToLayer_ForPlayer(LocalPlayer,
+			FGameplayTag::RequestGameplayTag("UI.Layer.GameMenu"), MainUIWidgetClass));
+
+		UE_LOG(LogTemp, Log, TEXT("MainUIWidgetClass=%s IsChildOf Activatable? %s"),
+	*GetNameSafe(*MainUIWidgetClass),
+	(MainUIWidgetClass && MainUIWidgetClass->IsChildOf(UCommonActivatableWidget::StaticClass())) ? TEXT("YES") : TEXT("NO"));
+	}
+}
+
+
 void UAWeekGameUIManager::HideInventoryMainPanel()
 {	
 	if (InventoryMainPanelWidget)
@@ -79,6 +99,20 @@ void UAWeekGameUIManager::HideInventoryMainPanel()
 		}
 	}
 }
+
+void UAWeekGameUIManager::HideMainWidget()
+{
+	if (MainUIWidget)
+	{
+		MainUIWidget->DeactivateWidget();
+		if (IsHoldingItem())
+		{
+			HeldItem->ReturnHeldItemToInventory();
+			HeldItem = nullptr;
+		}
+	}
+}
+
 
 void UAWeekGameUIManager::ShowCraftingMainPanel()
 {
@@ -118,6 +152,23 @@ void UAWeekGameUIManager::ToggleInventoryMainPanel()
 		PlayerController->SetShowMouseCursor(false);
 	}
 }
+void UAWeekGameUIManager::ToggleMainWidget()
+{
+	UE_LOG(LogTemp, Log, TEXT("1MainWidget Open"));
+	if (!IsValid(MainUIWidget) || !MainUIWidget->IsActivated())
+	{
+		UE_LOG(LogTemp, Log, TEXT("2MainWidget close"));
+		ShowMainWidget();
+		PlayerController->SetShowMouseCursor(true);
+	}else
+	{
+		UE_LOG(LogTemp, Log, TEXT("3MainWidget Open"));
+		HideMainWidget();
+		PlayerController->SetShowMouseCursor(false);
+	}
+}
+
+
 
 void UAWeekGameUIManager::ToggleChestInventory(TObjectPtr<UAWeekInventoryComponent> ChestInventory)
 {

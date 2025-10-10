@@ -230,6 +230,10 @@ void AAWeekPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 		
 		EnhancedInput->BindAction(InputCDO->mInventory, ETriggerEvent::Triggered,
 			this, &AAWeekPlayerCharacter::ToggleInventoryMainPanel);
+
+		EnhancedInput->BindAction(InputCDO->mMainWidget, ETriggerEvent::Triggered,
+			this, &AAWeekPlayerCharacter::ToggleMainWidget);
+		
 		EnhancedInput->BindAction(InputCDO->mAttack, ETriggerEvent::Triggered,
 			this, &AAWeekPlayerCharacter::Fire);
 
@@ -698,6 +702,11 @@ void AAWeekPlayerCharacter::ToggleInventoryMainPanel()
 	UIManager->ToggleInventoryMainPanel();
 	// test
 	// ToggleCraftingMainPanel();
+}
+
+void AAWeekPlayerCharacter::ToggleMainWidget()
+{
+	UIManager->ToggleMainWidget();	
 }
 
 void AAWeekPlayerCharacter::DropItemFromItemSlot(const FAWeekInventorySlotData& ItemSlot, const int32 QuantityToDrop)

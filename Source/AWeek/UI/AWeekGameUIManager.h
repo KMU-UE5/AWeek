@@ -10,6 +10,7 @@ class UAWeekCraftingMainPanel;
 class UAWeekUIDataAsset;
 class AAWeekPlayerController;
 class UAWeekInventoryMainPanel;
+class UMainUIWidget;
 class UAWeekInteractionWidget;
 struct FAWeekInteractableData;
 class UAWeekInventoryComponent;
@@ -45,9 +46,13 @@ class AWEEK_API UAWeekGameUIManager : public UGameInstanceSubsystem
 
 public:
 	UAWeekGameUIManager();
+
+	
+	
 	void InitializeUIManager();
 	
 	void ToggleInventoryMainPanel();
+	void ToggleMainWidget();
 	void ToggleChestInventory(TObjectPtr<UAWeekInventoryComponent> ChestInventory);
 
 	void ToggleCraftingMainPanel();
@@ -87,6 +92,11 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
 	TSubclassOf<UAWeekCraftingMainPanel> CraftingMainPanelClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<UMainUIWidget> MainUIWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UMainUIWidget> MainUIWidget;
 	
 	UPROPERTY()
 	TObjectPtr<UAWeekInventoryMainPanel> InventoryMainPanelWidget;
@@ -116,8 +126,10 @@ protected:
 	void CreateHeldItem(TObjectPtr<UAWeekItemBase> NewHeldItem, TObjectPtr<UAWeekInventoryComponent> SourceInventory, int32 SourceItemSlotIndex);
 
 	void ShowInventoryMainPanel();
+	void ShowMainWidget();
+	
 	void HideInventoryMainPanel();
-
+	void HideMainWidget();
 	void ShowCraftingMainPanel();
 
 private:
