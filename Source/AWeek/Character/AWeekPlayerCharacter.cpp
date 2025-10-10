@@ -60,7 +60,7 @@ AAWeekPlayerCharacter::AAWeekPlayerCharacter()
 
 	mPakour = CreateDefaultSubobject<UAWeekPakourComponent>(TEXT("Pakour"));
 
-	PlayerInventory = CreateDefaultSubobject<UAWeekInventoryComponent>(TEXT("PlayerInventory"));
+	PlayerInventoryComponent = CreateDefaultSubobject<UAWeekInventoryComponent>(TEXT("PlayerInventory"));
 	CraftingComponent = CreateDefaultSubobject<UAWeekCraftingComponent>(TEXT("CraftingComponent"));
 	
 	InteractionCheckFrequency = 0.1f;
@@ -84,7 +84,7 @@ void AAWeekPlayerCharacter::BeginPlay()
 	}
 
 	// temporary function
-	CraftingComponent->InitializeComponent();
+	CraftingComponent->InitializeCraftingComponent();
 	
 	if (IsValid(PlayerController))
 	{
@@ -745,7 +745,7 @@ void AAWeekPlayerCharacter::CloseChestInventory()
 
 void AAWeekPlayerCharacter::ToggleCraftingMainPanel()
 {
-	UIManager->ToggleCraftingMainPanel();
+	UIManager->ToggleCraftingMainPanel(CraftingComponent, PlayerInventoryComponent);
 }
 
 void AAWeekPlayerCharacter::CloseCraftingMainPanel()
