@@ -114,8 +114,6 @@ void UAWeekGameUIManager::HideMainWidget()
 	}
 }
 
-
-void UAWeekGameUIManager::ShowCraftingMainPanel()
 void UAWeekGameUIManager::ShowCraftingMainPanel(const TObjectPtr<UAWeekCraftingComponent> CraftingComponent, const TObjectPtr<UAWeekInventoryComponent> InventoryComponent)
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *FString(__FUNCTION__));
