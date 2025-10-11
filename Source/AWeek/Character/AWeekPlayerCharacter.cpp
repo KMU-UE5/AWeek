@@ -16,8 +16,7 @@
 #include "AWeek/Interfaces/AWeekInteractionInterface.h"
 #include "AWeek/Components/AWeekInventoryComponent.h"
 #include "AWeek/World/AWeekPickupItem.h"
-#include "AWeek/Player/AWeekUIController.h"
-
+#include "AWeek/Player/AWeekPlayerController.h"
 
 DEFINE_LOG_CATEGORY(AWeekPlayerCharacter);
 
