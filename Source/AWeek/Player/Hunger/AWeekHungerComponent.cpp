@@ -20,15 +20,6 @@ UAWeekHungerComponent::UAWeekHungerComponent()
 void UAWeekHungerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
-	
-}
-
-void UAWeekHungerComponent::OnRegister()
-{
-	Super::OnRegister();
-
 	StaminaChangedHandle = UGameEventMessageSubsystem::Get(this).RegisterListener<FStaminaChangedMessage>(
 		FGameplayTag::RequestGameplayTag(FName("Event.StaminaChanged")),
 		[this](FGameplayTag Channel, const FStaminaChangedMessage& Msg)
@@ -37,6 +28,11 @@ void UAWeekHungerComponent::OnRegister()
 				ChangeHunger(Msg.Amount / StaminaAffected);
 		}
 	);
+}
+
+void UAWeekHungerComponent::OnRegister()
+{
+	Super::OnRegister();
 }
 
 
