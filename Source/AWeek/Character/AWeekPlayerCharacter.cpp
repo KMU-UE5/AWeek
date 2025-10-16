@@ -706,7 +706,7 @@ void AAWeekPlayerCharacter::ToggleInventoryMainPanel()
 
 void AAWeekPlayerCharacter::ToggleMainWidget()
 {
-	UIManager->ToggleMainWidget();	
+	UIManager->ToggleMainWidget();
 }
 
 void AAWeekPlayerCharacter::DropItemFromItemSlot(const FAWeekInventorySlotData& ItemSlot, const int32 QuantityToDrop)

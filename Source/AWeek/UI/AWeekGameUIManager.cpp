@@ -15,6 +15,7 @@
 #include "AWeek/Player/AWeekPlayerController.h"
 #include "AWeek/Data/AWeekUIDataAsset.h"
 #include "AWeek/Components/AWeekCraftingComponent.h"
+#include "AWeek/Grid/GridPlacedSubsystem.h"
 
 UAWeekGameUIManager::UAWeekGameUIManager()
 {
@@ -156,15 +157,19 @@ void UAWeekGameUIManager::ToggleInventoryMainPanel()
 }
 void UAWeekGameUIManager::ToggleMainWidget()
 {
-	UE_LOG(LogTemp, Log, TEXT("1MainWidget Open"));
 	if (!IsValid(MainUIWidget) || !MainUIWidget->IsActivated())
 	{
-		UE_LOG(LogTemp, Log, TEXT("2MainWidget close"));
 		ShowMainWidget();
 		PlayerController->SetShowMouseCursor(true);
+		if (UWorld* World = GetWorld())
+		{
+			if (UGridPlacedSubsystem* Grid = World->GetSubsystem<UGridPlacedSubsystem>())
+			{
+				Grid->StopPlacement();
+			}
+		}
 	}else
 	{
-		UE_LOG(LogTemp, Log, TEXT("3MainWidget Open"));
 		HideMainWidget();
 		PlayerController->SetShowMouseCursor(false);
 	}

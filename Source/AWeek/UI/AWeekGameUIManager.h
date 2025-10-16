@@ -78,6 +78,9 @@ public:
 	void HandleItemSlotLeftClick(int32 ClickedItemSlotIndex, TObjectPtr<UAWeekInventoryComponent> OwningInventory);
 	void HandleItemSlotRightClick(int32 ClickedItemSlotIndex, TObjectPtr<UAWeekInventoryComponent> OwningInventory);
 	void HandleItemSlotShiftLeftClick(const FAWeekInventorySlotData& ClickedItemSlot) const;
+
+	void HideMainWidget();
+	void ShowMainWidget();
 protected:
 	//================================================================
 	//	PROPERTIES & VARIABLES
@@ -127,10 +130,10 @@ protected:
 	void CreateHeldItem(TObjectPtr<UAWeekItemBase> NewHeldItem, TObjectPtr<UAWeekInventoryComponent> SourceInventory, int32 SourceItemSlotIndex);
 
 	void ShowInventoryMainPanel();
-	void ShowMainWidget();
+	
 	
 	void HideInventoryMainPanel();
-	void HideMainWidget();
+	
 	void ShowCraftingMainPanel();
 
 	void ShowCraftingMainPanel(TObjectPtr<UAWeekCraftingComponent> CraftingComponent, const TObjectPtr<UAWeekInventoryComponent> InventoryComponent);

@@ -14,6 +14,9 @@
 #include "Components/Button.h"
 #include "AWeek/Components/AWeekInventoryComponent.h"
 #include "Components/SizeBox.h"
+#include "AWeek/Grid/PreviewObject.h"
+#include "AWeek/Grid/GridPlacedSubsystem.h"
+#include "AWeek/Character/AWeekPlayerCharacter.h"
 
 void UBuildingCraftPanel::ActivatePanel()
 {
@@ -33,6 +36,7 @@ void UBuildingCraftPanel::UpdateData(const FAWeekBuildingData* Data)
 	BuildingName->SetText(FText::FromName(Data->ID));
 	BuildingIcon->SetBrushFromTexture(Data->Image);
 	BuildingText->SetText(FText::FromString(Data->BuildingText));
+	PreviewObjectClass = Data->PreviewObjectClass.LoadSynchronous();
 	
 	bCheck = true;
 	for (FAWeekCost Cost : Data->Costs)
@@ -104,8 +108,30 @@ void UBuildingCraftPanel::CreateBuilding()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Create Building!!"));
 	//TODO Grid setting
-	//TODO Remove Cost
+	if (!PreviewObjectClass) return;
+    
+        APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+        if (!PC) return;
+    
+        if (UGridPlacedSubsystem* Sub = GetWorld()->GetSubsystem<UGridPlacedSubsystem>())
+        {
+            Sub->StartPlacement(PreviewObjectClass, PC, this);
+        	AAWeekPlayerCharacter* Ch = Cast<AAWeekPlayerCharacter>(PC->GetPawn());
+        	Ch->ToggleMainWidget();
+        }
 }
+
+void UBuildingCraftPanel::RemoveItem()
+{
+	for (UBuildCostPill* Pill : Pills)
+	{
+		if (!Pill->RemoveItem())
+		{
+			UE_LOG(LogTemp, Error, TEXT("Item Lack!! This Error must be solved"));
+		}
+	}
+}
+
 
 
 

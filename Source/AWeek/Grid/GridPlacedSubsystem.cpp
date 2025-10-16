@@ -3,8 +3,18 @@
 
 #include "AWeek/Grid/GridPlacedSubsystem.h"
 
-void UGridPlacedSubsystem::StartPlacement(TSubclassOf<APreviewObject> PreviewClass, APlayerController* ForPC)
+#include "CommonUIExtensions.h"
+#include "AWeek/UI/AWeekActivatableWidget.h"
+#include "AWeek/UI/MainWidget/Panel/BuildingCraftPanel.h"
+
+
+void UGridPlacedSubsystem::StartPlacement(TSubclassOf<APreviewObject> PreviewClass, APlayerController* ForPC, UBuildingCraftPanel* CraftPanel)
 {
+    if (GridWidgetClass == nullptr)
+    {
+        static const TCHAR* GridUIPath = TEXT("/Game/Grid/GridUI/GridPlacedUI.GridPlacedUI_C");
+        GridWidgetClass = TSoftClassPtr<UAWeekActivatableWidget>(FSoftClassPath(GridUIPath));
+    }
     if (!PreviewClass)
     {
         UE_LOG(LogTemp, Log, TEXT("Preview Object class is null"));
@@ -21,7 +31,7 @@ void UGridPlacedSubsystem::StartPlacement(TSubclassOf<APreviewObject> PreviewCla
     UE_LOG(LogTemp, Log, TEXT("Preview Object4"));
     // 기존 세션 종료
     StopPlacement();
-
+    BuildingCraftPanel = CraftPanel;
     OwnerPC = ForPC;
 
     // 프리뷰 스폰
@@ -31,24 +41,45 @@ void UGridPlacedSubsystem::StartPlacement(TSubclassOf<APreviewObject> PreviewCla
     PreviewActor = NewPreview;
     bActive = true;
     UE_LOG(LogTemp, Log, TEXT("Preview Object5"));
+
+    //UIWidget 스폰
+    if (UClass* Cls = GridWidgetClass.LoadSynchronous())   
+    {
+        EnsureGridUIShown(ForPC, Cls);                    
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Failed to load GridWidgetClass from path."));
+    }
+    
 }
 
+//Right Click
 void UGridPlacedSubsystem::StopPlacement()
 {
     bActive = false;
     ParentUnderCursor = nullptr;
-
+    
     if (PreviewActor.IsValid())
     {
         PreviewActor->Destroy();
         PreviewActor = nullptr;
     }
+    if (BuildingCraftPanel.IsValid())
+    {
+        //BuildingCraftPanel->OnDeactivated();
+        BuildingCraftPanel.Reset();
+    }
+    HideGridUI();
 }
-
+//LeftClick
 void UGridPlacedSubsystem::ConfirmPlacement()
 {
     if (!PreviewActor.IsValid()) return;
     PreviewActor->PlaceActor(ParentUnderCursor.Get());
+    //TODO Inventory Item Remove
+    BuildingCraftPanel->RemoveItem();
+    StopPlacement();
 }
 
 void UGridPlacedSubsystem::RotatePreview(float YawStepDeg)
@@ -118,3 +149,31 @@ void UGridPlacedSubsystem::Tick(float DeltaTime)
     if (!bActive) return;
     UpdatePreview();
 }
+
+void UGridPlacedSubsystem::EnsureGridUIShown(APlayerController* PC, TSubclassOf<UAWeekActivatableWidget> GridUIClass)
+{
+    
+    if (!PC) return;
+
+    if (GridUI.IsValid())
+    {
+        GridUI->ActivateWidget();           // 이미 레이어에 올라간 동일 인스턴스 활성화
+        return;
+    }
+
+    if (ULocalPlayer* LP = PC->GetLocalPlayer())
+    {
+        auto* Inst = UCommonUIExtensions::PushContentToLayer_ForPlayer(
+            LP, FGameplayTag::RequestGameplayTag(TEXT("UI.Layer.Game")), GridUIClass);
+        GridUI = Cast<UAWeekActivatableWidget>(Inst);  // 캐시
+    }
+}
+
+void UGridPlacedSubsystem::HideGridUI()
+{
+    if (GridUI.IsValid())
+    {
+        GridUI->DeactivateWidget();         // 숨김 (필요하면 Remove/Pop도 가능)
+    }
+}
+
