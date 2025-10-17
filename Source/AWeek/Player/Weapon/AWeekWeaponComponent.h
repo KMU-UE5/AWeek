@@ -10,12 +10,12 @@
 #include "AWeekWeaponComponent.generated.h"
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class AWEEK_API UAWeekWeaponComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	// Sets default values for this component's properties
 	UAWeekWeaponComponent();
 
@@ -38,17 +38,17 @@ protected:
 	float mDamage = 0;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	TObjectPtr<AActor>	mProjectile;
+	TObjectPtr<AActor> mProjectile;
 
 	bool bOutOfBullet = false;
 
 	int32 mCurrentBullet = 10;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	int32	mBulletMaxStack = 0;
+	int32 mBulletMaxStack = 0;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	int32	mBulletUsagePerSingle = 0;
+	int32 mBulletUsagePerSingle = 0;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	float mFireRate;
@@ -64,16 +64,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float mTimeSinceLastShot;
 
-
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	virtual void OnRegister() override;
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	FVector GetFireDirection();
 
-public:	
+public:
 	float GetWeaponDamage() { return mDamage; }
 	FVector GetMuzzleLocation() { return mWeapon->mMeshComponent->GetSocketLocation(FName("Muzzle")); }
 	FName GetWeaponKey() { return mWeaponKey; }
@@ -82,9 +82,10 @@ public:
 
 public:
 	void Fire();
+
 	bool StartFire()
 	{
-		// ÃÑ¾Ë ´Ù¾²¸é false ¸®ÅÏ
+		// ï¿½Ñ¾ï¿½ ï¿½Ù¾ï¿½ï¿½ï¿½ false ï¿½ï¿½ï¿½ï¿½
 		if (bOutOfBullet)
 			return false;
 		Fire();
@@ -92,12 +93,15 @@ public:
 		bIsFiring = true;
 		return true;
 	}
+
 	void EndFire()
 	{
 		bIsFiring = false;
 	}
+
 	void ChangeWeapon(FName WeaponKey);
 	void ChangeWeaponPos(FName SocketName);
+
 	void Reload()
 	{
 		mCurrentBullet = mBulletMaxStack;
@@ -106,4 +110,31 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSoftObjectPtr<UAWeekReticleDefinition> mReticleDefinition;
+
+private:
+	float BaseSpreadAngle = 0.0f;
+	float CurrentSpreadAngle = 0.0f;
+	float AdsSpreadAngle = 0.0f;
+	float MaxSpreadAngle = 0.0f;
+	float MinSpreadAngle = 0.0f;
+
+	float CurrentSpreadMultiplier = 0.0f;
+	float StandingSpreadMultiplier = 0.0f;
+	float JumpSpreadMultiplier = 0.0f;
+
+public:
+	float GetSpreadAngle() const
+	{
+		return CurrentSpreadAngle;
+	}
+
+	float GetSpreadMultiplier() const
+	{
+		return CurrentSpreadMultiplier;
+	}
+
+	float CalculateFinalSpreadAngle() const
+	{
+		return CurrentSpreadAngle * CurrentSpreadMultiplier;
+	}
 };
