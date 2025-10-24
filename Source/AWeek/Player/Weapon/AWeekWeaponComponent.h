@@ -115,31 +115,24 @@ public:
 	TSoftObjectPtr<UAWeekReticleDefinition> mReticleDefinition;
 
 private:
-	float BaseSpreadAngle = 0.0f;
-	float CurrentSpreadAngle = 0.0f;
-	float AdsSpreadAngle = 0.0f;
-	float MaxSpreadAngle = 0.0f;
-	float MinSpreadAngle = 0.0f;
-
-	float CurrentSpreadMultiplier = 0.0f;
-	float StandingSpreadMultiplier = 0.0f;
-	float JumpSpreadMultiplier = 0.0f;
+	FRangedWeaponInfo RangedWeaponInfo;
 public:
 	float GetSpreadAngle() const
 	{
-		return CurrentSpreadAngle;
+		return RangedWeaponInfo.CurrentSpreadAngle;
 	}
 
 	float GetSpreadMultiplier() const
 	{
-		return CurrentSpreadMultiplier;
+		return RangedWeaponInfo.CurrentSpreadMultiplier;
 	}
 
 	float CalculateFinalSpreadAngle() const
 	{
-		return CurrentSpreadAngle * CurrentSpreadMultiplier;
+		return RangedWeaponInfo.CurrentSpreadAngle * RangedWeaponInfo.CurrentSpreadMultiplier;
 	}
 
 	void TickSpread(float DeltaTime);
 	void TickMultipliers(float DeltaTime);
+	void AddSpreadHeat();
 };

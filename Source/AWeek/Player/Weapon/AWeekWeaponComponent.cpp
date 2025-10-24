@@ -132,6 +132,7 @@ void UAWeekWeaponComponent::ChangeWeaponPos(FName SocketName)
 
 void UAWeekWeaponComponent::TickSpread(float DeltaTime)
 {
+	float LastFireTimeSince = GetWorld()->TimeSince(mTimeSinceLastShot);
 }
 
 void UAWeekWeaponComponent::TickMultipliers(float DeltaTime)
@@ -139,14 +140,13 @@ void UAWeekWeaponComponent::TickMultipliers(float DeltaTime)
 	if (CharacterMovementComponent == nullptr)
 		return;
 	
-	static const float TransitSpeed = 5.0f;
+}
 
-	float MovementTargetMultiplier = FMath::GetMappedRangeValueClamped(
-		FVector2D(0.0f, CharacterMovementComponent->GetMaxSpeed()),
-		FVector2D(1.0f, 3.0f), mOwner->GetVelocity().Size());
-	
-	StandingSpreadMultiplier = FMath::FInterpTo(StandingSpreadMultiplier, MovementTargetMultiplier, DeltaTime, TransitSpeed);
-	CurrentSpreadMultiplier = StandingSpreadMultiplier;
+void UAWeekWeaponComponent::AddSpreadHeat()
+{
+	const float AddHeat = RangedWeaponInfo.HeatShotCurve.GetRichCurveConst()->Eval(RangedWeaponInfo.CurrentHeat);
+	RangedWeaponInfo.CurrentHeat = RangedWeaponInfo.ClampHeatRange(RangedWeaponInfo.CurrentHeat + AddHeat);
+	RangedWeaponInfo.CurrentSpreadAngle = RangedWeaponInfo.HeatToSpreadCurve.GetRichCurveConst()->Eval(RangedWeaponInfo.CurrentHeat);
 }
 
 // AWeekWeaponComponent.cpp
@@ -264,4 +264,6 @@ void UAWeekWeaponComponent::Fire()
 	{
 		bOutOfBullet = true;
 	}
+
+	AddSpreadHeat();
 }

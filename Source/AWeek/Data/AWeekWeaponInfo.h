@@ -15,16 +15,64 @@ enum class EWeaponType
 };
 
 USTRUCT(BlueprintType)
+struct FRangedWeaponInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FRuntimeFloatCurve HeatShotCurve;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FRuntimeFloatCurve HeatShotRecoveryCurve;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FRuntimeFloatCurve HeatToSpreadCurve;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(ClampMin="1.0", ClampMax="5.0", ForceUnits=x))
+	float JumpSpreadMultiplierNormal = 1.0f; // Jump시 곱해질 Spread Multiplier
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(ClampMin="1.0", ClampMax="5.0", ForceUnits=x))
+	float MoveSpreadMultiplierNormal = 1.0f; // Move시 곱해질 Spread Multiplier (1.0 ~ 서서히 증가)
+
+	float CurrentHeat = 0.0f;
+	
+	FRangedWeaponInfo()
+	{
+		HeatShotCurve.EditorCurveData.AddKey(0.0f, 1.0f);
+		HeatShotRecoveryCurve.EditorCurveData.AddKey(0.0f, 2.0f);
+	}
+
+	float ClampHeatRange(float HeatValue);
+	void ComputeHeatRange(const FRuntimeFloatCurve& RuntimeFloatCurve, float& MinTime, float& MaxTime);
+
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(ClampMin="1.0", ClampMax="5.0", ForceUnits=x))
+	float BaseSpreadAngle = 0.0f; // 초기 기본 Spraed Angle
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (Units = "deg"))
+	float BaseAdsSpreadAngle = 0.0f;
+
+
+	float CurrentSpreadAngle = 0.0f; // 현재 Spread Angle 
+	float MaxSpreadAngle = 6.0f;
+	float MinSpreadAngle = 3.0f;
+
+	float CurrentSpreadMultiplier = 0.0f;
+	float StandingSpreadMultiplier = 0.0f;
+	float JumpSpreadMultiplier = 0.0f;
+};
+
+USTRUCT(BlueprintType)
 struct FAWeekWeaponInfo : public FTableRowBase
 {
 	GENERATED_BODY()
 
 public:
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UStaticMesh>	Mesh;
+	TObjectPtr<UStaticMesh> Mesh;
 
 	UPROPERTY(EditAnywhere)
-	EWeaponType	WeaponType;
+	EWeaponType WeaponType;
 
 	UPROPERTY(EditAnywhere)
 	float Damage;
@@ -46,4 +94,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UAWeekReticleDefinition> ReticleDefinition;
+
+	UPROPERTY(EditAnywhere)
+	FRangedWeaponInfo RangedWeaponInfo;
 };
