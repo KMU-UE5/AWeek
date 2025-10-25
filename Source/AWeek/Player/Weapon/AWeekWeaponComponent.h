@@ -7,6 +7,7 @@
 #include "AWeekWeapon.h"
 #include "../../Data/AWeekWeaponInfo.h"
 #include "../../Character/AWeekPlayerCharacter.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "AWeekWeaponComponent.generated.h"
 
 
@@ -135,4 +136,5 @@ public:
 	void TickSpread(float DeltaTime);
 	void TickMultipliers(float DeltaTime);
 	void AddSpreadHeat();
+
 };

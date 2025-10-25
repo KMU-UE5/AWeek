@@ -29,6 +29,9 @@ struct FRangedWeaponInfo
 	FRuntimeFloatCurve HeatToSpreadCurve;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(ClampMin="0.0"))
+	float CenterBias;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(ClampMin="0.0"))
 	float HeatShotRecoveryDelay;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(ClampMin="1.0", ClampMax="5.0", ForceUnits=x))
@@ -45,22 +48,17 @@ struct FRangedWeaponInfo
 		HeatShotCurve.EditorCurveData.AddKey(0.0f, 1.0f);
 		HeatShotRecoveryCurve.EditorCurveData.AddKey(0.0f, 2.0f);
 	}
+	
+	static FVector GetRandomDirectionInCone(const FVector& Direction, float SpreadAngleDegree, float Bias = 0.0f, float SigmaScale = 1.0f);
 
 	float ClampHeatRange(float HeatValue);
 	void ComputeHeatRange(const FRuntimeFloatCurve& RuntimeFloatCurve, float& MinTime, float& MaxTime);
-
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(ClampMin="1.0", ClampMax="5.0", ForceUnits=x))
-	float BaseSpreadAngle = 0.0f; // 초기 기본 Spraed Angle
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (Units = "deg"))
-	float BaseAdsSpreadAngle = 0.0f;
-
-
-
+	
 	float CurrentSpreadMultiplier = 1.0f;
 	float StandingSpreadMultiplier = 0.0f;
 	float JumpSpreadMultiplier = 0.0f;
+
+	
 };
 
 USTRUCT(BlueprintType)

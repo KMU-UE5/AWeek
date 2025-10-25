@@ -172,6 +172,8 @@ FVector UAWeekWeaponComponent::GetFireDirection()
 	FVector CameraLocation, CameraDirection;
 	PC->DeprojectScreenPositionToWorld(ScreenCenter.X, ScreenCenter.Y, CameraLocation, CameraDirection);
 
+	const float FinalSpreadAngle = CalculateFinalSpreadAngle();
+	CameraDirection = FRangedWeaponInfo::GetRandomDirectionInCone(CameraDirection, FinalSpreadAngle,  RangedWeaponInfo.CenterBias);
 	return CameraDirection;
 }
 
