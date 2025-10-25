@@ -45,14 +45,12 @@ void UAWeekWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	if (mWeaponType == EWeaponType::Ranged)
 	{
+		mTimeSinceLastShot += DeltaTime;
 		TickSpread(DeltaTime);
 		TickMultipliers(DeltaTime);
 	}
 	if (bIsFiring && mCurrentBullet > 0 && mWeaponType == EWeaponType::Ranged)
 	{
-
-		mTimeSinceLastShot += DeltaTime;
-
 		// �߻� ���� ��� (RPS)
 		float FireInterval = 1.f / mFireRate;
 
@@ -133,8 +131,7 @@ void UAWeekWeaponComponent::ChangeWeaponPos(FName SocketName)
 
 void UAWeekWeaponComponent::TickSpread(float DeltaTime)
 {
-	float LastFireTimeSince = GetWorld()->TimeSince(mTimeSinceLastShot);
-	if (LastFireTimeSince >= RangedWeaponInfo.HeatShotRecoveryDelay)
+	if (mTimeSinceLastShot >= RangedWeaponInfo.HeatShotRecoveryDelay)
 	{
 		const float RecoveryHeat = RangedWeaponInfo.HeatShotRecoveryCurve.GetRichCurveConst()->Eval(RangedWeaponInfo.CurrentHeat);
 		const float NewHeat = RangedWeaponInfo.CurrentHeat - (RecoveryHeat * DeltaTime);

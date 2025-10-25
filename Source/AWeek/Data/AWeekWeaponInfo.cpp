@@ -17,8 +17,9 @@ float FRangedWeaponInfo::ClampHeatRange(float HeatValue)
 
 	ComputeHeatRange(HeatToSpreadCurve, MinTime, MaxTime);
 	MinHeat = FMath::Min(MinHeat, MinTime);
-	MaxHeat = FMath::Max(MaxHeat, MinTime);
+	MaxHeat = FMath::Max(MaxHeat, MaxTime);
 
+	UE_LOG(LogTemp, Warning, TEXT("Min: %f, Max: %f"), MinHeat, MaxHeat);
 	return FMath::Clamp(HeatValue, MinHeat, MaxHeat);
 }
 
