@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DetourCrowdAIController.h"
+#include "AIController.h"
 #include "BaseEnemyAIController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class AWEEK_API ABaseEnemyAIController : public ADetourCrowdAIController
+class AWEEK_API ABaseEnemyAIController : public AAIController
 {
 	GENERATED_BODY()
 public:
@@ -20,9 +20,12 @@ public:
 	void SetBlackboardValues();
 
 public:
+	ABaseEnemyAIController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	virtual void BeginPlay() override;
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName AttackTargetKeyName = "AttackTarget";
-
+	
 public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	UBehaviorTree* BTAsset;
