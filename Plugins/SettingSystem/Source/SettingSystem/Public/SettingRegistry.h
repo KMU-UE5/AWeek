@@ -21,7 +21,7 @@ public:
 	FOnSettingChanged OnSettingChanged;
 
 public:
-	void Init(ULocalPlayer* InLocalPlayer);
+	virtual void Init(ULocalPlayer* InLocalPlayer);
 	virtual void Apply();
 
 	void RegisterSetting(USettingItem* Setting);
