@@ -6,14 +6,15 @@
 #include "CommonUIExtensions.h"
 #include "AWeek/UI/AWeekActivatableWidget.h"
 #include "AWeek/UI/MainWidget/Panel/BuildingCraftPanel.h"
+#include "AWeek/UI/Building/PreviewObjectWidget.h"
 
 
 void UGridPlacedSubsystem::StartPlacement(TSubclassOf<APreviewObject> PreviewClass, APlayerController* ForPC, UBuildingCraftPanel* CraftPanel)
 {
     if (GridWidgetClass == nullptr)
     {
-        static const TCHAR* GridUIPath = TEXT("/Game/Grid/GridUI/GridPlacedUI.GridPlacedUI_C");
-        GridWidgetClass = TSoftClassPtr<UAWeekActivatableWidget>(FSoftClassPath(GridUIPath));
+        static const TCHAR* GridUIPath = TEXT("/Game/Grid/GridUI/WBP_PreviewObjectWidget.WBP_PreviewObjectWidget_C");
+        GridWidgetClass = TSoftClassPtr<UPreviewObjectWidget>(FSoftClassPath(GridUIPath));
     }
     if (!PreviewClass)
     {
@@ -82,6 +83,7 @@ void UGridPlacedSubsystem::ConfirmPlacement()
     StopPlacement();
 }
 
+//R
 void UGridPlacedSubsystem::RotatePreview(float YawStepDeg)
 {
     if (!PreviewActor.IsValid()) return;
@@ -150,7 +152,7 @@ void UGridPlacedSubsystem::Tick(float DeltaTime)
     UpdatePreview();
 }
 
-void UGridPlacedSubsystem::EnsureGridUIShown(APlayerController* PC, TSubclassOf<UAWeekActivatableWidget> GridUIClass)
+void UGridPlacedSubsystem::EnsureGridUIShown(APlayerController* PC, TSubclassOf<UPreviewObjectWidget> GridUIClass)
 {
     
     if (!PC) return;
@@ -165,7 +167,7 @@ void UGridPlacedSubsystem::EnsureGridUIShown(APlayerController* PC, TSubclassOf<
     {
         auto* Inst = UCommonUIExtensions::PushContentToLayer_ForPlayer(
             LP, FGameplayTag::RequestGameplayTag(TEXT("UI.Layer.Game")), GridUIClass);
-        GridUI = Cast<UAWeekActivatableWidget>(Inst);  // 캐시
+        GridUI = Cast<UPreviewObjectWidget>(Inst);  // 캐시
     }
 }
 

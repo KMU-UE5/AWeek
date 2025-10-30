@@ -224,6 +224,11 @@ void AAWeekPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 		EnhancedInput->BindAction(InputCDO->mMainWidget, ETriggerEvent::Triggered,
 			this, &AAWeekPlayerCharacter::ToggleMainWidget);
 
+		EnhancedInput->BindAction(InputCDO->mPreviewRotateL, ETriggerEvent::Triggered,
+			this, &AAWeekPlayerCharacter::WheelDownPreviewObject);
+		EnhancedInput->BindAction(InputCDO->mPreviewRotateR, ETriggerEvent::Triggered,
+			this, &AAWeekPlayerCharacter::WheelUpPreviewObject);
+
 		EnhancedInput->BindAction(InputCDO->mAttack, ETriggerEvent::Completed,
 			this, &AAWeekPlayerCharacter::EndFire);
 
@@ -708,6 +713,17 @@ void AAWeekPlayerCharacter::ToggleMainWidget()
 {
 	UIManager->ToggleMainWidget();
 }
+
+void AAWeekPlayerCharacter::WheelDownPreviewObject()
+{
+	UIManager->PreviewObjectRotateL();	
+}
+
+void AAWeekPlayerCharacter::WheelUpPreviewObject()
+{
+	UIManager->PreviewObjectRotateR();
+}
+
 
 void AAWeekPlayerCharacter::DropItemFromItemSlot(const FAWeekInventorySlotData& ItemSlot, const int32 QuantityToDrop)
 {

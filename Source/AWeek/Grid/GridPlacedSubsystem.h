@@ -15,6 +15,7 @@
  */
 class UAWeekActivatableWidget;
 class UBuildingCraftPanel;
+class UPreviewObjectWidget;
 UCLASS()
 class AWEEK_API UGridPlacedSubsystem : public UWorldSubsystem, public FTickableGameObject
 {
@@ -45,7 +46,7 @@ private:
 
 	TSoftClassPtr<UAWeekActivatableWidget> GridWidgetClass;
 
-	void EnsureGridUIShown(APlayerController* PC, TSubclassOf<UAWeekActivatableWidget> GridUIClass);
+	void EnsureGridUIShown(APlayerController* PC, TSubclassOf<UPreviewObjectWidget> GridUIClass);
 	void HideGridUI();
 	TWeakObjectPtr<UAWeekActivatableWidget> GridUI;
 	TWeakObjectPtr<UBuildingCraftPanel> BuildingCraftPanel;

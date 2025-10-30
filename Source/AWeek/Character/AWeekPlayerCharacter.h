@@ -235,6 +235,9 @@ public:
 	void ToggleCraftingMainPanel();
 	void CloseCraftingMainPanel();
 
+	void WheelUpPreviewObject();
+	void WheelDownPreviewObject();
+
 public:
 	// =====================================================
 	// INVENTORY SYSTEM

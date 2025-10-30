@@ -16,6 +16,7 @@
 #include "AWeek/Data/AWeekUIDataAsset.h"
 #include "AWeek/Components/AWeekCraftingComponent.h"
 #include "AWeek/Grid/GridPlacedSubsystem.h"
+#include "AWeek/UI/Building/PreviewObjectWidget.h"
 
 UAWeekGameUIManager::UAWeekGameUIManager()
 {
@@ -174,6 +175,23 @@ void UAWeekGameUIManager::ToggleMainWidget()
 		PlayerController->SetShowMouseCursor(false);
 	}
 }
+
+void UAWeekGameUIManager::PreviewObjectRotateL()
+{
+	if (!IsValid(PreviewObjectWidget) || !PreviewObjectWidget->IsActivated())
+	{
+		
+	}
+}
+
+void UAWeekGameUIManager::PreviewObjectRotateR()
+{
+	if (!IsValid(PreviewObjectWidget) || !PreviewObjectWidget->IsActivated())
+	{
+		
+	}
+}
+
 
 
 
