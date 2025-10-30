@@ -31,25 +31,27 @@ void UPreviewObjectWidget::NativeOnActivated()
 		}
 	}
 
-	if (LeftClickBindingHandle.IsValid())
+	/*if (LeftClickBindingHandle.IsValid())
 	{
+		UE_LOG(LogTemp, Log, TEXT("adsfasdfasdf1"));
 		RemoveActionBinding(LeftClickBindingHandle);
 		LeftClickBindingHandle = FUIActionBindingHandle();
 	}
 	if (RightClickBindingHandle.IsValid())
 	{
+		UE_LOG(LogTemp, Log, TEXT("adsfasdfasdf2"));
 		RemoveActionBinding(RightClickBindingHandle);
 		RightClickBindingHandle = FUIActionBindingHandle();
-	}
-	const FUIActionTag LTag = FUIActionTag::TryConvert(FGameplayTag::RequestGameplayTag(TEXT("UI.Action.LeftClick"), /*bErrorIfNotFound*/false));
-	const FUIActionTag RTag = FUIActionTag::TryConvert(FGameplayTag::RequestGameplayTag(TEXT("UI.Action.RightClick"), /*bErrorIfNotFound*/false));
+	}*/
+	/*const FUIActionTag LTag = FUIActionTag::TryConvert(FGameplayTag::RequestGameplayTag(TEXT("UI.Action.LeftClick"), /*bErrorIfNotFound#1#false));
+	const FUIActionTag RTag = FUIActionTag::TryConvert(FGameplayTag::RequestGameplayTag(TEXT("UI.Action.RightClick"), /*bErrorIfNotFound#1#false));*/
 
-	if (!LTag.IsValid() || !RTag.IsValid())
+	/*if (!LTag.IsValid() || !RTag.IsValid())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PreviewWidget: UI Action Tag not valid (Left:%d Right:%d)"), LTag.IsValid(), RTag.IsValid());
 		// 태그 매핑이 아직이면 조용히 리턴
 		return;
-	}
+	}*/
 	
 
 	UE_LOG(LogTemp, Log, TEXT("PreviewWidget click handler Binding!! a"))
@@ -67,17 +69,17 @@ void UPreviewObjectWidget::NativeOnActivated()
 	FBindUIActionArgs ArgsWheelUp(FUIActionTag::ConvertChecked(FGameplayTag::RequestGameplayTag(TEXT("UI.Action.WheelUp"))),
 		false,
 		FSimpleDelegate::CreateUObject(this, &UPreviewObjectWidget::RotateR));
-	RightClickBindingHandle = RegisterUIActionBinding(ArgsWheelUp);
+	WheelUpBindingHandle = RegisterUIActionBinding(ArgsWheelUp);
 
 	FBindUIActionArgs ArgsWheelDown(FUIActionTag::ConvertChecked(FGameplayTag::RequestGameplayTag(TEXT("UI.Action.WheelDown"))),
 		false,
 		FSimpleDelegate::CreateUObject(this, &UPreviewObjectWidget::RotateL));
-	RightClickBindingHandle = RegisterUIActionBinding(ArgsWheelDown);
+	WheelDownBindingHandle = RegisterUIActionBinding(ArgsWheelDown);
 }
 
 void UPreviewObjectWidget::NativeOnDeactivated()
 {
-	Super::NativeOnDeactivated();
+	
 
 	//TODO Active Atack
 	/*if (ULocalPlayer* LP = GetOwningLocalPlayer())
@@ -104,6 +106,7 @@ void UPreviewObjectWidget::NativeOnDeactivated()
 		RemoveActionBinding(RightClickBindingHandle);
 		RightClickBindingHandle = FUIActionBindingHandle();
 	}*/
+	Super::NativeOnDeactivated();
 }
 
 void UPreviewObjectWidget::SetupBuilding()

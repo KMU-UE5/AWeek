@@ -190,11 +190,11 @@ void UTurretComponent::UpdateAim(float DT)
 	const float NextYaw    = FMath::FixedTurn(CurYaw, DesYaw, YawStepDeg);
 	Yaw->SetWorldRotation(FRotator(0.f, NextYaw, 0.f));
 
-	UE_LOG(LogTemp, Log,
+	/*UE_LOG(LogTemp, Log,
 		TEXT("[Turret][Yaw] cur=%.2f -> next=%.2f (des=%.2f, step=%.2f, delta=%.2f) target=%s"),
 		CurYaw, NextYaw, DesYaw, YawStepDeg,
 		FMath::FindDeltaAngleDegrees(CurYaw, DesYaw),
-		CurrentTarget.IsValid() ? *CurrentTarget->GetName() : TEXT("None"));
+		CurrentTarget.IsValid() ? *CurrentTarget->GetName() : TEXT("None"));*/
 
 	// --- Pitch ---
 	const float PitchStepDeg = PitchSpeedDegPerSec * DT;
@@ -204,12 +204,12 @@ void UTurretComponent::UpdateAim(float DT)
 	// Yaw는 YawPivot이 책임지고 있으니, PitchPivot은 Pitch만 변경
 	Pitch->SetWorldRotation(FRotator(NextPitch, Pitch->GetComponentRotation().Yaw, 0.f));
 
-	UE_LOG(LogTemp, Log,
+	/*UE_LOG(LogTemp, Log,
 		TEXT("[Turret][Pitch] cur=%.2f -> next=%.2f (des=%.2f, step=%.2f, delta=%.2f, clamp=[%.2f..%.2f]) target=%s"),
 		CurPitch, NextPitch, DesPitch, PitchStepDeg,
 		FMath::FindDeltaAngleDegrees(CurPitch, DesPitch),
 		MinPitch, MaxPitch,
-		CurrentTarget.IsValid() ? *CurrentTarget->GetName() : TEXT("None"));
+		CurrentTarget.IsValid() ? *CurrentTarget->GetName() : TEXT("None"));*/
 }
 bool UTurretComponent::IsValidTarget(const APawn* A) const
 {
