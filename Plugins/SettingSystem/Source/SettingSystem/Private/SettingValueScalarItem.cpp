@@ -55,3 +55,13 @@ void USettingValueScalarItem::SetMaxValue(double InMaxValue)
 {
 	MaxValue = InMaxValue;
 }
+
+void USettingValueScalarItem::SetGetter(const TSharedRef<FSettingPropertyResolver>& InGetter)
+{
+	Getter = InGetter;
+}
+
+void USettingValueScalarItem::SetSetter(const TSharedRef<FSettingPropertyResolver>& InSetter)
+{
+	Setter = InSetter;
+}

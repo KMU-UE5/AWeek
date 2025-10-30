@@ -7,6 +7,7 @@
 #include "Engine/LocalPlayer.h"
 #include "AWeekLocalPlayer.generated.h"
 
+class UAWeekGameUserSettings;
 /**
  * 
  */
@@ -16,4 +17,6 @@ class AWEEK_API UAWeekLocalPlayer : public UCommonLocalPlayer
 	GENERATED_BODY()
 public:
 	UAWeekLocalPlayer(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	UAWeekGameUserSettings* GetGameUserSettings();
 };

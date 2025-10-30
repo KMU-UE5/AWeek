@@ -25,6 +25,9 @@ public:
 	void SetMinValue(double InMinValue);
 	void SetMaxValue(double InMaxValue);
 
+	void SetGetter(const TSharedRef<FSettingPropertyResolver>& InGetter);
+	void SetSetter(const TSharedRef<FSettingPropertyResolver>& InSetter);
+
 private:
 	TOptional<double> DefaultValue;
 	double InitialValue;

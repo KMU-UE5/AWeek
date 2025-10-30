@@ -3,6 +3,11 @@
 
 #include "AWeekGameUserSettings.h"
 
+UAWeekGameUserSettings* UAWeekGameUserSettings::Get()
+{
+	return CastChecked<UAWeekGameUserSettings>(GEngine->GetGameUserSettings());
+}
+
 float UAWeekGameUserSettings::GetOverallVolume() const
 {
 	return OverallVolume;

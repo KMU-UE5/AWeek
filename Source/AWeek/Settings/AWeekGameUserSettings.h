@@ -14,6 +14,8 @@ class AWEEK_API UAWeekGameUserSettings : public UGameUserSettings
 {
 	GENERATED_BODY()
 public:
+	static UAWeekGameUserSettings* Get();
+	
 	UFUNCTION()
 	float GetOverallVolume() const;
 	UFUNCTION()
