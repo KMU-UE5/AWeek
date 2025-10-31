@@ -27,13 +27,16 @@ void USettingValueScalarItem::SetValue(double InValue)
 {
 	if (MinValue.IsSet())
 	{
-		InValue = FMath::Min(InValue, MinValue.GetValue());
+		InValue = FMath::Max(InValue, MinValue.GetValue());
 	}
 
 	if (MaxValue.IsSet())
 	{
-		InValue = FMath::Max(InValue, MaxValue.GetValue());
+		InValue = FMath::Min(InValue, MaxValue.GetValue());
 	}
+
+	const FString ValueString = LexToString(InValue);
+	Setter->SetValue(ValueString);
 }
 
 double USettingValueScalarItem::GetValue()
