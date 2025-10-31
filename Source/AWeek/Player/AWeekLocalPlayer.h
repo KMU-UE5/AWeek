@@ -18,5 +18,6 @@ class AWEEK_API UAWeekLocalPlayer : public UCommonLocalPlayer
 public:
 	UAWeekLocalPlayer(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	UFUNCTION(BlueprintCallable)
 	UAWeekGameUserSettings* GetGameUserSettings();
 };

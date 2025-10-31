@@ -27,8 +27,10 @@ class AWEEK_API UAWeekAudioSubsystem : public UWorldSubsystem
 
 public:
 	virtual void PostInitialize() override;
-
+	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
+	
 	void SetSoundVolume(ESoundChannel Channel, float Volume = 1.0f);
+	
 private:
 	void RegisterSoundClass(ESoundChannel SoundType, const FSoftObjectPath& SoftObjectPath);
 

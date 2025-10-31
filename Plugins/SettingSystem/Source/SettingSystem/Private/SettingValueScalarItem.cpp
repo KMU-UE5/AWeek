@@ -37,6 +37,8 @@ void USettingValueScalarItem::SetValue(double InValue)
 
 	const FString ValueString = LexToString(InValue);
 	Setter->SetValue(ValueString);
+
+	NotifySettingChanged();
 }
 
 double USettingValueScalarItem::GetValue()

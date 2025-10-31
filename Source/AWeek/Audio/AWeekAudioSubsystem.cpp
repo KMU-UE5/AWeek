@@ -32,9 +32,19 @@ void UAWeekAudioSubsystem::PostInitialize()
 	}
 }
 
+void UAWeekAudioSubsystem::OnWorldBeginPlay(UWorld& InWorld)
+{
+	Super::OnWorldBeginPlay(InWorld);
+
+	check(DefaultSoundMix);
+	
+	UGameplayStatics::SetBaseSoundMix(&InWorld, DefaultSoundMix);
+	UGameplayStatics::PushSoundMixModifier(&InWorld, DefaultSoundMix);
+}
+
 void UAWeekAudioSubsystem::SetSoundVolume(const ESoundChannel Channel, const float Volume)
 {
-	if (TObjectPtr<USoundClass>* SoundClass = SoundClasses.Find(Channel))
+	if (const TObjectPtr<USoundClass>* SoundClass = SoundClasses.Find(Channel))
 	{
 		UGameplayStatics::SetSoundMixClassOverride(
 			GetWorld(),

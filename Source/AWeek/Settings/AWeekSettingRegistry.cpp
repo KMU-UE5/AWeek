@@ -17,9 +17,9 @@
 
 void UAWeekSettingRegistry::Init(ULocalPlayer* InLocalPlayer)
 {
-	
 	Super::Init(InLocalPlayer);
 
+	OwningLocalPlayer = InLocalPlayer;
 	AudioSetting = RegisterAudioSetting();
 	RootSettings.Add(AudioSetting);
 }
