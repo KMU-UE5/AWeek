@@ -35,7 +35,6 @@ void USettingWidgetMain::SetPanelSetting(FName DevName)
 {
 	USettingItem* Setting = Registry->FindByRootSettingDevName(DevName);
 	Panel->RefreshSetting(Setting);
-	// Panel에 정리
 }
 
 void USettingWidgetMain::HandleSettingChanged(USettingItem* Setting)

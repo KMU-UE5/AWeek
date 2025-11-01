@@ -6,6 +6,7 @@
 #include "CommonListView.h"
 #include "SettingListView.generated.h"
 
+class USettingWidgetTypeData;
 /**
  * 
  */
@@ -15,4 +16,8 @@ class SETTINGSYSTEM_API USettingListView : public UCommonListView
 	GENERATED_BODY()
 
 	virtual TSubclassOf<UUserWidget> GetDesiredEntryClassForItem(UObject* Item) const override;
+
+public:
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<USettingWidgetTypeData> WidgetTypeData;
 };
