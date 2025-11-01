@@ -25,6 +25,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void Cancel();
 
+	UFUNCTION(BlueprintCallable)
+	void SetPanelSetting(FName DevName);
+
 	UFUNCTION(BlueprintImplementableEvent)
 	USettingRegistry* CreateRegistry();
 

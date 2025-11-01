@@ -30,6 +30,13 @@ void USettingWidgetMain::Cancel()
 	ChangeDirtyState(false);
 }
 
+void USettingWidgetMain::SetPanelSetting(FName DevName)
+{
+	USettingItem* Setting = Registry->FindByRootSettingDevName(DevName);
+
+	// Panel에 정리
+}
+
 void USettingWidgetMain::HandleSettingChanged(USettingItem* Setting)
 {
 	ChangeDirtyState(true);

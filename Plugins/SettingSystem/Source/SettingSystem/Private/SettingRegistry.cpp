@@ -53,6 +53,19 @@ void USettingRegistry::InitSetting(USettingItem* Setting)
 	}
 }
 
+USettingItem* USettingRegistry::FindByRootSettingDevName(const FName& DevName)
+{
+	for (USettingItem* Setting: RootSettings)
+	{
+		if (Setting->GetDevName() == DevName)
+		{
+			return Setting;
+		}
+	}
+
+	return nullptr;
+}
+
 void USettingRegistry::HandleSettingChanged(USettingItem* Setting)
 {
 	DirtySettings.Add(FObjectKey(Setting), Setting);
