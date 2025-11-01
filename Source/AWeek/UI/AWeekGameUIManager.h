@@ -6,6 +6,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "AWeekGameUIManager.generated.h"
 
+class UAWeekInventoryController;
 class UAWeekCraftingComponent;
 class UAWeekCraftingMainPanel;
 class UAWeekUIDataAsset;
@@ -20,6 +21,7 @@ class UAWeekHeldItem;
 class UAWeekItemBase;
 struct FAWeekInventorySlotData;
 class AAWeekPlayerCharacter;
+class UAWeekCraftingController;
 
 /**
  * 
@@ -37,20 +39,14 @@ class AWEEK_API UAWeekGameUIManager : public UGameInstanceSubsystem
 	//	PROPERTIES & VARIABLES
 	//================================================================
 
-
-	//UPROPERTY(EditDefaultsOnly, Category = "Widgets")
-	//TSubclassOf<UUserWidget> CrosshairWidgetClass;
-
 	//================================================================
 	//	FUNCTIONS
 	//================================================================
 
 public:
 	UAWeekGameUIManager();
-
 	
-	
-	void InitializeUIManager();
+	void InitializeUIManager(TObjectPtr<AAWeekPlayerCharacter> InPlayerCharacter);
 	
 	void ToggleInventoryMainPanel();
 	void ToggleMainWidget();
@@ -69,32 +65,27 @@ public:
 
 	void HideCraftingMainPanel();
 	
-	// held item functions
-	FORCEINLINE bool IsHoldingItem() const;
-	FORCEINLINE void SetHeldItem(TObjectPtr<UAWeekHeldItem> NewHeldItem) { HeldItem = NewHeldItem; }
-	void UpdateHeldItemPosition(FVector2D NewPosition);
-
-	// inventory slot delegates
-	void HandleItemSlotLeftClick(int32 ClickedItemSlotIndex, TObjectPtr<UAWeekInventoryComponent> OwningInventory);
-	void HandleItemSlotRightClick(int32 ClickedItemSlotIndex, TObjectPtr<UAWeekInventoryComponent> OwningInventory);
-	void HandleItemSlotShiftLeftClick(const FAWeekInventorySlotData& ClickedItemSlot) const;
+	FORCEINLINE UAWeekInventoryController* GetInventoryController() const { return InventoryController; }
+	FORCEINLINE AAWeekPlayerCharacter* GetPlayerCharacter() const { return PlayerCharacter; }
+	FORCEINLINE AAWeekPlayerController* GetPlayerContoller() const { return PlayerController; }
 protected:
 	//================================================================
 	//	PROPERTIES & VARIABLES
 	//================================================================
-	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
-	TSubclassOf<UAWeekHeldItemVisual> HeldItemVisualClass;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	UPROPERTY(EditDefaultsOnly, Category = "UI Classes")
 	TSubclassOf<UAWeekInventoryMainPanel> InventoryMainPanelClass;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	UPROPERTY(EditDefaultsOnly, Category = "UI Classes")
 	TSubclassOf<UAWeekInteractionWidget> InteractionWidgetClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	UPROPERTY(EditDefaultsOnly, Category = "UI Classes")
 	TSubclassOf<UAWeekCraftingMainPanel> CraftingMainPanelClass;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	UPROPERTY(EditDefaultsOnly, Category = "UI Classes")
+	TSubclassOf<UAWeekHeldItemVisual> HeldItemVisualClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI Classes")
 	TSubclassOf<UMainUIWidget> MainUIWidgetClass;
 	UPROPERTY()
 	TObjectPtr<UMainUIWidget> MainUIWidget;
@@ -115,16 +106,10 @@ protected:
 	TObjectPtr<ULocalPlayer> LocalPlayer;
 
 	UPROPERTY()
-	TObjectPtr<AAWeekPlayerController> PlayerController;
+	TObjectPtr<AAWeekPlayerCharacter> PlayerCharacter;
 
 	UPROPERTY()
-	TObjectPtr<UAWeekHeldItem> HeldItem;
-
-	//================================================================
-	//	FUNCTIONS
-	//================================================================
-	void MergeItem(int32 TargetSlotIndex, TObjectPtr<UAWeekInventoryComponent> OwningInventory);
-	void CreateHeldItem(TObjectPtr<UAWeekItemBase> NewHeldItem, TObjectPtr<UAWeekInventoryComponent> SourceInventory, int32 SourceItemSlotIndex);
+	TObjectPtr<AAWeekPlayerController> PlayerController;
 
 	void ShowInventoryMainPanel();
 	void ShowMainWidget();
@@ -141,4 +126,10 @@ private:
     
 	UPROPERTY()
 	UAWeekUIDataAsset* UIDataAsset;
+
+	UPROPERTY(VisibleAnywhere, Category = "Controller")
+	TObjectPtr<UAWeekInventoryController> InventoryController;
+
+	UPROPERTY(VisibleAnywhere, Category = "Controller")
+	TObjectPtr<UAWeekCraftingController> CraftingController;
 };

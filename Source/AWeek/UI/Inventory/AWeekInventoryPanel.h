@@ -31,7 +31,7 @@ public:
 	FORCEINLINE UAWeekInventoryComponent* GetInventory() { return Inventory; }
 	UFUNCTION()
 	void RefreshInventory();
-	void LinkToInventory(TObjectPtr<UAWeekInventoryComponent> InputInventory, TObjectPtr<AAWeekPlayerCharacter> InputCharacter = nullptr);
+	void LinkToInventory(TObjectPtr<UAWeekInventoryComponent> InInventory, TObjectPtr<AAWeekPlayerCharacter> InCharacter = nullptr);
 	void UnlinkFromInventory();
 
 protected:

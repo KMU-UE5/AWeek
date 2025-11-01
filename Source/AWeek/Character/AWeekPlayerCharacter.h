@@ -21,6 +21,7 @@
 #include "AWeekPlayerCharacter.generated.h"
 
 
+class UAWeekLootComponent;
 class AAWeekPlayerController;
 class UAWeekCraftingComponent;
 class UAWeekGameUIManager;
@@ -145,9 +146,15 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Character | Inventory")
 	TObjectPtr<UAWeekInventoryComponent> PlayerInventoryComponent;
 
+	UPROPERTY(VisibleAnywhere, Category = "Character | Inventory")
+	TObjectPtr<UAWeekInventoryComponent> ChestInventoryComponent;
+	
 	UPROPERTY(VisibleAnywhere, Category = "Character | Crafting")
 	TObjectPtr<UAWeekCraftingComponent> CraftingComponent;
-	
+
+	// =====================================================
+	// INTERACTION
+	// ====================================================
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float InteractionCheckFrequency;
 
@@ -234,6 +241,12 @@ public:
 	void CloseChestInventory();
 	void ToggleCraftingMainPanel();
 	void CloseCraftingMainPanel();
+
+	FORCEINLINE void SetChestInventoryComponent(const TObjectPtr<UAWeekInventoryComponent> InChestInventoryComponent)
+	{
+		ChestInventoryComponent = InChestInventoryComponent;
+	}
+	FORCEINLINE UAWeekInventoryComponent* GetChestInventoryComponent() const { return ChestInventoryComponent;}
 
 public:
 	// =====================================================

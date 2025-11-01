@@ -15,17 +15,20 @@
 #include "AWeek/Player/AWeekPlayerController.h"
 #include "AWeek/Data/AWeekUIDataAsset.h"
 #include "AWeek/Components/AWeekCraftingComponent.h"
+#include "Controller/AWeekInventoryController.h"
+#include "Controller/AWeekCraftingController.h"
 
 UAWeekGameUIManager::UAWeekGameUIManager()
 {
 	UIDataAssetPath = FSoftObjectPath(TEXT("/Game/Data/UI/UA_UIClassSettings.UA_UIClassSettings"));
 }
 
-void UAWeekGameUIManager::InitializeUIManager()
+void UAWeekGameUIManager::InitializeUIManager(const TObjectPtr<AAWeekPlayerCharacter> InPlayerCharacter)
 {
 	PlayerController = Cast<AAWeekPlayerController>(GetWorld()->GetFirstPlayerController());
 	LocalPlayer = PlayerController->GetLocalPlayer();
-
+	PlayerCharacter = InPlayerCharacter;
+	
 	if (UIDataAssetPath.IsValid())
 	{
 		UIDataAsset = Cast<UAWeekUIDataAsset>(UIDataAssetPath.TryLoad());
@@ -47,7 +50,15 @@ void UAWeekGameUIManager::InitializeUIManager()
 		}
 	}
 
-	ensure(InventoryMainPanelClass);
+	// Create UI Controllers
+	InventoryController = NewObject<UAWeekInventoryController>(this, UAWeekInventoryController::StaticClass());
+	InventoryController->InitializeInventoryController(this, HeldItemVisualClass);
+
+	CraftingController = NewObject<UAWeekCraftingController>(this, UAWeekCraftingController::StaticClass());
+	CraftingController->InitializeCraftingController(this,
+		PlayerCharacter->GetCraftingComponent(),
+		PlayerCharacter->GetPlayerInventoryComponent());
+	
 	if (InventoryMainPanelClass)
 	{
 		InventoryMainPanelWidget = Cast<UAWeekInventoryMainPanel, UCommonActivatableWidget>(
@@ -93,11 +104,7 @@ void UAWeekGameUIManager::HideInventoryMainPanel()
 	if (InventoryMainPanelWidget)
 	{
 		InventoryMainPanelWidget->DeactivateWidget();
-		if (IsHoldingItem())
-		{
-			HeldItem->ReturnHeldItemToInventory();
-			HeldItem = nullptr;
-		}
+		InventoryController->ReturnHeldItemToInventory();
 	}
 }
 
@@ -106,11 +113,7 @@ void UAWeekGameUIManager::HideMainWidget()
 	if (MainUIWidget)
 	{
 		MainUIWidget->DeactivateWidget();
-		if (IsHoldingItem())
-		{
-			HeldItem->ReturnHeldItemToInventory();
-			HeldItem = nullptr;
-		}
+		InventoryController->ReturnHeldItemToInventory();
 	}
 }
 
@@ -123,7 +126,7 @@ void UAWeekGameUIManager::ShowCraftingMainPanel(const TObjectPtr<UAWeekCraftingC
 			UCommonUIExtensions::PushContentToLayer_ForPlayer(LocalPlayer,
 				FGameplayTag::RequestGameplayTag("UI.Layer.GameMenu"), CraftingMainPanelClass));
 		CraftingComponent->UpdateInventoryCounts();
-		CraftingMainPanelWidget->InitializeCraftingMainPanel(CraftingComponent, InventoryComponent);
+		CraftingMainPanelWidget->InitializeCraftingMainPanel(CraftingController, InventoryComponent);
 	}
 }
 
@@ -251,175 +254,22 @@ void UAWeekGameUIManager::UpdateInteractionWidget(const FAWeekInteractableData* 
 	}
 }
 
-void UAWeekGameUIManager::ActivateChestInventory(TObjectPtr<UAWeekInventoryComponent> ChestInventory) const
+void UAWeekGameUIManager::ActivateChestInventory(const TObjectPtr<UAWeekInventoryComponent> ChestInventory) const
 {
+	PlayerCharacter->SetChestInventoryComponent(ChestInventory);
 	InventoryMainPanelWidget->ActivateChestInventory(ChestInventory);
 }
 
 void UAWeekGameUIManager::DeactivateChestInventory()
 {
-	if (IsHoldingItem())
+	PlayerCharacter->SetChestInventoryComponent(nullptr);
+	
+	if (InventoryController->IsHoldingItem())
 	{
-		if (HeldItem->GetSourceInventory() == InventoryMainPanelWidget->GetChestInventoryComponent())
+		if (InventoryController->GetHeldItem()->GetSourceInventory() == InventoryMainPanelWidget->GetChestInventoryComponent())
 		{
-			HeldItem->ReturnHeldItemToInventory();
-			HeldItem = nullptr;
+			InventoryController->ReturnHeldItemToInventory();
 		}
 	}
 	InventoryMainPanelWidget->DeActivateChestInventory();
-}
-
-bool UAWeekGameUIManager::IsHoldingItem() const
-{
-	return IsValid(HeldItem);
-}
-
-void UAWeekGameUIManager::UpdateHeldItemPosition(FVector2D NewPosition)
-{
-	if (IsValid(HeldItem))
-	{
-		HeldItem->UpdateHeldVisualPosition(NewPosition);
-	}
-}
-
-void UAWeekGameUIManager::HandleItemSlotLeftClick(int32 ClickedItemSlotIndex, TObjectPtr<UAWeekInventoryComponent> OwningInventory)
-{
-	// if isHolding item
-	//		if heldItem == slotItem => add item to SlotItem as possible and hold remaining items
-	//		else => put HeldItem and hold SlotItem
-	// else
-	//		hold SlotItem
-
-	if (IsHoldingItem())
-	{
-		const FAWeekInventorySlotData& ClickedItemSlot = OwningInventory->GetItemSlotAt(ClickedItemSlotIndex);
-		if (ClickedItemSlot.bIsEmpty)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("%s: Place Item to slot and clear HeldItem"), *FString(__FUNCTION__));
-
-			OwningInventory->PlaceItemAt(HeldItem->ReleaseHeldItem(), ClickedItemSlotIndex);
-			HeldItem->ClearHeldItem();
-			HeldItem = nullptr;
-		}
-		else
-		{
-			// if target slot item is same as clicked item, merge item quantity as possible and hold remaining quantity of item 
-			if (ClickedItemSlot.Item->GetID() == HeldItem->GetItem()->GetID())
-			{
-				MergeItem(ClickedItemSlotIndex, OwningInventory);
-			}
-			// put held item to target slot and hold target slot item
-			else
-			{
-				UAWeekItemBase* ClickedItem = OwningInventory->ReleaseItemAt(ClickedItemSlotIndex);
-				OwningInventory->PlaceItemAt(HeldItem->ReleaseHeldItem(), ClickedItemSlotIndex);
-				HeldItem->SetItem(ClickedItem);
-			}
-		}
-	}
-	else
-	{
-		if (!OwningInventory->GetItemSlotAt(ClickedItemSlotIndex).bIsEmpty)
-		{
-			UAWeekItemBase* NewHeldItem = OwningInventory->ReleaseItemAt(ClickedItemSlotIndex);
-			CreateHeldItem(NewHeldItem, OwningInventory, ClickedItemSlotIndex);
-		}
-	}
-}
-
-void UAWeekGameUIManager::HandleItemSlotRightClick(int32 ClickedItemSlotIndex, TObjectPtr<UAWeekInventoryComponent> OwningInventory)
-{
-	const FAWeekInventorySlotData& ClickedItemSlot = OwningInventory->GetItemSlotAt(ClickedItemSlotIndex);
-	if (IsHoldingItem())
-	{
-		if (!ClickedItemSlot.bIsEmpty)
-		{
-			if (HeldItem->GetItem()->GetID() == ClickedItemSlot.Item->GetID())
-			{
-				OwningInventory->RemoveAmountOfItem(ClickedItemSlotIndex, 1);
-				HeldItem->SetHeldItemQuantity(HeldItem->GetItem()->GetQuantity() + 1);
-			}
-		}
-	}
-	else
-	{
-		if (!ClickedItemSlot.bIsEmpty)
-		{
-			// hold one item
-			UAWeekItemBase* NewHeldItem = ClickedItemSlot.Item->CreateItemCopy();
-			NewHeldItem->SetQuantity(1);
-			CreateHeldItem(NewHeldItem, OwningInventory, ClickedItemSlotIndex);
-			OwningInventory->RemoveAmountOfItem(ClickedItemSlotIndex, 1);
-		}
-	}
-}
-
-void UAWeekGameUIManager::MergeItem(int32 ClickedItemSlotIndex, TObjectPtr<UAWeekInventoryComponent> OwningInventory)
-{
-	UE_LOG(LogTemp, Warning, TEXT("%s: Merge Item"), *FString(__FUNCTION__));
-
-	int32 HeldItemQuantity = HeldItem->GetItem()->GetQuantity();
-	int32 ActualAmountAdded = OwningInventory->AddItemQuantityAt(ClickedItemSlotIndex, HeldItemQuantity);
-	HeldItemQuantity -= ActualAmountAdded;
-	HeldItem->SetHeldItemQuantity(HeldItemQuantity);
-	if (HeldItem->IsEmpty())
-	{
-		HeldItem = nullptr;
-	}
-}
-
-void UAWeekGameUIManager::CreateHeldItem(TObjectPtr<UAWeekItemBase> NewHeldItem, TObjectPtr<UAWeekInventoryComponent> SourceInventory, int32 SourceItemSlotIndex)
-{
-	if (HeldItemVisualClass)
-	{
-		UAWeekHeldItemVisual* HeldItemVisual = Cast<UAWeekHeldItemVisual>(CreateWidget(PlayerController, HeldItemVisualClass));
-		HeldItem = NewObject<UAWeekHeldItem>();
-
-		if (HeldItemVisual)
-		{
-			FHeldItemData HeldItemData;
-			HeldItemData.HeldItemVisual = HeldItemVisual;
-			HeldItemData.Item = NewHeldItem;
-			HeldItemData.SourceInventory = SourceInventory;
-			HeldItemData.SourceSlotIndex = SourceItemSlotIndex;
-
-			HeldItem->InitializeHeldItem(HeldItemData);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("%s: HeldItemVisual is nullptr!"), *FString(__FUNCTION__));
-		}
-	}
-}
-
-void UAWeekGameUIManager::HandleItemSlotShiftLeftClick(const FAWeekInventorySlotData& ClickedItemSlot) const
-{
-
-	if (!ClickedItemSlot.bIsEmpty && InventoryMainPanelWidget->IsChestOpen())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("%s: execute"), *FString(__FUNCTION__));
-		UAWeekInventoryComponent* SourceInventory = ClickedItemSlot.OwningInventory;
-		UAWeekInventoryComponent* TargetInventory = nullptr;
-		if (SourceInventory == InventoryMainPanelWidget->GetPlayerInventoryComponent())
-		{
-			TargetInventory = InventoryMainPanelWidget->GetChestInventoryComponent();
-		}
-		else
-		{
-			TargetInventory = InventoryMainPanelWidget->GetPlayerInventoryComponent();
-		}
-		
-		if (SourceInventory && TargetInventory)
-		{
-			SourceInventory->TransferItem(ClickedItemSlot, TargetInventory);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("%s: Source Inventory or TargetInventory is null."), *FString(__FUNCTION__));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("%s: Chest is not open"), *FString(__FUNCTION__));
-	}
 }

@@ -50,10 +50,10 @@ protected:
 	//================================================================
 	//	PROPERTIES & VARIABLES
 	//================================================================
-	UPROPERTY(EditDefaultsOnly, Category = "Inventory Slot")
-	TSubclassOf<UAWeekInventoryToolTip> ToolTipClass;
+	// UPROPERTY(EditDefaultsOnly, Category = "Inventory Slot")
+	// TSubclassOf<UAWeekInventoryToolTip> ToolTipClass;
 
-	TObjectPtr<UAWeekInventoryComponent> OwningInventory;
+	TWeakObjectPtr<UAWeekInventoryComponent> OwningInventory;
 	int32 ItemSlotIndex;
 	
 	//================================================================

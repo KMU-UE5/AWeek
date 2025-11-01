@@ -3,6 +3,7 @@
 
 #include "AWeek/UI/Inventory/AWeekItemSlot.h"
 #include "AWeek/Items/AWeekItemBase.h"
+#include "AWeek/UI/Inventory/AWeekInventoryToolTip.h"
 
 #include "Components/Border.h"
 #include "Components/TextBlock.h"
@@ -10,8 +11,20 @@
 
 void UAWeekItemSlot::InitializeItemSlot(const FAWeekItemData& ItemData, const int Quantity)
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *FString(__FUNCTION__));
-	
+	if (ToolTipClass)
+	{
+		UAWeekInventoryToolTip* ToolTip = CreateWidget<UAWeekInventoryToolTip>(this, ToolTipClass);
+		if (IsValid(ToolTip))
+		{
+			ToolTip->InitializeToolTip(ItemData, Quantity);
+			SetToolTip(ToolTip);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s: ToolTip is invalid"), *FString(__FUNCTION__));
+		}
+	}
+
 	switch (ItemData.ItemQuality)
 	{
 	case EAWeekItemQuality::Shoddy:

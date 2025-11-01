@@ -34,11 +34,6 @@ void AAWeekPickupItem::InitializePickupItem(const int32 InQuantity)
 		Item = UAWeekItemBase::CreateFromRowHandle(ItemRowHandle, InQuantity, GetWorld());
 		UE_LOG(LogTemp, Warning, TEXT("%s: ID: %s, Weight: %f"), *FString(__FUNCTION__), *Item->GetID().ToString(), Item->GetNumericData().Weight);
 		
-		// const FAWeekItemData* ItemData = ItemRowHandle.GetRow<FAWeekItemData>(ItemRowHandle.RowName.ToString());
-		//
-		// Item = NewObject<UAWeekItemBase>(this, UAWeekItemBase::StaticClass());
-		// Item->InitializeFromItemData(*ItemData, InQuantity);
-
 		PickupMesh->SetStaticMesh(Item->GetAssetData().Mesh);
 
 		UpdateInteractableData();

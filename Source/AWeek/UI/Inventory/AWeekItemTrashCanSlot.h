@@ -15,7 +15,7 @@ class AWEEK_API UAWeekItemTrashCanSlot : public UAWeekItemSlot
 {
 	GENERATED_BODY()
 
-	FOnTrashCanSlotLeftClick OnLeftClick;
+	FOnTrashCanSlotLeftClick OnTrashCanLeftClick;
 	
 	
 };

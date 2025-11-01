@@ -28,9 +28,9 @@ void UAWeekInventoryPanel::NativeOnInitialized()
 	bIsLinkedToInventory = false;
 }
 
-void UAWeekInventoryPanel::LinkToInventory(TObjectPtr<UAWeekInventoryComponent> InputInventory, TObjectPtr<AAWeekPlayerCharacter> InputCharacter)
+void UAWeekInventoryPanel::LinkToInventory(const TObjectPtr<UAWeekInventoryComponent> InInventory, const TObjectPtr<AAWeekPlayerCharacter> InCharacter)
 {
-	UE_LOG(LogTemp, Error, TEXT("Link To Inventory"));
+	// UE_LOG(LogTemp, Log, TEXT("Link To Inventory"));
 
 	// InputCharacter is null by default, but if linking to a player then
 	// create the submenu and link it to the input inventory
@@ -42,7 +42,7 @@ void UAWeekInventoryPanel::LinkToInventory(TObjectPtr<UAWeekInventoryComponent> 
 	//		SubMenu->PlayerCharacter = InputCharacter;
 	//		SubMenu->AddToViewport(6);
 	//		SubMenu->SetVisibility(ESlateVisibility::Collapsed);
-	//		SubMenu->LinkedInventory = InputInventory;
+	//		SubMenu->LinkedInventory = InInventory;
 	//	}
 	//	else
 	//	{
@@ -50,7 +50,7 @@ void UAWeekInventoryPanel::LinkToInventory(TObjectPtr<UAWeekInventoryComponent> 
 	//	}
 	//}
 
-	if (InputCharacter)
+	if (InCharacter)
 	{
 		InventoryTitle->SetText(FText::FromString("Player Inventory"));
 	}
@@ -58,12 +58,12 @@ void UAWeekInventoryPanel::LinkToInventory(TObjectPtr<UAWeekInventoryComponent> 
 	{
 		InventoryTitle->SetText(FText::FromString("Chest Inventory"));
 	}
-	if (InputInventory)
+	if (InInventory)
 	{
 		// verify that the inventory reference is different from the incoming inventory
-		if (this->Inventory != InputInventory)
+		if (this->Inventory != InInventory)
 		{
-			this->Inventory = InputInventory;
+			this->Inventory = InInventory;
 			this->Inventory->SetIsLinkedToInventoryPanel(true);
 			// bind the delegate so that changes in the linked inventory call RefreshInventory
 			this->Inventory->OnInventoryUpdated.AddUObject(this, &UAWeekInventoryPanel::RefreshInventory);
@@ -76,7 +76,7 @@ void UAWeekInventoryPanel::LinkToInventory(TObjectPtr<UAWeekInventoryComponent> 
 
 			UE_LOG(LogTemp, Log, L"%s: Input inventory %s successfully linked to %s.",
 				*FString(__FUNCTION__),
-				*InputInventory->GetName(),
+				*InInventory->GetName(),
 				*GetName());
 		}
 		else

@@ -15,8 +15,10 @@
 #include "AWeek/UI/AWeekGameUIManager.h"
 #include "AWeek/Interfaces/AWeekInteractionInterface.h"
 #include "AWeek/Components/AWeekInventoryComponent.h"
+#include "AWeek/Components/AWeekLootComponent.h"
 #include "AWeek/World/AWeekPickupItem.h"
 #include "AWeek/Player/AWeekPlayerController.h"
+#include "AWeek/UI/Controller/AWeekInventoryController.h"
 
 DEFINE_LOG_CATEGORY(AWeekPlayerCharacter);
 
@@ -77,13 +79,14 @@ void AAWeekPlayerCharacter::BeginPlay()
 
 	PlayerController = Cast<AAWeekPlayerController>(GetController());
 
+	// Initialize UI Manager
 	if (UGameInstance* GameInstance = GetGameInstance())
 	{
 		UIManager = GameInstance->GetSubsystem<UAWeekGameUIManager>();
-		UIManager->InitializeUIManager();
+		UIManager->InitializeUIManager(this);
 	}
 
-	// temporary function
+	// Initialize crafting component
 	CraftingComponent->InitializeCraftingComponent();
 	
 	if (IsValid(PlayerController))
@@ -156,12 +159,12 @@ void AAWeekPlayerCharacter::Tick(float DeltaTime)
 	// update held item ui position
 	if (UIManager)
 	{
-		if (UIManager->IsHoldingItem())
+		if (UIManager->GetInventoryController()->IsHoldingItem())
 		{
 			FVector2D MousePos;
 			if (PlayerController->GetMousePosition(MousePos.X, MousePos.Y))
 			{
-				UIManager->UpdateHeldItemPosition(MousePos);
+				UIManager->GetInventoryController()->UpdateHeldItemPosition(MousePos);
 			}
 		}
 	}
@@ -700,8 +703,6 @@ void AAWeekPlayerCharacter::UpdateInteractionWidget() const
 void AAWeekPlayerCharacter::ToggleInventoryMainPanel()
 {
 	UIManager->ToggleInventoryMainPanel();
-	// test
-	// ToggleCraftingMainPanel();
 }
 
 void AAWeekPlayerCharacter::ToggleMainWidget()

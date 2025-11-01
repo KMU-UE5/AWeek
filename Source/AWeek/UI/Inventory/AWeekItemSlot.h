@@ -10,9 +10,11 @@ class UTextBlock;
 class UImage;
 class UBorder;
 class UAWeekItemBase;
+class UAWeekInventoryToolTip;
 struct FAWeekItemData;
 struct FAWeekItemAssetData;
 struct FAWeekItemNumericData;
+
 enum class EAWeekItemQuality : uint8;
 /**
  * 
@@ -30,8 +32,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Item Slot", meta = (BindWidget))
 	TObjectPtr<UBorder> ItemBorder;
 
-	// UPROPERTY(EditDefaultsOnly, Category = "Item Slot")
-	// TSubclassOf<UAWeekInventoryToolTip> ToolTipClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Item Slot")
+	TSubclassOf<UAWeekInventoryToolTip> ToolTipClass;
 	
 	UPROPERTY(VisibleAnywhere, Category = "Item Slot", meta = (BindWidget))
 	TObjectPtr<UImage> ItemIcon;
