@@ -3,6 +3,10 @@
 
 #include "SettingItem.h"
 
+void USettingItem::Init()
+{
+}
+
 void USettingItem::NotifySettingChanged()
 {
 	OnSettingChangedEvent.Broadcast(this);

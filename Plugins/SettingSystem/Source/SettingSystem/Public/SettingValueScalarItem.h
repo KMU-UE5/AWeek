@@ -15,14 +15,17 @@ class SETTINGSYSTEM_API USettingValueScalarItem : public USettingValueItem
 {
 	GENERATED_BODY()
 public:
+	virtual void Init() override;
+	
 	virtual void Reset() override;
 	virtual void Store() override;
 	virtual void Restore() override;
 
 	void SetInitialValue(double InValue);
+	void SetDefaultValue(double InValue);
 	
 	void SetValue(double InValue);
-	double GetValue();
+	double GetValue() const;
 
 	void SetMinValue(double InMinValue);
 	void SetMaxValue(double InMaxValue);

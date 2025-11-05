@@ -5,6 +5,12 @@
 
 #include "SettingPropertyResolver.h"
 
+void USettingValueScalarItem::Init()
+{
+	Super::Init();
+	InitialValue = GetValue();
+}
+
 void USettingValueScalarItem::Reset()
 {
 	if (DefaultValue.IsSet())
@@ -28,6 +34,11 @@ void USettingValueScalarItem::SetInitialValue(double InValue)
 	InitialValue = InValue;
 }
 
+void USettingValueScalarItem::SetDefaultValue(double InValue)
+{
+	DefaultValue = InValue;
+}
+
 void USettingValueScalarItem::SetValue(double InValue)
 {
 	if (MinValue.IsSet())
@@ -46,7 +57,7 @@ void USettingValueScalarItem::SetValue(double InValue)
 	NotifySettingChanged();
 }
 
-double USettingValueScalarItem::GetValue()
+double USettingValueScalarItem::GetValue() const
 {
 	double Value;
 	const FString ValueString = Getter->GetValue();

@@ -5,5 +5,9 @@
 
 void USettingItemCategory::AddSetting(USettingItem* Setting)
 {
-	Settings.Add(Setting);
+	if (Setting)
+	{
+		Settings.Add(Setting);
+		Setting->Init();
+	}
 }

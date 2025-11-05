@@ -20,6 +20,8 @@ public:
 	FOnSettingChanged OnSettingChangedEvent;
 	FOnSettingApplied OnSettingAppliedEvent;
 
+	virtual void Init();
+	
 	void NotifySettingChanged();
 	void Apply();
 
