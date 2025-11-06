@@ -739,6 +739,12 @@ void AAWeekPlayerCharacter::WheelUpPreviewObject()
 	UIManager->PreviewObjectRotateR();
 }
 
+void AAWeekPlayerCharacter::ToggleChestInventory(TObjectPtr<UAWeekInventoryComponent> InChestInventoryComponent)
+{
+	ChestInventoryComponent = InChestInventoryComponent;
+	UIManager->ToggleInventoryHub(EAWeekInventoryHubPanel::Chest);
+}
+
 void AAWeekPlayerCharacter::CloseChestInventory()
 {
 	UIManager->CloseChestInventory();

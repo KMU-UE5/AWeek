@@ -18,6 +18,8 @@
 #include "AWeek/Components/AWeekCraftingComponent.h"
 #include "AWeek/Grid/GridPlacedSubsystem.h"
 #include "AWeek/UI/Building/PreviewObjectWidget.h"
+#include "AWeek/UI/Controller/AWeekCraftingController.h"
+#include "AWeek/UI/Controller/AWeekInventoryController.h"
 
 UAWeekGameUIManager::UAWeekGameUIManager()
 {
