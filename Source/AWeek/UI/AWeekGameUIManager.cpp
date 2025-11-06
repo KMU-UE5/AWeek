@@ -5,6 +5,7 @@
 #include "AWeek/UI/Inventory/AWeekInventoryMainPanel.h"
 #include "AWeek/UI/Crafting/AWeekCraftingMainPanel.h"
 #include "AWeek/UI/Interaction/AWeekInteractionWidget.h"
+#include "AWeek/UI/Inventory/AWeekInventoryHubWidget.h"
 #include "AWeek/UI/Inventory/AWeekHeldItemVisual.h"
 #include "AWeek/UI/Inventory/AWeekHeldItem.h"
 #include "AWeek/UI/MainWidget/MainUIWidget.h"
@@ -35,6 +36,7 @@ void UAWeekGameUIManager::InitializeUIManager(const TObjectPtr<AAWeekPlayerChara
         
 		if (UIDataAsset)
 		{
+			InventoryHubWidgetClass = UIDataAsset->InventoryHubWidgetClass;
 			InventoryMainPanelClass = UIDataAsset->InventoryMainPanelClass;
 			CraftingMainPanelClass = UIDataAsset->CraftingMainPanelClass;
 			InteractionWidgetClass = UIDataAsset->InteractionWidgetClass;
@@ -59,26 +61,77 @@ void UAWeekGameUIManager::InitializeUIManager(const TObjectPtr<AAWeekPlayerChara
 		PlayerCharacter->GetCraftingComponent(),
 		PlayerCharacter->GetPlayerInventoryComponent());
 	
-	if (InventoryMainPanelClass)
+	if (InventoryHubWidgetClass)
 	{
-		InventoryMainPanelWidget = Cast<UAWeekInventoryMainPanel, UCommonActivatableWidget>(
+		InventoryHubWidget = Cast<UAWeekInventoryHubWidget, UCommonActivatableWidget>(
 			UCommonUIExtensions::PushContentToLayer_ForPlayer(LocalPlayer,
-				FGameplayTag::RequestGameplayTag("UI.Layer.GameMenu"), InventoryMainPanelClass));
-		InventoryMainPanelWidget->InitializeInventoryMainPanel();
-		InventoryMainPanelWidget->DeactivateWidget();
+				FGameplayTag::RequestGameplayTag("UI.Layer.GameMenu"), InventoryHubWidgetClass));
+		InventoryHubWidget->InitializeInventoryHub(CraftingController, InPlayerCharacter->GetPlayerInventoryComponent());
+		InventoryHubWidget->DeactivateWidget();
 	}
 }
-// =====================================================
-// INVENTORY SYSTEM
-// =====================================================
 
-void UAWeekGameUIManager::ShowInventoryMainPanel()
-{	
-	if (InventoryMainPanelClass)
+void UAWeekGameUIManager::ToggleInventoryHub(EAWeekInventoryHubPanel DisplayPanel)
+{
+	if (!IsInventoryHubOpen())
 	{
-		InventoryMainPanelWidget = Cast<UAWeekInventoryMainPanel, UCommonActivatableWidget>(
-			UCommonUIExtensions::PushContentToLayer_ForPlayer(LocalPlayer,
-				FGameplayTag::RequestGameplayTag("UI.Layer.GameMenu"), InventoryMainPanelClass));
+		OpenInventoryHub(DisplayPanel);
+		PlayerController->SetShowMouseCursor(true);
+	}
+	else
+	{
+		CloseInventoryHub();
+		PlayerController->SetShowMouseCursor(false);
+	}
+}
+
+void UAWeekGameUIManager::OpenInventoryHub(EAWeekInventoryHubPanel DisplayPanel)
+{	
+	if (!InventoryHubWidgetClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s: InventoryHubWidgetClass is null!"), *FString(__FUNCTION__));
+		return;
+	}
+	InventoryHubWidget = Cast<UAWeekInventoryHubWidget, UCommonActivatableWidget>(
+		UCommonUIExtensions::PushContentToLayer_ForPlayer(LocalPlayer,
+			FGameplayTag::RequestGameplayTag("UI.Layer.GameMenu"), InventoryHubWidgetClass));
+	
+	switch (DisplayPanel)
+	{
+	case EAWeekInventoryHubPanel::Weapon:
+		break;
+	case EAWeekInventoryHubPanel::Chest:
+		// InventoryHubWidget->SwitchToPanel(
+		// 	EAWeekInventoryHubPanel::Chest,
+		// 	FAWeekPanelContext::ForChest(PlayerCharacter->GetChestInventoryComponent())
+		// 	);
+		OpenChestInventory(PlayerCharacter->GetChestInventoryComponent());
+		break;
+	case EAWeekInventoryHubPanel::Crafting:
+		CraftingController->GetCraftingComponent()->UpdateInventoryCounts();
+		InventoryHubWidget->OpenCraftingPanel();
+		// InventoryHubWidget->SwitchToPanel(
+		// 	EAWeekInventoryHubPanel::Chest,
+		// 	FAWeekPanelContext::ForCrafting(CraftingController->GetCraftingComponent())
+		// 	);
+		break;
+	case EAWeekInventoryHubPanel::PlayerState:
+		break;
+	default:
+		break;
+	}
+}
+
+void UAWeekGameUIManager::CloseInventoryHub()
+{
+	if (InventoryHubWidget)
+	{
+		if (InventoryHubWidget->IsChestOpen())
+		{
+			CloseChestInventory();
+		}
+		InventoryHubWidget->DeactivateWidget();
+		InventoryController->ReturnHeldItemToInventory();
 	}
 }
 
@@ -98,16 +151,6 @@ void UAWeekGameUIManager::ShowMainWidget()
 	}
 }
 
-
-void UAWeekGameUIManager::HideInventoryMainPanel()
-{	
-	if (InventoryMainPanelWidget)
-	{
-		InventoryMainPanelWidget->DeactivateWidget();
-		InventoryController->ReturnHeldItemToInventory();
-	}
-}
-
 void UAWeekGameUIManager::HideMainWidget()
 {
 	if (MainUIWidget)
@@ -117,46 +160,11 @@ void UAWeekGameUIManager::HideMainWidget()
 	}
 }
 
-void UAWeekGameUIManager::ShowCraftingMainPanel(const TObjectPtr<UAWeekCraftingComponent> CraftingComponent, const TObjectPtr<UAWeekInventoryComponent> InventoryComponent)
+bool UAWeekGameUIManager::IsInventoryHubOpen() const
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *FString(__FUNCTION__));
-	if (CraftingMainPanelClass)
-	{
-		CraftingMainPanelWidget = Cast<UAWeekCraftingMainPanel, UCommonActivatableWidget>(
-			UCommonUIExtensions::PushContentToLayer_ForPlayer(LocalPlayer,
-				FGameplayTag::RequestGameplayTag("UI.Layer.GameMenu"), CraftingMainPanelClass));
-		CraftingComponent->UpdateInventoryCounts();
-		CraftingMainPanelWidget->InitializeCraftingMainPanel(CraftingController, InventoryComponent);
-	}
+	return IsValid(InventoryHubWidget) && InventoryHubWidget->IsActivated();
 }
 
-void UAWeekGameUIManager::HideCraftingMainPanel()
-{
-	UE_LOG(LogTemp, Warning, TEXT("%s:"), *FString(__FUNCTION__));
-	if (CraftingMainPanelWidget)
-	{
-		CraftingMainPanelWidget->DeactivateWidget();
-	}
-}
-
-void UAWeekGameUIManager::ToggleInventoryMainPanel()
-{
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *FString(__FUNCTION__));
-	if (!IsValid(InventoryMainPanelWidget) || !InventoryMainPanelWidget->IsActivated())
-	{
-		ShowInventoryMainPanel();
-		PlayerController->SetShowMouseCursor(true);
-	}
-	else
-	{
-		if (InventoryMainPanelWidget->IsChestOpen())
-		{
-			DeactivateChestInventory();
-		}
-		HideInventoryMainPanel();
-		PlayerController->SetShowMouseCursor(false);
-	}
-}
 void UAWeekGameUIManager::ToggleMainWidget()
 {
 	UE_LOG(LogTemp, Log, TEXT("1MainWidget Open"));
@@ -172,58 +180,6 @@ void UAWeekGameUIManager::ToggleMainWidget()
 		PlayerController->SetShowMouseCursor(false);
 	}
 }
-
-
-
-void UAWeekGameUIManager::ToggleChestInventory(TObjectPtr<UAWeekInventoryComponent> ChestInventory)
-{
-	if (!InventoryMainPanelWidget->IsChestOpen())
-	{
-		if (!IsValid(InventoryMainPanelWidget) || !InventoryMainPanelWidget->IsActivated())
-		{
-			ShowInventoryMainPanel();
-			PlayerController->SetShowMouseCursor(true);
-		}
-		ActivateChestInventory(ChestInventory);
-	}
-	else
-	{
-		DeactivateChestInventory();
-		HideInventoryMainPanel();
-		PlayerController->SetShowMouseCursor(false);
-	}
-}
-
-void UAWeekGameUIManager::ToggleCraftingMainPanel(const TObjectPtr<UAWeekCraftingComponent> CraftingComponent, const TObjectPtr<UAWeekInventoryComponent> InventoryComponent)
-{
-	if (!IsValid(CraftingMainPanelWidget) || !CraftingMainPanelWidget->IsActivated())
-	{
-		ShowCraftingMainPanel(CraftingComponent, InventoryComponent);
-		PlayerController->SetShowMouseCursor(true);
-	}
-	else
-	{
-		HideCraftingMainPanel();
-		PlayerController->SetShowMouseCursor(false);
-	}
-}
-
-
-// void UAWeekGameUIManager::ShowCrosshair()
-// {
-// 	if (CrosshairWidget)
-// 	{
-// 		CrosshairWidget->SetVisibility(ESlateVisibility::Visible);
-// 	}
-// }
-//
-// void UAWeekGameUIManager::HideCrosshair()
-// {
-// 	if (CrosshairWidget)
-// 	{
-// 		CrosshairWidget->SetVisibility(ESlateVisibility::Collapsed);
-// 	}
-// }
 
 void UAWeekGameUIManager::ShowInteractionWidget()
 {
@@ -253,23 +209,21 @@ void UAWeekGameUIManager::UpdateInteractionWidget(const FAWeekInteractableData* 
 		InteractionWidget->UpdateWidget(InteractableData);
 	}
 }
-
-void UAWeekGameUIManager::ActivateChestInventory(const TObjectPtr<UAWeekInventoryComponent> ChestInventory) const
+//
+void UAWeekGameUIManager::OpenChestInventory(const TObjectPtr<UAWeekInventoryComponent> ChestInventory) const
 {
-	PlayerCharacter->SetChestInventoryComponent(ChestInventory);
-	InventoryMainPanelWidget->ActivateChestInventory(ChestInventory);
+	InventoryHubWidget->OpenChestInventory(ChestInventory);
 }
 
-void UAWeekGameUIManager::DeactivateChestInventory()
+void UAWeekGameUIManager::CloseChestInventory()
 {
 	PlayerCharacter->SetChestInventoryComponent(nullptr);
-	
 	if (InventoryController->IsHoldingItem())
 	{
-		if (InventoryController->GetHeldItem()->GetSourceInventory() == InventoryMainPanelWidget->GetChestInventoryComponent())
+		if (InventoryController->GetHeldItem()->GetSourceInventory() == PlayerCharacter->GetChestInventoryComponent())
 		{
 			InventoryController->ReturnHeldItemToInventory();
 		}
 	}
-	InventoryMainPanelWidget->DeActivateChestInventory();
+	InventoryHubWidget->CloseChestInventory();
 }

@@ -44,7 +44,7 @@ void UAWeekCraftingMainPanel::OnRecipeSelected(int32 RecipeIndex, bool bIsCrafta
 	if (CraftingDetailPanel && CraftingController)
 	{
 		bIsCraftable = CraftingController->CanCraftRecipe(RecipeIndex);
-		CraftingDetailPanel->SetRecipe(RecipeIndex, CraftingController->GetCraftingComponent(), bIsCraftable);
+		CraftingDetailPanel->SetRecipe(RecipeIndex, bIsCraftable);
 	}
 }
 

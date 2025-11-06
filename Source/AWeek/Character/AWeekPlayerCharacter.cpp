@@ -86,6 +86,8 @@ void AAWeekPlayerCharacter::BeginPlay()
 		UIManager->InitializeUIManager(this);
 	}
 
+	PlayerInventoryComponent->OnEncumberedStatusChanged.AddUObject(this, &AAWeekPlayerCharacter::OnEncumbered);
+	
 	// Initialize crafting component
 	CraftingComponent->InitializeCraftingComponent();
 	
@@ -220,7 +222,7 @@ void AAWeekPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 			this, &AAWeekPlayerCharacter::ZoomOut);
 		
 		EnhancedInput->BindAction(InputCDO->mInventory, ETriggerEvent::Triggered,
-			this, &AAWeekPlayerCharacter::ToggleInventoryMainPanel);
+			this, &AAWeekPlayerCharacter::ToggleInventoryHub);
 		EnhancedInput->BindAction(InputCDO->mAttack, ETriggerEvent::Started,
 			this, &AAWeekPlayerCharacter::StartFire);
 
@@ -558,6 +560,18 @@ void AAWeekPlayerCharacter::FootStepEffect(FName SocketName)
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), FootStepVFX, Position);
 }
 
+void AAWeekPlayerCharacter::OnEncumbered(bool bIsEncumbered)
+{
+	if (bIsEncumbered)
+	{
+		// TODO: Player get panelty
+	}
+	else
+	{
+		// TODO: Player get back to normal
+	}
+}
+
 // ================================
 // INVENTORY SYSTEM
 // ================================
@@ -700,56 +714,34 @@ void AAWeekPlayerCharacter::UpdateInteractionWidget() const
 	}
 }
 
-void AAWeekPlayerCharacter::ToggleInventoryMainPanel()
+void AAWeekPlayerCharacter::ToggleInventoryHub()
 {
-	UIManager->ToggleInventoryMainPanel();
+	UIManager->ToggleInventoryHub(EAWeekInventoryHubPanel::Crafting);
 }
 
 void AAWeekPlayerCharacter::ToggleMainWidget()
 {
-	UIManager->ToggleMainWidget();	
+	UIManager->ToggleMainWidget();
 }
 
-void AAWeekPlayerCharacter::DropItemFromItemSlot(const FAWeekInventorySlotData& ItemSlot, const int32 QuantityToDrop)
+void AAWeekPlayerCharacter::ToggleChestInventory(TObjectPtr<UAWeekInventoryComponent> InChestInventoryComponent)
 {
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;
-	SpawnParams.bNoFail = true;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-	const FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 50.0f;
-	const FTransform SpawnTransform(GetActorRotation(), SpawnLocation);
-	UAWeekItemBase* ItemToDrop = ItemSlot.Item;
-
-	//const int32 RemoveQuantity = PlayerInventory->RemoveAmountOfItem(ItemSlot, QuantityToDrop);
-	const int32 RemoveQuantity = ItemSlot.OwningInventory->RemoveAmountOfItem(ItemSlot.ItemSlotIndex, QuantityToDrop);
-
-	AAWeekPickupItem* Pickup = GetWorld()->SpawnActor<AAWeekPickupItem>(AAWeekPickupItem::StaticClass(), SpawnTransform, SpawnParams);
-	Pickup->InitializeDrop(ItemToDrop, RemoveQuantity);
+	ChestInventoryComponent = InChestInventoryComponent;
+	UIManager->ToggleInventoryHub(EAWeekInventoryHubPanel::Chest);
 }
-
-void AAWeekPlayerCharacter::ToggleChestInventory(TObjectPtr<UAWeekInventoryComponent> ChestInventory)
-{
-	UIManager->ToggleChestInventory(ChestInventory);
-}
-
-//void AAWeekPlayerCharacter::OpenChestInventory(TObjectPtr<UAWeekInventoryComponent> ChestInventory)
-//{
-//	UIManager->ActivateChestInventory(ChestInventory);
-//}
 
 void AAWeekPlayerCharacter::CloseChestInventory()
 {
-	UIManager->DeactivateChestInventory();
+	UIManager->CloseChestInventory();
 }
 
-void AAWeekPlayerCharacter::ToggleCraftingMainPanel()
+void AAWeekPlayerCharacter::ToggleCraftingPanel()
 {
-	UIManager->ToggleCraftingMainPanel(CraftingComponent, PlayerInventoryComponent);
+	UIManager->ToggleInventoryHub(EAWeekInventoryHubPanel::Crafting);
 }
 
-void AAWeekPlayerCharacter::CloseCraftingMainPanel()
+void AAWeekPlayerCharacter::CloseCraftingPanel()
 {
-	UIManager->HideCraftingMainPanel();
+	UIManager->ToggleInventoryHub(EAWeekInventoryHubPanel::Crafting);
 }
 

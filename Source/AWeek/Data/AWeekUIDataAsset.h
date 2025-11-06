@@ -11,6 +11,7 @@
  */
 
 class UAWeekInteractionWidget;
+class UAWeekInventoryHubWidget;
 class UAWeekInventoryMainPanel;
 class UAWeekCraftingMainPanel;
 class UAWeekHeldItemVisual;
@@ -24,6 +25,9 @@ class AWEEK_API UAWeekUIDataAsset : public UDataAsset
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditDefaultsOnly, Category = "Widget Class")
+	TSubclassOf<UAWeekInventoryHubWidget> InventoryHubWidgetClass;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Widget Class")
 	TSubclassOf<UAWeekInventoryMainPanel> InventoryMainPanelClass;
 

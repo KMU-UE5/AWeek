@@ -21,14 +21,12 @@ void UAWeekCraftingController::InitializeCraftingController(
 
 FCraftingResult UAWeekCraftingController::TryCraftRecipe(int32 RecipeIndex, int32 CraftCount)
 {
-    // 유효성 검사
     FCraftingResult ValidationResult = ValidateCrafting(RecipeIndex, CraftCount);
     if (ValidationResult.Result != ECraftingFailureReason::Success)
     {
         return ValidationResult;
     }
-
-    // 실제 제작 시도
+    
     if (CraftingComponent->TryCraftRecipe(RecipeIndex))
     {
         FAWeekCachedCraftingRecipe Recipe;
@@ -50,14 +48,14 @@ FCraftingResult UAWeekCraftingController::TryCraftRecipe(int32 RecipeIndex, int3
 bool UAWeekCraftingController::CanCraftRecipe(int32 RecipeIndex) const
 {
     if (!CraftingComponent)
+    {
         return false;
-
+    }
     return CraftingComponent->CanCraft(RecipeIndex);
 }
 
 FCraftingResult UAWeekCraftingController::ValidateCrafting(int32 RecipeIndex, int32 CraftCount) const
 {
-    // Component 검사
     if (!CraftingComponent || !InventoryComponent)
     {
         return FCraftingResult::MakeFailure(
@@ -66,7 +64,6 @@ FCraftingResult UAWeekCraftingController::ValidateCrafting(int32 RecipeIndex, in
         );
     }
 
-    // 레시피 유효성 검사
     FAWeekCachedCraftingRecipe Recipe;
     if (!CraftingComponent->GetRecipeAt(RecipeIndex, Recipe))
     {
@@ -76,7 +73,6 @@ FCraftingResult UAWeekCraftingController::ValidateCrafting(int32 RecipeIndex, in
         );
     }
 
-    // 재료 검사
     if (!CraftingComponent->CanCraft(RecipeIndex))
     {
         return FCraftingResult::MakeFailure(
@@ -88,7 +84,6 @@ FCraftingResult UAWeekCraftingController::ValidateCrafting(int32 RecipeIndex, in
         );
     }
 
-    // 인벤토리 공간 검사
     if (!InventoryComponent->CanAddItem(
         Recipe.CraftedItemEntry.ItemData.ID,
         Recipe.CraftedItemEntry.ItemData.NumericData.Weight,
