@@ -16,6 +16,8 @@
 				"BlueprintGraph",
 				"UMG",
 				"AIModule",
+				"SettingSystem",
+				"DeveloperSettings"
 			]
 		}
 	],
