@@ -129,7 +129,37 @@ USettingItem* UAWeekSettingRegistry::RegisterKeyboardAndMouseSetting()
 
 		for (const TPair<FName, FKeyMappingRow>& RowPair : Profile->GetPlayerMappingRows())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%s"), *RowPair.Key.ToString());
+			UE_LOG(LogTemp, Warning, TEXT("KeyBinding: %s"), *RowPair.Key.ToString());
+
+			if (RowPair.Value.HasAnyMappings() /* && !CreatedMappingNames.Contains(RowPair.Key)*/)
+			{
+				FPlayerMappableKeyQueryOptions Options = {};
+				Options.KeyToMatch = EKeys::A;
+				Options.bMatchBasicKeyTypes = true;
+
+				
+
+
+				for (const FPlayerKeyMapping& Mapping : RowPair.Value.Mappings)
+				{
+					if (!Profile->DoesMappingPassQueryOptions(Mapping, Options))
+					{
+						continue;
+					}
+					
+					USettingItemCategory* InputSetting = NewObject<USettingItemCategory>();
+					InputSetting->SetDevName(Mapping.GetMappingName());
+					InputSetting->SetDisplayName(Mapping.GetDisplayName());
+					Setting->AddSetting(InputSetting);
+				}
+				// ULyraSettingKeyboardInput* InputBinding = NewObject<ULyraSettingKeyboardInput>();
+				//
+				// InputBinding->InitializeInputData(Profile, RowPair.Value, Options);
+				// InputBinding->AddEditCondition(WhenPlatformSupportsMouseAndKeyboard);
+				//
+				// Collection->AddSetting(InputBinding);
+				// CreatedMappingNames.Add(RowPair.Key);
+			}
 		}
 	}
 		
