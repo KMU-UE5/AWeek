@@ -23,6 +23,9 @@ public:
 	virtual void Restore() override;
 
 	bool ChangeKey(int32 InSlot, FKey InKey);
+
+	FText GetKeyText() const;
+	FKey GetKey() const;
 private:
 	UPROPERTY()
 	TObjectPtr<UEnhancedInputUserSettings> InputSetting;

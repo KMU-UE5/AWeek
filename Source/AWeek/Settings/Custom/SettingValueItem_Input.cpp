@@ -90,3 +90,28 @@ bool USettingValueItem_Input::ChangeKey(int32 InSlot, FKey InKey)
 
 	return false;
 }
+
+FText USettingValueItem_Input::GetKeyText() const
+{
+	FKey Key = GetKey();
+	return Key.GetDisplayName();
+}
+
+FKey USettingValueItem_Input::GetKey() const
+{
+	if (const UEnhancedPlayerMappableKeyProfile* Profile = InputSetting->GetKeyProfileWithIdentifier(ProfileIdentifier))
+	{
+		if (const FKeyMappingRow* Row = Profile->FindKeyMappingRow(ActionMappingName))
+		{
+			for (const FPlayerKeyMapping& Mapping : Row->Mappings)
+			{
+				if (Profile->DoesMappingPassQueryOptions(Mapping, QueryOptions))
+				{
+					return Mapping.GetCurrentKey();
+				}
+			}
+		}
+	}
+
+	return EKeys::Invalid;
+}
