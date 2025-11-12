@@ -6,6 +6,13 @@
 #include "UObject/NoExportTypes.h"
 #include "SettingItem.generated.h"
 
+UENUM()
+enum class ESettingChangedReason
+{
+	Change,
+	Init,
+	Restore,
+}; 
 /**
  * 
  */
@@ -14,7 +21,7 @@ class SETTINGSYSTEM_API USettingItem : public UObject
 {
 	GENERATED_BODY()
 public:
-	DECLARE_EVENT_OneParam(USettingItem, FOnSettingChanged, USettingItem*);
+	DECLARE_EVENT_TwoParams(USettingItem, FOnSettingChanged, USettingItem*, ESettingChangedReason);
 	DECLARE_EVENT_OneParam(USettingItem, FOnSettingApplied, USettingItem*);
 
 	FOnSettingChanged OnSettingChangedEvent;
@@ -22,7 +29,7 @@ public:
 
 	virtual void Init();
 	
-	void NotifySettingChanged();
+	void NotifySettingChanged(const ESettingChangedReason Reason);
 	void Apply();
 
 	virtual TArray<USettingItem*> GetSettings() { return TArray<USettingItem*>(); }

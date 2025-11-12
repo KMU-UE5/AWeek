@@ -21,21 +21,21 @@ void USettingListViewItem_Discrete::Init(USettingItem* InGameSetting)
 			Rotator->PopulateTextLabels(OptionTexts);
 			Rotator->SetSelectedItem(DiscreteSetting->GetValueOptionIndex());
 		}
+		
+		Rotator->OnRotatedEvent.AddUObject(this, &ThisClass::HandleRotatorValueChanged);
+		NextButton->OnClicked().AddUObject(this, &ThisClass::HandleNextButtonClicked);
+		PrevButton->OnClicked().AddUObject(this, &ThisClass::HandlePrevButtonClicked);
 	}
 }
 
 void USettingListViewItem_Discrete::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
-
-	Rotator->OnRotatedEvent.AddUObject(this, &ThisClass::HandleRotatorValueChanged);
-	NextButton->OnClicked().AddUObject(this, &ThisClass::HandleNextButtonClicked);
-	PrevButton->OnClicked().AddUObject(this, &ThisClass::HandlePrevButtonClicked);
 }
 
-void USettingListViewItem_Discrete::HandleSettingChangedApplied(USettingItem* ChangedSetting)
+void USettingListViewItem_Discrete::HandleSettingChangedApplied(USettingItem* ChangedSetting, ESettingChangedReason Reason)
 {
-	Super::HandleSettingChangedApplied(ChangedSetting);
+	Super::HandleSettingChangedApplied(ChangedSetting, Reason);
 }
 
 void USettingListViewItem_Discrete::HandleRotatorValueChanged(int32 Value, bool bUserInitiated)

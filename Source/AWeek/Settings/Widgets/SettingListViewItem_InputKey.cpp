@@ -15,16 +15,17 @@ void USettingListViewItem_InputKey::Init(USettingItem* InGameSetting)
 		FInputChord InputChord;
 		InputChord.Key = InputSetting->GetKey();
 		KeySelector->SetSelectedKey(InputChord);
+		
+		if (ensure(KeySelector))
+		{
+			KeySelector->OnKeySelected.AddDynamic(this, &ThisClass::HandleKeySelected);
+		}
 	}
 }
 
 void USettingListViewItem_InputKey::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
-	if (ensure(KeySelector))
-	{
-		KeySelector->OnKeySelected.AddDynamic(this, &ThisClass::HandleKeySelected);
-	}
 }
 
 void USettingListViewItem_InputKey::HandleKeySelected(FInputChord SelectedKey)

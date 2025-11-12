@@ -20,6 +20,7 @@ void USettingListViewItem_Scalar::Init(USettingItem* InGameSetting)
 			Slider->SetValue(Value);
 			Slider->SetMinValue(ScalarSetting->GetMinValue());
 			Slider->SetMaxValue(ScalarSetting->GetMaxValue());
+			Slider->OnValueChanged.AddDynamic(this, &ThisClass::HandleSliderValueChanged);
 		}
 	}
 }
@@ -27,10 +28,10 @@ void USettingListViewItem_Scalar::Init(USettingItem* InGameSetting)
 void USettingListViewItem_Scalar::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
-	Slider->OnValueChanged.AddDynamic(this, &ThisClass::HandleSliderValueChanged);
 }
 
-void USettingListViewItem_Scalar::HandleSettingChangedApplied(USettingItem* ChangedSetting)
+void USettingListViewItem_Scalar::HandleSettingChangedApplied(USettingItem* ChangedSetting,
+	ESettingChangedReason Reason)
 {
 	Slider->SetValue(ScalarSetting->GetValue());
 }

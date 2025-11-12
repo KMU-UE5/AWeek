@@ -14,7 +14,7 @@ void USettingValueScalarItem::Reset()
 {
 	if (DefaultValue.IsSet())
 	{
-		SetValue(DefaultValue.GetValue());
+		SetValue(DefaultValue.GetValue(), ESettingChangedReason::Init);
 	}
 }
 
@@ -25,7 +25,7 @@ void USettingValueScalarItem::Store()
 
 void USettingValueScalarItem::Restore()
 {
-	SetValue(InitialValue);
+	SetValue(InitialValue, ESettingChangedReason::Restore);
 }
 
 void USettingValueScalarItem::SetInitialValue(double InValue)
@@ -38,7 +38,7 @@ void USettingValueScalarItem::SetDefaultValue(double InValue)
 	DefaultValue = InValue;
 }
 
-void USettingValueScalarItem::SetValue(double InValue)
+void USettingValueScalarItem::SetValue(double InValue, ESettingChangedReason Reason)
 {
 	if (MinValue.IsSet())
 	{
@@ -53,7 +53,7 @@ void USettingValueScalarItem::SetValue(double InValue)
 	const FString ValueString = LexToString(InValue);
 	Setter->SetValue(ValueString);
 
-	NotifySettingChanged();
+	NotifySettingChanged(Reason);
 }
 
 double USettingValueScalarItem::GetValue() const

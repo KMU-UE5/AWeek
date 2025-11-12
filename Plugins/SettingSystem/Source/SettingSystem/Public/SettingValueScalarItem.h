@@ -24,7 +24,7 @@ public:
 	void SetInitialValue(double InValue);
 	void SetDefaultValue(double InValue);
 	
-	void SetValue(double InValue);
+	void SetValue(double InValue, ESettingChangedReason Reason = ESettingChangedReason::Change);
 	double GetValue() const;
 
 	void SetMinValue(double InMinValue);

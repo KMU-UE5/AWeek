@@ -16,7 +16,7 @@ class SETTINGSYSTEM_API USettingRegistry : public UObject
 	GENERATED_BODY()
 
 public:
-	DECLARE_EVENT_OneParam(USettingRegistry, FOnSettingChanged, USettingItem*);
+	DECLARE_EVENT_TwoParams(USettingRegistry, FOnSettingChanged, USettingItem*, ESettingChangedReason);
 
 	FOnSettingChanged OnSettingChanged;
 
@@ -31,7 +31,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	USettingItem* FindByRootSettingDevName(const FName&  DevName);
 protected:
-	void HandleSettingChanged(USettingItem* Setting);
+	void HandleSettingChanged(USettingItem* Setting, ESettingChangedReason Reason);
 	void HandleSettingApplied(USettingItem* Setting);
 	
 	UPROPERTY()

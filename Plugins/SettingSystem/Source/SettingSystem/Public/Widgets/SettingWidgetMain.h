@@ -6,6 +6,7 @@
 #include "CommonActivatableWidget.h"
 #include "SettingWidgetMain.generated.h"
 
+enum class ESettingChangedReason;
 class UCommonButtonBase;
 class UCommonTabListWidgetBase;
 class USettingWidgetPanel;
@@ -62,7 +63,7 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ChangeDirtyState(bool bSettingDirty);
 
-	void HandleSettingChanged(USettingItem* Setting);
+	void HandleSettingChanged(USettingItem* Setting, ESettingChangedReason Reason);
 
 private:
 	UPROPERTY(Transient)

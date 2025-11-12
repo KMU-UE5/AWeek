@@ -7,9 +7,9 @@ void USettingItem::Init()
 {
 }
 
-void USettingItem::NotifySettingChanged()
+void USettingItem::NotifySettingChanged(const ESettingChangedReason Reason)
 {
-	OnSettingChangedEvent.Broadcast(this);
+	OnSettingChangedEvent.Broadcast(this, Reason);
 }
 
 void USettingItem::Apply()

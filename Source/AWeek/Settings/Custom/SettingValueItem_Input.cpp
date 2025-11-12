@@ -44,7 +44,7 @@ void USettingValueItem_Input::Reset()
 
 	FGameplayTagContainer FailReason;
 	InputSetting->ResetAllPlayerKeysInRow(Args, FailReason);
-	NotifySettingChanged();
+	NotifySettingChanged(ESettingChangedReason::Init);
 }
 
 void USettingValueItem_Input::Store()
@@ -85,7 +85,7 @@ bool USettingValueItem_Input::ChangeKey(int32 InSlot, FKey InKey)
 		
 		FGameplayTagContainer FailureReason;
 		InputSetting->MapPlayerKey(Args, FailureReason);
-		NotifySettingChanged();
+		NotifySettingChanged(ESettingChangedReason::Change);
 	}
 
 	return false;
