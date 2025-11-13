@@ -47,8 +47,13 @@ UAWeekGameInput::UAWeekGameInput()
 
 	static ConstructorHelpers::FObjectFinder<UInputAction>
 		InteractAction(TEXT("/Script/EnhancedInput.InputAction'/Game/Player/Input/Actions/IA_Interact.IA_Interact'"));
-
 	mInteract = InteractAction.Object;
 
-	
+	static ConstructorHelpers::FObjectFinder<UInputAction>
+		UseItemAction(TEXT("/Script/EnhancedInput.InputAction'/Game/Player/Input/Actions/IA_UseItem.IA_UseItem'"));
+	mUseItem = UseItemAction.Object;
+
+	static ConstructorHelpers::FObjectFinder<UInputAction>
+		TestAction(TEXT("/Script/EnhancedInput.InputAction'/Game/Player/Input/Actions/IA_Test.IA_Test'"));
+	mTest = TestAction.Object;
 }

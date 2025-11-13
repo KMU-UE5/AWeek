@@ -75,7 +75,7 @@ public:
 	virtual void Use(AAWeekPlayerCharacter* Character);
 
 	void ResetItemFlags();
-
+	
 protected:
 	bool operator==(const FName& OtherID) const
 	{

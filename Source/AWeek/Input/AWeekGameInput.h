@@ -28,4 +28,9 @@ public:
 	TObjectPtr<UInputAction>			mInteract;
 	TObjectPtr<UInputAction>			mChangeWeapon;
 	TObjectPtr<UInputAction>			mMainWidget;
+	TObjectPtr<UInputAction>			mUseItem;
+
+
+	TObjectPtr<UInputAction>			mTest;
+	
 };
