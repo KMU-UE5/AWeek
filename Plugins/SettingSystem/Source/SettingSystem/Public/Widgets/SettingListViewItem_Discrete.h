@@ -23,7 +23,7 @@ public:
 protected:
 	virtual void NativeOnInitialized() override;
 
-	virtual void HandleSettingChangedApplied(USettingItem* ChangedSetting) override;
+	virtual void HandleSettingChangedApplied(USettingItem* ChangedSetting, ESettingChangedReason Reason) override;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnValueChanged(int Index);

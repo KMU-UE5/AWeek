@@ -21,6 +21,11 @@ void USettingListViewItem::Init(USettingItem* InGameSetting)
 	}
 }
 
-void USettingListViewItem::HandleSettingChangedApplied(USettingItem* ChangedSetting)
+void USettingListViewItem::NativeOnEntryReleased()
+{
+	Setting->OnSettingChangedEvent.RemoveAll(this);
+}
+
+void USettingListViewItem::HandleSettingChangedApplied(USettingItem* ChangedSetting, ESettingChangedReason Reason)
 {
 }

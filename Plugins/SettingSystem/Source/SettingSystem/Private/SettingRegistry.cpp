@@ -70,10 +70,10 @@ USettingItem* USettingRegistry::FindByRootSettingDevName(const FName& DevName)
 	return nullptr;
 }
 
-void USettingRegistry::HandleSettingChanged(USettingItem* Setting)
+void USettingRegistry::HandleSettingChanged(USettingItem* Setting, ESettingChangedReason Reason)
 {
 	DirtySettings.Add(FObjectKey(Setting), Setting);
-	OnSettingChanged.Broadcast(Setting);
+	OnSettingChanged.Broadcast(Setting, Reason);
 }
 
 void USettingRegistry::HandleSettingApplied(USettingItem* Setting)

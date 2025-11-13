@@ -24,7 +24,7 @@ public:
 	virtual void Store() override;
 	virtual void Restore() override;
 
-	void SetValue(const FString& InValue);
+	void SetValue(const FString& InValue, ESettingChangedReason Reason = ESettingChangedReason::Change);
 	FString GetValue() const;
 
 	void SetGetter(const TSharedRef<FSettingPropertyResolver>& InGetter);

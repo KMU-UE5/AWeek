@@ -13,6 +13,7 @@ void USettingWidgetMain::NativeConstruct()
 	Registry->Init(GetOwningLocalPlayer());
 	Registry->OnSettingChanged.AddUObject(this, &ThisClass::HandleSettingChanged);
 	Super::NativeConstruct();
+	ChangeDirtyState(false);
 }
 
 void USettingWidgetMain::Apply()
@@ -49,7 +50,10 @@ USettingItem* USettingWidgetMain::FindByRootSettingDevName(const FName& DevName)
 	return nullptr;
 }
 
-void USettingWidgetMain::HandleSettingChanged(USettingItem* Setting)
+void USettingWidgetMain::HandleSettingChanged(USettingItem* Setting, ESettingChangedReason Reason)
 {
-	ChangeDirtyState(true);
+	if (Reason == ESettingChangedReason::Change)
+	{
+		ChangeDirtyState(true);
+	}
 }

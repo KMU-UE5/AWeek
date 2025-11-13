@@ -14,7 +14,7 @@ void USettingValueDiscreteItem::Reset()
 {
 	if (DefaultValue.IsSet())
 	{
-		SetValue(DefaultValue.GetValue());
+		SetValue(DefaultValue.GetValue(), ESettingChangedReason::Init);
 	}
 }
 
@@ -25,12 +25,13 @@ void USettingValueDiscreteItem::Store()
 
 void USettingValueDiscreteItem::Restore()
 {
-	SetValue(InitialValue);
+	SetValue(InitialValue, ESettingChangedReason::Restore);
 }
 
-void USettingValueDiscreteItem::SetValue(const FString& InValue)
+void USettingValueDiscreteItem::SetValue(const FString& InValue, ESettingChangedReason Reason)
 {
 	Setter->SetValue(InValue);
+	NotifySettingChanged(Reason);
 }
 
 FString USettingValueDiscreteItem::GetValue() const

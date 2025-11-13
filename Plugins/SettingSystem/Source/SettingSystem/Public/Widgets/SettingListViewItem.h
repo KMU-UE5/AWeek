@@ -7,6 +7,7 @@
 #include "Blueprint/IUserObjectListEntry.h"
 #include "SettingListViewItem.generated.h"
 
+enum class ESettingChangedReason;
 class UTextBlock;
 class USettingItem;
 /**
@@ -19,7 +20,8 @@ class SETTINGSYSTEM_API USettingListViewItem : public UCommonUserWidget, public 
 
 public:
 	virtual void Init(USettingItem* InGameSetting);
-
+	virtual void NativeOnEntryReleased() override;
+	
 	UFUNCTION(BlueprintImplementableEvent)
 	void HandleInit();
 protected:
@@ -32,5 +34,5 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidgetOptional))
 	TObjectPtr<UTextBlock> SettingTextBlock; 
 protected:
-	virtual void HandleSettingChangedApplied(USettingItem* ChangedSetting);
+	virtual void HandleSettingChangedApplied(USettingItem* ChangedSetting, ESettingChangedReason Reason);
 };

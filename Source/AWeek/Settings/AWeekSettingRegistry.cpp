@@ -4,11 +4,15 @@
 #include "AWeekSettingRegistry.h"
 
 #include "AWeekGameUserSettings.h"
+#include "EnhancedInputSubsystems.h"
+#include "GameplayTagContainer.h"
 #include "SettingItemCategory.h"
 #include "SettingPropertyResolver.h"
 #include "SettingValueDiscreteItem_Bool.h"
 #include "SettingValueScalarItem.h"
 #include "AWeek/Player/AWeekLocalPlayer.h"
+#include "Custom/SettingValueItem_Input.h"
+#include "UserSettings/EnhancedInputUserSettings.h"
 
 #define LOCTEXT_NAMESPACE "AWeek"
 
@@ -26,6 +30,9 @@ void UAWeekSettingRegistry::Init(ULocalPlayer* InLocalPlayer)
 	
 	AudioSetting = RegisterAudioSetting();
 	RegisterSetting(AudioSetting);
+
+	KeyboardAndMouseSetting = RegisterKeyboardAndMouseSetting();
+	RegisterSetting(KeyboardAndMouseSetting);
 }
 
 void UAWeekSettingRegistry::Apply()
@@ -34,6 +41,10 @@ void UAWeekSettingRegistry::Apply()
 	if (UAWeekLocalPlayer* LocalPlayer = Cast<UAWeekLocalPlayer>(OwningLocalPlayer))
 	{
 		LocalPlayer->GetGameUserSettings()->ApplySettings(false);
+		const UEnhancedInputLocalPlayerSubsystem* InputSubsystem = OwningLocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+		UEnhancedInputUserSettings* UserSettings = InputSubsystem->GetUserSettings();
+		UserSettings->ApplySettings();
+		UserSettings->SaveSettings();
 	}
 }
 
@@ -105,5 +116,46 @@ USettingItem* UAWeekSettingRegistry::RegisterAudioSetting()
 	MusicSetting->SetSetter(GET_GAME_SETTINGS_PATH(OwningLocalPlayer, SetMusicVolume));
 	Setting->AddSetting(MusicSetting);
 	
+	return Setting;
+}
+
+USettingItem* UAWeekSettingRegistry::RegisterKeyboardAndMouseSetting()
+{
+	USettingItemCategory* Setting = NewObject<USettingItemCategory>();
+	Setting->SetDevName(TEXT("KeyboardAndMouseCategory"));
+	Setting->SetDisplayName(LOCTEXT("NAME_KeyboardAndMouseCategory","KeyboardAndMouse"));
+
+	const UEnhancedInputLocalPlayerSubsystem* InputSubsystem = OwningLocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	UEnhancedInputUserSettings* UserSettings = InputSubsystem->GetUserSettings();
+	for (const TPair<FGameplayTag, TObjectPtr<UEnhancedPlayerMappableKeyProfile>>& ProfilePair : UserSettings->GetAllSavedKeyProfiles())
+	{
+		const FGameplayTag& ProfileName = ProfilePair.Key;
+		const TObjectPtr<UEnhancedPlayerMappableKeyProfile>& Profile = ProfilePair.Value;
+
+		for (const TPair<FName, FKeyMappingRow>& RowPair : Profile->GetPlayerMappingRows())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("KeyBinding: %s"), *RowPair.Key.ToString());
+
+			if (RowPair.Value.HasAnyMappings() /* && !CreatedMappingNames.Contains(RowPair.Key)*/)
+			{
+				FPlayerMappableKeyQueryOptions Options = {};
+				Options.KeyToMatch = EKeys::A;
+				Options.bMatchBasicKeyTypes = true;
+
+				for (const FPlayerKeyMapping& Mapping : RowPair.Value.Mappings)
+				{
+					if (!Profile->DoesMappingPassQueryOptions(Mapping, Options))
+					{
+						continue;
+					}
+					USettingValueItem_Input* InputSetting = NewObject<USettingValueItem_Input>();
+					InputSetting->Init(Profile, RowPair.Value, Options, UserSettings);
+					Setting->AddSetting(InputSetting);
+				}
+			}
+		}
+	}
+		
+
 	return Setting;
 }
