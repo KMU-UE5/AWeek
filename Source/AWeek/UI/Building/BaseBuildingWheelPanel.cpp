@@ -7,7 +7,7 @@
 
 void UBaseBuildingWheelPanel::ActiveWheel()
 {
-	if (index == SectionCount)index = 0;
-	UE_LOG(LogTemp, Log, TEXT("Base Building select widget click action %d"), index);
-	BuildingSelectWidget->ChangeWheel(index+1);
+	if (Index == SectionCount)Index = 0;
+	UE_LOG(LogTemp, Log, TEXT("Base Building select widget click action %d"), Index);
+	BuildingSelectWidget->ChangeWheel(Index+1);
 }

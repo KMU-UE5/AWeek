@@ -13,6 +13,7 @@
 /**
  * 
  */
+class UBuildingWheelPanel;
 class UAWeekActivatableWidget;
 class UBuildingCraftPanel;
 class UPreviewObjectWidget;
@@ -22,7 +23,7 @@ class AWEEK_API UGridPlacedSubsystem : public UWorldSubsystem, public FTickableG
 	GENERATED_BODY()
 public:
 	// 진입/종료
-	UFUNCTION(BlueprintCallable) void StartPlacement(TSubclassOf<APreviewObject> PreviewClass, APlayerController* ForPC, UBuildingCraftPanel* Panel);
+	UFUNCTION(BlueprintCallable) void StartPlacement(TSubclassOf<APreviewObject> PreviewClass, APlayerController* ForPC, UBuildingWheelPanel* Panel);
 	UFUNCTION(BlueprintCallable) void StopPlacement();
 
 	// 사용자 액션
@@ -49,7 +50,7 @@ private:
 	void EnsureGridUIShown(APlayerController* PC, TSubclassOf<UPreviewObjectWidget> GridUIClass);
 	void HideGridUI();
 	TWeakObjectPtr<UAWeekActivatableWidget> GridUI;
-	TWeakObjectPtr<UBuildingCraftPanel> BuildingCraftPanel;
+	TWeakObjectPtr<UBuildingWheelPanel> BuildingCraftPanel;
 	
 	bool UpdatePreview();                    // 디프로젝션+레이캐스트+스냅
 	FVector SnapToGrid(const FVector& P) const;

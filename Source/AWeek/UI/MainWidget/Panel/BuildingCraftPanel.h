@@ -52,6 +52,7 @@ protected:
 	
 	UPROPERTY()
 	TSubclassOf<APreviewObject> PreviewObjectClass;
+	//TSubclassOf<APreviewObject> PreviewObjectClass;
 
 	UFUNCTION()
 	void CreateBuilding();

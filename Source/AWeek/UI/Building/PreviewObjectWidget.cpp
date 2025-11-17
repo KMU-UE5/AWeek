@@ -6,6 +6,14 @@
 #include "AWeek/Grid/GridPlacedSubsystem.h"
 #include "Input/CommonUIInputTypes.h"
 
+
+UPreviewObjectWidget::UPreviewObjectWidget(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	//bAutoFocusOnActivation = true; // 활성화될 때 자동 포커스
+	SetIsFocusable(true);          // 포커스 가능하도록
+}
+
 void UPreviewObjectWidget::NativeOnActivated()
 {
 	Super::NativeOnActivated();
@@ -64,6 +72,9 @@ void UPreviewObjectWidget::NativeOnActivated()
 		false,
 		FSimpleDelegate::CreateUObject(this, &UPreviewObjectWidget::RotateL));
 	WheelDownBindingHandle = RegisterUIActionBinding(ArgsWheelDown);
+
+
+	UE_LOG(LogTemp, Log, TEXT("Left handle valid? %d"), LeftClickBindingHandle.IsValid());
 }
 
 void UPreviewObjectWidget::NativeOnDeactivated()

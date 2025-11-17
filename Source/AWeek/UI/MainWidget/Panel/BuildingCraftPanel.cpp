@@ -54,7 +54,7 @@ void UBuildingCraftPanel::UpdateItemCount()
 	{
 		if (Pill->CheckItem())bInventoryCheck = false;
 	}
-	if (bInventoryCheck){CreateButton->SetIsEnabled(false);}
+	if (bInventoryCheck){CreateButton->SetIsEnabled(true);}
 	else{CreateButton->SetIsEnabled(true);}
 }
 
@@ -111,9 +111,9 @@ void UBuildingCraftPanel::CreateBuilding()
     
         if (UGridPlacedSubsystem* Sub = GetWorld()->GetSubsystem<UGridPlacedSubsystem>())
         {
-            Sub->StartPlacement(PreviewObjectClass, PC, this);
         	AAWeekPlayerCharacter* Ch = Cast<AAWeekPlayerCharacter>(PC->GetPawn());
         	Ch->ToggleMainWidget();
+            //Sub->StartPlacement(PreviewObjectClass, PC, this);
         }
 }
 

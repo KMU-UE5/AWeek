@@ -5,11 +5,12 @@
 
 #include "CommonUIExtensions.h"
 #include "AWeek/UI/AWeekActivatableWidget.h"
+#include "AWeek/UI/Building/BuildingWheelPanel.h"
 #include "AWeek/UI/MainWidget/Panel/BuildingCraftPanel.h"
 #include "AWeek/UI/Building/PreviewObjectWidget.h"
 
 
-void UGridPlacedSubsystem::StartPlacement(TSubclassOf<APreviewObject> PreviewClass, APlayerController* ForPC, UBuildingCraftPanel* CraftPanel)
+void UGridPlacedSubsystem::StartPlacement(TSubclassOf<APreviewObject> PreviewClass, APlayerController* ForPC, UBuildingWheelPanel* CraftPanel)
 {
     if (GridWidgetClass == nullptr)
     {
@@ -76,10 +77,13 @@ void UGridPlacedSubsystem::StopPlacement()
 //LeftClick
 void UGridPlacedSubsystem::ConfirmPlacement()
 {
+    
     if (!PreviewActor.IsValid()) return;
+    
     PreviewActor->PlaceActor(ParentUnderCursor.Get());
     //TODO Inventory Item Remove
     BuildingCraftPanel->RemoveItem();
+    
     StopPlacement();
 }
 
@@ -160,7 +164,7 @@ void UGridPlacedSubsystem::EnsureGridUIShown(APlayerController* PC, TSubclassOf<
     if (ULocalPlayer* LP = PC->GetLocalPlayer())
     {
         auto* Inst = UCommonUIExtensions::PushContentToLayer_ForPlayer(
-            LP, FGameplayTag::RequestGameplayTag(TEXT("UI.Layer.Game")), GridUIClass);
+            LP, FGameplayTag::RequestGameplayTag(TEXT("UI.Layer.GameMenu")), GridUIClass);
         GridUI = Cast<UPreviewObjectWidget>(Inst);  // 캐시
     }
 }

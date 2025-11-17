@@ -10,7 +10,7 @@
 #include "PreviewObject.generated.h"
 
 class UGridTriggerBoxComponent;
-
+class UBoxComponent;
 UCLASS(ClassGroup=(Custom), BlueprintType, Blueprintable)
 class AWEEK_API APreviewObject : public AActor
 {
@@ -43,7 +43,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category="BoxComponent")
 	UStaticMeshComponent* BoxMesh;
 	UPROPERTY(EditAnywhere, Category="BoxComponent")
-	UGridTriggerBoxComponent* BoxComponent;
+	UBoxComponent* BoxComponent;
 	UPROPERTY(VisibleAnywhere, Category="BoxComponent")
 	UStaticMesh* BoxMeshAsset;
 	UPROPERTY(EditAnywhere, Category="Preview|Size")

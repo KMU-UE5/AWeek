@@ -15,6 +15,9 @@ class AWEEK_API UPreviewObjectWidget : public UAWeekActivatableWidget
 {
 	GENERATED_BODY()
 
+public:
+	UPreviewObjectWidget(const FObjectInitializer& ObjectInitializer);
+
 protected:
 	virtual void NativeOnActivated() override;
 	virtual void NativeOnDeactivated() override;

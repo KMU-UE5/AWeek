@@ -53,11 +53,12 @@ void UGridTriggerBoxComponent::TickComponent(float DeltaTime, enum ELevelTick Ti
 	
 	for (UPrimitiveComponent* Comp : OverlappingComps)
 	{
+		
 		if (!Comp) continue;
 		if (IsBuildingArea(Comp))
 		{
 			bBuildingArea = true;
-			//UE_LOG(LogTemp, Log, TEXT("BuildingArea Enter!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
+			UE_LOG(LogTemp, Log, TEXT("BuildingArea Enter!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"));
 			//continue;
 		}
 		if (Comp->ComponentHasTag(TestTag) && bBuildingArea)

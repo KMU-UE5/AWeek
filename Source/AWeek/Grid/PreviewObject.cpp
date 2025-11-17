@@ -3,6 +3,7 @@
 
 #include "AWeek/Grid/PreviewObject.h"
 #include "AWeek/Grid/GridTriggerBoxComponent.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 APreviewObject::APreviewObject()
@@ -59,11 +60,15 @@ void APreviewObject::BeginPlay()
 	StaticMesh->SetMaterial(0, TrueMaterial);*/
 
 	/*BoxMesh->SetMaterial(0, TrueMaterial);*/
+	UE_LOG(LogTemp, Log, TEXT("asdf"));
 	if (Mesh)
 	{
 		StaticMesh->SetStaticMesh(Mesh);
 	}
 	StaticMesh->SetMaterial(0, TrueMaterial);
+
+	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &APreviewObject::OnBoxBeginOverlap);
+	BoxComponent->OnComponentEndOverlap.AddDynamic(this, &APreviewObject::OnBoxEndOverlap);
 }
  
 // Called every frame
@@ -163,8 +168,10 @@ bool APreviewObject::PlaceActor(AGridPlacedActor* ParentGridPlacedActor)
 		PlacedActor->SetActive(true);
 	}else{return false;}
 	return true;*/
+	UE_LOG(LogTemp, Log,TEXT("1"));
 	if (bCanPlace)
 	{
+		UE_LOG(LogTemp, Log,TEXT("2"));
 		//UE_LOG(LogTemp, Log, TEXT("place Actor bCanPlace is %s"), bCanPlace ? TEXT("true") : TEXT("false"));
 		AGridPlacedActor* ChildPlacedActor = GetWorld()->SpawnActor<AGridPlacedActor>(BuildToPlace, GetActorLocation(), GetActorRotation());
 		if (ParentGridPlacedActor)
@@ -180,7 +187,12 @@ bool APreviewObject::PlaceActor(AGridPlacedActor* ParentGridPlacedActor)
 			TestWorldSubsystem_->InsertBuilding(ChildPlacedActor);
 			TestWorldSubsystem_->ReBuildingLink();
 		}*/
-	}else{return false;}
+	}else
+	{
+		UE_LOG(LogTemp, Log,TEXT("3"));
+		return false;
+	}
+	UE_LOG(LogTemp, Log,TEXT("4"));
 	return true;
 }
 
@@ -198,33 +210,40 @@ void APreviewObject::SyncBoxComponentToBoxMesh()
 
 void APreviewObject::OnBoxBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	
 	if (OtherComp->GetCollisionProfileName() == FName(TEXT("BuildingArea")))
 	{
+		
 		//TODO Check Overlapped Object
 		if (BlockObjects.Num() == 0)
 		{
 			BoxMesh->SetMaterial(0, TrueMaterial);
+			bCanPlace = true;
 		}
 	}else
 	{
 		BoxMesh->SetMaterial(0, FalseMaterial);
 		BlockObjects.Add(OtherComp);
+		bCanPlace = false;
 	}
 }
 
 void APreviewObject::OnBoxEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-
+	
 	if (OtherComp->GetCollisionProfileName() == FName(TEXT("BuildingArea")))
 	{
+		bCanPlace = false;
 		BoxMesh->SetMaterial(0, FalseMaterial);
 	}else
 	{
+		
 		//TODO Check Overlapped Object
 		BlockObjects.Remove(OtherComp);
 		if (BlockObjects.Num() == 0)
 		{
 			BoxMesh->SetMaterial(0, TrueMaterial);
+			bCanPlace = true;
 		}
 	}
 }
