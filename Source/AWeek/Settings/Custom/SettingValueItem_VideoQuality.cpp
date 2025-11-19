@@ -13,10 +13,10 @@ void USettingValueItem_VideoQuality::Init()
 	
 	AddNumOption(0, LOCTEXT("OverallScalabilityLevel_Low", "Low"));
 	AddNumOption(1, LOCTEXT("OverallScalabilityLevel_Medium", "Medium"));
-	AddNumOption(1, LOCTEXT("OverallScalabilityLevel_High", "High"));
-	AddNumOption(1, LOCTEXT("OverallScalabilityLevel_Epic", "Epic"));
-	AddNumOption(1, LOCTEXT("OverallScalabilityLevel_Cinematic", "Cinematic"));
-	AddNumOption(1, LOCTEXT("OverallScalabilityLevel_Custom", "Custom"));
+	AddNumOption(2, LOCTEXT("OverallScalabilityLevel_High", "High"));
+	AddNumOption(3, LOCTEXT("OverallScalabilityLevel_Epic", "Epic"));
+	AddNumOption(4, LOCTEXT("OverallScalabilityLevel_Cinematic", "Cinematic"));
+	AddNumOption(5, LOCTEXT("OverallScalabilityLevel_Custom", "Custom"));
 }
 
 void USettingValueItem_VideoQuality::Store()

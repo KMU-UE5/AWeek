@@ -35,7 +35,7 @@ void USettingListViewItem_Discrete::NativeOnInitialized()
 
 void USettingListViewItem_Discrete::HandleSettingChangedApplied(USettingItem* ChangedSetting, ESettingChangedReason Reason)
 {
-	Super::HandleSettingChangedApplied(ChangedSetting, Reason);
+	Rotator->SetSelectedItem(DiscreteSetting->GetValueOptionIndex());
 }
 
 void USettingListViewItem_Discrete::HandleRotatorValueChanged(int32 Value, bool bUserInitiated)

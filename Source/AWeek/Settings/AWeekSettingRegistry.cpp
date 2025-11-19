@@ -134,6 +134,20 @@ USettingItem* UAWeekSettingRegistry::RegisterGraphicSetting()
 		OverallQuality->SetDevName(TEXT("OverallQuality"));
 		OverallQuality->SetDisplayName(LOCTEXT("SETTING_OverallQuality","OverallQuality"));
 		Graphics->AddSetting(OverallQuality);
+
+		 USettingValueDiscreteItem_Num* ShadowSetting = NewObject<USettingValueDiscreteItem_Num>();
+		 ShadowSetting->SetDevName(TEXT("ShadowSetting"));
+		 ShadowSetting->SetDisplayName(LOCTEXT("SETTING_Shadow","Shadow"));
+		 ShadowSetting->SetGetter(GET_GAME_SETTINGS_PATH(OwningLocalPlayer, GetShadowQuality));
+		 ShadowSetting->SetSetter(GET_GAME_SETTINGS_PATH(OwningLocalPlayer, SetShadowQuality));
+		 ShadowSetting->AddNumOption(0, LOCTEXT("Shadow_Low", "Low"));
+		 ShadowSetting->AddNumOption(1, LOCTEXT("Shadow_Medium", "Medium"));
+		 ShadowSetting->AddNumOption(2, LOCTEXT("Shadow_High", "High"));
+		 ShadowSetting->AddNumOption(3, LOCTEXT("Shadow_Epic", "Epic"));
+		 ShadowSetting->AddNumOption(4, LOCTEXT("Shadow_Cinematic", "Cinematic"));
+		 ShadowSetting->AddNeighbour(OverallQuality);
+		 OverallQuality->AddNeighbour(ShadowSetting);
+		Graphics->AddSetting(ShadowSetting);
 	}
 	
 
