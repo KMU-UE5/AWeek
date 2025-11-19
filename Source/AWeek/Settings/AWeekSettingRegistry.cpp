@@ -9,9 +9,12 @@
 #include "SettingItemCategory.h"
 #include "SettingPropertyResolver.h"
 #include "SettingValueDiscreteItem_Bool.h"
+#include "SettingValueDiscreteItem_Enum.h"
+#include "SettingValueDiscreteItem_Num.h"
 #include "SettingValueScalarItem.h"
 #include "AWeek/Player/AWeekLocalPlayer.h"
 #include "Custom/SettingValueItem_Input.h"
+#include "Custom/SettingValueItem_VideoQuality.h"
 #include "UserSettings/EnhancedInputUserSettings.h"
 
 #define LOCTEXT_NAMESPACE "AWeek"
@@ -27,6 +30,9 @@ void UAWeekSettingRegistry::Init(ULocalPlayer* InLocalPlayer)
 	OwningLocalPlayer = InLocalPlayer;
 	GameplaySetting = RegisterGameplaySetting();
 	RegisterSetting(GameplaySetting);
+	
+	GraphicsSetting = RegisterGraphicSetting();
+	RegisterSetting(GraphicsSetting);
 	
 	AudioSetting = RegisterAudioSetting();
 	RegisterSetting(AudioSetting);
@@ -78,15 +84,59 @@ USettingItem* UAWeekSettingRegistry::RegisterGameplaySetting()
 	MouseSensitivityY->SetGetter(GET_GAME_SETTINGS_PATH(OwningLocalPlayer, GetMouseSensitivityY));
 	MouseSensitivityY->SetSetter(GET_GAME_SETTINGS_PATH(OwningLocalPlayer, SetMouseSensitivityY));
 	Setting->AddSetting(MouseSensitivityY);
-
-	USettingValueDiscreteItem_Bool* FullScreen = NewObject<USettingValueDiscreteItem_Bool>();
-	FullScreen->SetDevName(TEXT("FullScreenMode"));
-	FullScreen->SetDisplayName(LOCTEXT("FullScreenMode","IsFullScreen"));
-	FullScreen->SetDefaultValue(GetDefault<UAWeekGameUserSettings>()->GetFullScreenModeTemp());
-	FullScreen->SetGetter(GET_GAME_SETTINGS_PATH(OwningLocalPlayer, GetFullScreenModeTemp));
-	FullScreen->SetSetter(GET_GAME_SETTINGS_PATH(OwningLocalPlayer, SetFullScreenModeTemp));
-	Setting->AddSetting(FullScreen);
 	
+	return Setting;
+}
+
+USettingItem* UAWeekSettingRegistry::RegisterGraphicSetting()
+{
+	const UAWeekGameUserSettings* UserSettings = UAWeekGameUserSettings::Get();
+	
+	USettingItemCategory* Setting = NewObject<USettingItemCategory>();
+	Setting->SetDevName(TEXT("GraphicsCategory"));
+	Setting->SetDisplayName(LOCTEXT("SETTING_GraphicsCategory","Graphics"));
+	
+	USettingItemCategory* Display = NewObject<USettingItemCategory>();
+	Display->SetDevName(TEXT("Display"));
+	Display->SetDisplayName(LOCTEXT("SETTING_Display","Display"));
+	Setting->AddSetting(Display);
+	{
+		USettingValueDiscreteItem_Enum* WindowMode = NewObject<USettingValueDiscreteItem_Enum>();
+		WindowMode->SetDevName(TEXT("WindowMode"));
+		WindowMode->SetDisplayName(LOCTEXT("SETTING_WindowMode","WindowMode"));
+		WindowMode->SetSetter(GET_GAME_SETTINGS_PATH(OwningLocalPlayer, SetFullscreenMode));
+		WindowMode->SetGetter(GET_GAME_SETTINGS_PATH(OwningLocalPlayer, GetFullscreenMode));
+		WindowMode->SetDefaultValueEnum(EWindowMode::Fullscreen);
+		WindowMode->AddEnumOption(EWindowMode::Fullscreen, LOCTEXT("SETTING_WindowModeFullScreen", "FullScreen"));
+		WindowMode->AddEnumOption(EWindowMode::Windowed, LOCTEXT("SETTING_WindowModeWindowed", "Windowed"));
+		WindowMode->AddEnumOption(EWindowMode::WindowedFullscreen, LOCTEXT("SETTING_WindowModeWindowedFullScreen", "WindowedFullScreen"));
+		Display->AddSetting(WindowMode);
+	}
+	
+
+	USettingItemCategory* Graphics = NewObject<USettingItemCategory>();
+	Graphics->SetDevName(TEXT("Graphics"));
+	Graphics->SetDisplayName(LOCTEXT("SETTING_Graphics","Graphics"));
+	Setting->AddSetting(Graphics);
+	{
+		USettingValueScalarItem* GammaSetting = NewObject<USettingValueScalarItem>();
+		GammaSetting->SetDevName(TEXT("Gamma"));
+		GammaSetting->SetDisplayName(LOCTEXT("SETTING_Gamma","Gamma"));
+		GammaSetting->SetMinValue(1.0f);
+		GammaSetting->SetMaxValue(5.0f);
+		GammaSetting->SetDefaultValue(2.2f);
+		GammaSetting->SetGetter(GET_GAME_SETTINGS_PATH(OwningLocalPlayer, GetGamma));
+		GammaSetting->SetSetter(GET_GAME_SETTINGS_PATH(OwningLocalPlayer, SetGamma));
+		Graphics->AddSetting(GammaSetting);
+	}
+	{
+		USettingValueItem_VideoQuality* OverallQuality = NewObject<USettingValueItem_VideoQuality>();
+		OverallQuality->SetDevName(TEXT("OverallQuality"));
+		OverallQuality->SetDisplayName(LOCTEXT("SETTING_OverallQuality","OverallQuality"));
+		Graphics->AddSetting(OverallQuality);
+	}
+	
+
 	return Setting;
 }
 

@@ -97,3 +97,13 @@ void UAWeekGameUserSettings::SetAmbientVolume(float InVolume)
 		UAWeekAudioSubsystem::Get(World)->SetSoundVolume(ESoundChannel::Ambient, AmbientVolume);
 	}
 }
+
+float UAWeekGameUserSettings::GetGamma() const
+{
+	return GEngine->GetDisplayGamma();
+}
+
+void UAWeekGameUserSettings::SetGamma(float InGamma)
+{
+	GEngine->DisplayGamma = InGamma;
+}

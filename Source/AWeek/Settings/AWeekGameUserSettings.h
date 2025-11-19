@@ -56,6 +56,11 @@ public:
 	float GetAmbientVolume() const;
 	UFUNCTION()
 	void SetAmbientVolume(float InVolume);
+
+	UFUNCTION()
+	float GetGamma() const;
+	UFUNCTION()
+	void SetGamma(float InGamma);
 private:
 	UPROPERTY(Config)
 	bool IsFullScreenMode = true;
