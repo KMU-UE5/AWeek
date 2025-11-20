@@ -9,6 +9,7 @@ enum class EDamageType : uint8
     Default  UMETA(DisplayName = "Default"),
     Melee     UMETA(DisplayName = "Melee"),
     Projectile      UMETA(DisplayName = "Projectile"),
+    Flame UMETA(DisplayName = "Flame"),
     Explosion   UMETA(DisplayName = "Explosion")
 };
 
