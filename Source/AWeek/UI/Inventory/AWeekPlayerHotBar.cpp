@@ -8,9 +8,17 @@
 
 #include "Components/UniformGridPanel.h"
 
-void UAWeekPlayerHotBar::InitializeHotBar(const TObjectPtr<UAWeekPlayerInventoryComponent> InPlayerInventoryComponent)
+void UAWeekPlayerHotBar::NativeOnInitialized()
 {
-	PlayerInventoryComponent = InPlayerInventoryComponent;
+	Super::NativeOnInitialized();
+
+	AAWeekPlayerCharacter* PlayerCharacter = Cast<AAWeekPlayerCharacter>(GetOwningPlayerPawn());
+	if (!PlayerCharacter)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s: PlayerCharacter is null!"), *FString(__FUNCTION__));
+		return;
+	}
+	PlayerInventoryComponent = PlayerCharacter->GetPlayerInventoryComponent();
 
 	for (int32 i = 0; i < PlayerInventoryComponent->GetHotBarInventorySize(); i++)
 	{
@@ -19,7 +27,9 @@ void UAWeekPlayerHotBar::InitializeHotBar(const TObjectPtr<UAWeekPlayerInventory
 		HotBarSlots.Add(ItemSlot);
 	}
 	HotBarSlots[0]->SetHighlight(true);
+
 	PlayerInventoryComponent->OnSlotUpdated.AddUObject(this, &UAWeekPlayerHotBar::OnSlotUpdated);
+	PlayerInventoryComponent->OnHotbarSelectionChanged.AddUObject(this, &UAWeekPlayerHotBar::OnHotBarSelectionChanged);
 	
 	RefreshHotBar();
 }
@@ -39,8 +49,6 @@ void UAWeekPlayerHotBar::RefreshHotBar()
 
 void UAWeekPlayerHotBar::OnHotBarSelectionChanged(int32 OldIndex, int32 NewIndex)
 {
-	// UE_LOG(LogTemp, Warning, TEXT("%s, OldIndex:%d, NewIndex:%d"),
-	// 	*FString(__FUNCTION__), OldIndex, NewIndex);
 	UAWeekItemSlot* OldItemSlot = HotBarSlots[OldIndex];
 	UAWeekItemSlot* NewItemSlot = HotBarSlots[NewIndex];
 	

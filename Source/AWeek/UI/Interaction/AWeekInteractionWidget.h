@@ -16,9 +16,7 @@ class AWEEK_API UAWeekInteractionWidget : public UAWeekActivatableWidget
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(VisibleAnywhere, Category = "Interaction Widget | Player Reference")
-	AAWeekPlayerCharacter* PlayerReference;
-
+	UAWeekInteractionWidget();
 	void UpdateWidget(const FAWeekInteractableData* FInteractableData) const;
 
 protected:
@@ -44,5 +42,5 @@ protected:
 	float UpdateInteractionProgress();
 
 	virtual void NativeOnInitialized() override;
-	virtual void NativeConstruct() override;
+	void OnInteractionTargetChanged(const FAWeekInteractableData* InteractableData);
 };

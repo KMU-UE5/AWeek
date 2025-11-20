@@ -18,9 +18,10 @@ class AWEEK_API UAWeekPlayerHotBar : public UAWeekActivatableWidget
 {
 	GENERATED_BODY()
 
+protected:
+	virtual void NativeOnInitialized() override;
+	
 public:
-	void InitializeHotBar(TObjectPtr<UAWeekPlayerInventoryComponent> InPlayerInventoryComponent);
-
 	UFUNCTION()
 	void RefreshHotBar();
 

@@ -33,6 +33,8 @@ class UAWeekInventoryComponent;
 class UAWeekItemBase;
 struct FAWeekInventorySlotData;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnInteractionTargetChanged, const FAWeekInteractableData* InteractableData)
+
 USTRUCT()
 struct FAWeekInteractionData
 {
@@ -57,6 +59,8 @@ class AWEEK_API AAWeekPlayerCharacter : public AAWeekCharacter, public IDamageAb
 public:
 	AAWeekPlayerCharacter();
 
+	FOnInteractionTargetChanged OnInteractionTargetChanged;
+	
 protected:
 	/*--------------CAMERA--------------*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))

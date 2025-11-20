@@ -681,7 +681,7 @@ void AAWeekPlayerCharacter::PerformInteractionCheck()
 	NoInteractableFound();
 }
 
-void AAWeekPlayerCharacter::FoundInteractable(TObjectPtr<AActor> NewInteractable)
+void AAWeekPlayerCharacter::FoundInteractable(const TObjectPtr<AActor> NewInteractable)
 {
 	if (IsInteracting())
 	{
@@ -697,8 +697,7 @@ void AAWeekPlayerCharacter::FoundInteractable(TObjectPtr<AActor> NewInteractable
 	InteractionData.CurrentInteractable = NewInteractable;
 	TargetInteractable = NewInteractable;
 
-	
-	UIManager->UpdateInteractionWidget(&TargetInteractable->InteractableData);
+	OnInteractionTargetChanged.Broadcast(&TargetInteractable->InteractableData);
 	TargetInteractable->BeginFocus();
 }
 
@@ -716,7 +715,7 @@ void AAWeekPlayerCharacter::NoInteractableFound()
 			TargetInteractable->EndFocus();
 		}
 
-		UIManager->HideInteractionWidget();
+		OnInteractionTargetChanged.Broadcast(nullptr);
 
 		InteractionData.CurrentInteractable = nullptr;
 		TargetInteractable = nullptr;
@@ -775,7 +774,7 @@ void AAWeekPlayerCharacter::UpdateInteractionWidget() const
 {
 	if (IsValid(TargetInteractable.GetObject()))
 	{
-		UIManager->UpdateInteractionWidget(&TargetInteractable->InteractableData);
+		OnInteractionTargetChanged.Broadcast(&TargetInteractable->InteractableData);
 	}
 }
 

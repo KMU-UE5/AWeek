@@ -2,32 +2,58 @@
 
 
 #include "AWeek/UI/Interaction/AWeekInteractionWidget.h"
+
+#include "AWeek/Character/AWeekPlayerCharacter.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "AWeek/Interfaces/AWeekInteractionInterface.h"
+#include "AWeek/UI/AWeekGameUIManager.h"
+
+UAWeekInteractionWidget::UAWeekInteractionWidget(): CurrentInteractionDuration(0.0f)
+{
+}
 
 void UAWeekInteractionWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
 	InteractionProgressBar->PercentDelegate.BindUFunction(this, "UpdateInteractionProgress");
+	if (AAWeekPlayerCharacter* PlayerCharacter = Cast<AAWeekPlayerCharacter>(GetOwningPlayerPawn()))
+	{
+		PlayerCharacter->OnInteractionTargetChanged.AddUObject(this, &UAWeekInteractionWidget::OnInteractionTargetChanged);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s: PlayerCharacter is null!"), *FString(__FUNCTION__));
+	}
+
+	SetVisibility(ESlateVisibility::Collapsed);
 }
 
-void UAWeekInteractionWidget::NativeConstruct()
+void UAWeekInteractionWidget::OnInteractionTargetChanged(const FAWeekInteractableData* InteractableData)
 {
-	Super::NativeConstruct();
-
-	KeyPressText->SetText(FText::FromString("Press"));
-	CurrentInteractionDuration = 0.0f;
+	if (InteractableData)
+	{
+		SetVisibility(ESlateVisibility::Visible);
+		UpdateWidget(InteractableData);
+	}
+	else
+	{
+		SetVisibility(ESlateVisibility::Collapsed);
+	}
 }
 
 void UAWeekInteractionWidget::UpdateWidget(const FAWeekInteractableData* FInteractableData) const
 {
+	if (!FInteractableData)
+	{
+		return;
+	}
 	switch (FInteractableData->InteractableType)
 	{
 	case EAWeekInteractableType::Pickup:
-		KeyPressText->SetText(FText::FromString("Press"));
 		InteractionProgressBar->SetVisibility(ESlateVisibility::Collapsed);
+		KeyPressText->SetText(FText::FromString("Press"));
 
 		if (FInteractableData->Quantity < 2)
 		{

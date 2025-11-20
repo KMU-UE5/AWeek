@@ -37,8 +37,6 @@ void UAWeekGameUIManager::InitializeUIManager(const TObjectPtr<AAWeekPlayerChara
 		if (UIDataAsset)
 		{
 			InventoryHubWidgetClass = UIDataAsset->InventoryHubWidgetClass;
-			PlayerHotBarClass = UIDataAsset->PlayerHotBarClass;
-			InteractionWidgetClass = UIDataAsset->InteractionWidgetClass;
 			HeldItemVisualClass = UIDataAsset->HeldItemVisualClass;
 			MainUIWidgetClass = UIDataAsset->MainWidgetClass;
 			BuildingSelectWidgetClass = UIDataAsset->BuildingSelectWidgetClass;
@@ -60,18 +58,6 @@ void UAWeekGameUIManager::InitializeUIManager(const TObjectPtr<AAWeekPlayerChara
 	CraftingController->InitializeCraftingController(this,
 		PlayerCharacter->GetCraftingComponent(),
 		PlayerCharacter->GetPlayerInventoryComponent());
-
-	// Create Hotbar widget
-	if (PlayerHotBarClass)
-	{
-		PlayerHotBarWidget = Cast<UAWeekPlayerHotBar>(
-			UCommonUIExtensions::PushContentToLayer_ForPlayer(LocalPlayer,
-				FGameplayTag::RequestGameplayTag("UI.Layer.GameMenu"), PlayerHotBarClass));
-		
-		PlayerHotBarWidget->InitializeHotBar(PlayerCharacter->GetPlayerInventoryComponent());
-		PlayerCharacter->GetPlayerInventoryComponent()->OnHotbarSelectionChanged.AddUObject(
-			PlayerHotBarWidget, &UAWeekPlayerHotBar::OnHotBarSelectionChanged);
-	}
 	
 	if (InventoryHubWidgetClass)
 	{
@@ -265,34 +251,10 @@ void UAWeekGameUIManager::PreviewObjectRotateR()
 	}
 }
 
-void UAWeekGameUIManager::ShowInteractionWidget()
-{
-	if (InteractionWidgetClass)
-	{
-		InteractionWidget = Cast<UAWeekInteractionWidget, UCommonActivatableWidget>(
-			UCommonUIExtensions::PushContentToLayer_ForPlayer(LocalPlayer,
-				FGameplayTag::RequestGameplayTag("UI.Layer.Game"), InteractionWidgetClass));
-	}
-}
-void UAWeekGameUIManager::HideInteractionWidget() const
-{
-	if (InteractionWidget)
-	{
-		InteractionWidget->DeactivateWidget();
-	}
-}
-void UAWeekGameUIManager::UpdateInteractionWidget(const FAWeekInteractableData* InteractableData)
-{
-	if (InteractionWidget == nullptr || !InteractionWidget->IsActivated())
-	{
-		if (InteractionWidgetClass)
-		{
-			ShowInteractionWidget();
-		}
-
-		InteractionWidget->UpdateWidget(InteractableData);
-	}
-}
+// void UAWeekGameUIManager::UpdateInteractionWidget(const FAWeekInteractableData* InteractableData)
+// {
+// 	InteractionWidget->UpdateWidget(InteractableData);
+// }
 
 void UAWeekGameUIManager::CloseChestInventory()
 {

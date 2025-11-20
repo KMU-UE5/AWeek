@@ -60,10 +60,8 @@ public:
 
 	void PreviewObjectRotateL();
 	void PreviewObjectRotateR();
-
-	void ShowInteractionWidget();
-	void HideInteractionWidget() const;
-	void UpdateInteractionWidget(const FAWeekInteractableData* InteractableData);
+	
+	// void UpdateInteractionWidget(const FAWeekInteractableData* InteractableData);
 	
 	void CloseChestInventory();
 	
