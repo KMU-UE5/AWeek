@@ -1,6 +1,7 @@
 #include "EnemyActorSpawner.h"
 #include "../Pool/ActorPoolSubSystem.h"
 #include "../Pool/IPoolable.h"
+#include"../Visibility/CameraVisibilitySubsystem.h"
 #include "Engine/World.h"
 #include "GameFramework/Character.h"
 #include "Components/CapsuleComponent.h"
@@ -22,6 +23,12 @@ void AEnemyActorSpawner::BeginPlay()
         {
             UE_LOG(LogTemp, Error, TEXT("[%s] Failed to get ActorPoolSubSystem!"), *GetName());
         }
+    }
+
+    VisibilitySubsystem = World->GetSubsystem<UCameraVisibilitySubsystem>();
+    if (!VisibilitySubsystem)
+    {
+        UE_LOG(LogTemp, Error, TEXT("[%s] Failed to get CameraVisibilitySubsystem!"), *GetName());
     }
 
     auto& MessageSubsystem = UGameEventMessageSubsystem::Get(this);
@@ -55,6 +62,12 @@ void AEnemyActorSpawner::SpawnEnemiesFromPool()
         return;
     }
 
+    if (!VisibilitySubsystem)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[%s] VisibilitySubsystem is null"), *GetName());
+        return;
+    }
+
     UWorld* World = GetWorld();
     if (!World) return;
 
@@ -77,11 +90,21 @@ void AEnemyActorSpawner::SpawnEnemiesFromPool()
                 if (UCapsuleComponent* Capsule = DefaultChar->GetCapsuleComponent())
                     ZOffset = Capsule->GetScaledCapsuleHalfHeight();
             }
+
             SpawnLocation.Z += ZOffset;
 
+            bool bVisibleToPlayer = VisibilitySubsystem->IsLocationVisible(SpawnLocation, false);
+
+            if (bVisibleToPlayer)
+            {
+                UE_LOG(LogTemp, Log, TEXT("[%s] Skip spawn: player can see location (%s)"),
+                    *GetName(), *SpawnLocation.ToString());
+                continue;
+            }
+
             FRotator SpawnRot = bSpawnActorRandomRotation
-                                    ? FRotator(0.f, FMath::FRandRange(0.f, 360.f), 0.f)
-                                    : FRotator::ZeroRotator;
+                ? FRotator(0.f, FMath::FRandRange(0.f, 360.f), 0.f)
+                : FRotator::ZeroRotator;
 
             ABaseEnemy* SpawnedEnemy = Cast<ABaseEnemy>(
                 ActorPoolSubsystem->GetPooledActor(Info.ActorClass, SpawnLocation, SpawnRot));
@@ -89,7 +112,7 @@ void AEnemyActorSpawner::SpawnEnemiesFromPool()
             if (!SpawnedEnemy)
             {
                 UE_LOG(LogTemp, Warning, TEXT("[%s] Failed to spawn from pool: %s"),
-                       *GetName(), *Info.ActorClass->GetName());
+                    *GetName(), *Info.ActorClass->GetName());
                 continue;
             }
 

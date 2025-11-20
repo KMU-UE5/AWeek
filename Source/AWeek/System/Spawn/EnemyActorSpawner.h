@@ -42,4 +42,6 @@ public:
 private:
     UPROPERTY()
     class UActorPoolSubSystem* ActorPoolSubsystem;
+    UPROPERTY()
+    class UCameraVisibilitySubsystem* VisibilitySubsystem;
 };
