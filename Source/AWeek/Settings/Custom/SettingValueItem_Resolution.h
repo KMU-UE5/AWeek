@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SettingValueDiscreteItem_Num.h"
-#include "SettingValueItem_VideoQuality.generated.h"
+#include "SettingValueDiscreteItem.h"
+#include "SettingValueItem_Resolution.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class AWEEK_API USettingValueItem_VideoQuality : public USettingValueDiscreteItem_Num
+class AWEEK_API USettingValueItem_Resolution : public USettingValueDiscreteItem
 {
 	GENERATED_BODY()
 public:
@@ -23,4 +23,7 @@ public:
 
 	virtual int32 GetValueOptionIndex() const override;
 	virtual void SetValueOptionByIndex(int32 Index) override;
+
+protected:
+	TArray<FIntPoint> Resolutions;
 };

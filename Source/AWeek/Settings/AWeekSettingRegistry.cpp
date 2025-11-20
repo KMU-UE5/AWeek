@@ -14,6 +14,7 @@
 #include "SettingValueScalarItem.h"
 #include "AWeek/Player/AWeekLocalPlayer.h"
 #include "Custom/SettingValueItem_Input.h"
+#include "Custom/SettingValueItem_Resolution.h"
 #include "Custom/SettingValueItem_VideoQuality.h"
 #include "UserSettings/EnhancedInputUserSettings.h"
 
@@ -111,6 +112,11 @@ USettingItem* UAWeekSettingRegistry::RegisterGraphicSetting()
 		WindowMode->AddEnumOption(EWindowMode::Windowed, LOCTEXT("SETTING_WindowModeWindowed", "Windowed"));
 		WindowMode->AddEnumOption(EWindowMode::WindowedFullscreen, LOCTEXT("SETTING_WindowModeWindowedFullScreen", "WindowedFullScreen"));
 		Display->AddSetting(WindowMode);
+
+		USettingValueItem_Resolution* Resolution = NewObject<USettingValueItem_Resolution>();
+		Resolution->SetDevName(TEXT("Resolution"));
+		Resolution->SetDisplayName(LOCTEXT("SETTING_Resolution","Resolution"));
+		Display->AddSetting(Resolution);
 	}
 	
 
