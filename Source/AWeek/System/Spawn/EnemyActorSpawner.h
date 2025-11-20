@@ -4,30 +4,44 @@
 
 #include "CoreMinimal.h"
 #include "AWeekActorSpawner.h"
-#include"../../System/GameEventMessageSubsystem.h"
-#include"../../System/AWeekEventMessageInfo.h"
+#include "../../Character/Enemy/BaseEnemy.h"
+#include "../../System/GameEventMessageSubsystem.h"
+#include "../../System/AWeekEventMessageInfo.h"
 #include "EnemyActorSpawner.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class AWEEK_API AEnemyActorSpawner : public AAWeekActorSpawner
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	AEnemyActorSpawner();
+    AEnemyActorSpawner();
 
 protected:
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
+
 private:
-	FGameEventMessageListenerHandle DayChangedListenerHandle;
+    FGameEventMessageListenerHandle DayChangedListenerHandle;
+
+    UPROPERTY()
+    TArray<class ABaseEnemy*> SpawnedEnemies;
+
+    UPROPERTY(EditAnywhere, Category = "Spawn")
+    int32 MaxActiveEnemies = 10;
+
 protected:
-	UFUNCTION()
-	void OnDayChanged(const FDayChangedMessage& Msg);
-	void SpawnEnemiesFromPool();
-private :
-	UPROPERTY()
-	class UActorPoolSubSystem* ActorPoolSubsystem;
+    UFUNCTION()
+    void OnDayChanged(const FDayChangedMessage& Msg);
+
+    void SpawnEnemiesFromPool();
+
+public:
+    void UnregisterSpawnedEnemy(class ABaseEnemy* Enemy);
+
+private:
+    UPROPERTY()
+    class UActorPoolSubSystem* ActorPoolSubsystem;
+    UPROPERTY()
+    class UCameraVisibilitySubsystem* VisibilitySubsystem;
 };
