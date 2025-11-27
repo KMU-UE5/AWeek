@@ -26,12 +26,11 @@ void UAWeekPlayerHotBar::NativeOnInitialized()
 		HotBarGridPanel->AddChildToUniformGrid(ItemSlot, 0, i);
 		HotBarSlots.Add(ItemSlot);
 	}
-	HotBarSlots[0]->SetHighlight(true);
-
 	PlayerInventoryComponent->OnSlotUpdated.AddUObject(this, &UAWeekPlayerHotBar::OnSlotUpdated);
 	PlayerInventoryComponent->OnHotbarSelectionChanged.AddUObject(this, &UAWeekPlayerHotBar::OnHotBarSelectionChanged);
 	
 	RefreshHotBar();
+	HotBarSlots[0]->SetHighlight(true);
 }
 
 void UAWeekPlayerHotBar::RefreshHotBar()
@@ -44,6 +43,7 @@ void UAWeekPlayerHotBar::RefreshHotBar()
 	for (int32 i = 0; i < HotBarSlots.Num(); i++)
 	{
 		HotBarSlots[i]->InitializeItemSlot(PlayerInventoryComponent->GetHotBarItemAt(i).Item);
+		HotBarSlots[i]->SetHighlight(false);
 	}
 }
 

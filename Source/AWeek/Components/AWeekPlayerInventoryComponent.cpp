@@ -23,24 +23,20 @@ void UAWeekPlayerInventoryComponent::BeginPlay()
 	TrashCanSlotIndex = InventoryContents.Num() - 1;
 }
 
-void UAWeekPlayerInventoryComponent::UseSelectedItemPrimary(const TObjectPtr<AAWeekPlayerCharacter> PlayerCharacter)
+void UAWeekPlayerInventoryComponent::UseSelectedItem(const TObjectPtr<AAWeekPlayerCharacter> PlayerCharacter)
 {
-	const FAWeekInventorySlotData& SlotData = InventoryContents[HotBarCurrentIndex];
-	if (!SlotData.IsEmpty())
+	FAWeekInventorySlotData& SlotData = InventoryContents[HotBarCurrentIndex];
+	if (SlotData.IsEmpty())
 	{
-		SlotData.Item->UsePrimary(PlayerCharacter);
+		return;
+	}
+	if (SlotData.Item->GetItemType() == EAWeekItemType::Consumable)
+	{
+		PlayerCharacter->GetAnimInstance()->PlayMontageByName("Drink");
+		SlotData.Item->UseItem(PlayerCharacter);
+		RemoveAmountOfItem(SlotData, 1);
 	}
 }
-
-void UAWeekPlayerInventoryComponent::UseSelectedItemSecondary(const TObjectPtr<AAWeekPlayerCharacter> PlayerCharacter)
-{
-	const FAWeekInventorySlotData& SlotData = InventoryContents[HotBarCurrentIndex];
-	if (!SlotData.IsEmpty())
-	{
-		SlotData.Item->UseSecondary(PlayerCharacter);
-	}
-}
-
 
 void UAWeekPlayerInventoryComponent::SelectItemInHotBar(const int32 InHotBarIndex)
 {
@@ -73,17 +69,17 @@ void UAWeekPlayerInventoryComponent::SelectCurrentItemInHotBar()
 	
 	if (AAWeekPlayerCharacter* PlayerCharacter = Cast<AAWeekPlayerCharacter>(GetOwner()))
 	{
-		const FAWeekInventorySlotData& SlotData = InventoryContents[HotBarCurrentIndex];
+		const FAWeekInventorySlotData& SlotData = GetItemSlotAt(HotBarCurrentIndex);
 		if (SlotData.Item && SlotData.Item->GetItemType() == EAWeekItemType::Weapon)
 		{
 			const FName WeaponID = SlotData.Item->GetItemData().WeaponID; 
 			PlayerCharacter->GetWeaponComponent()->ChangeWeapon(WeaponID);
-			PlayerCharacter->SetAnimInstance(WeaponID);
+			PlayerCharacter->GetAnimInstance()->ChangeAnimOverride(WeaponID);
 		}
 		else
 		{
 			PlayerCharacter->GetWeaponComponent()->ChangeWeapon("Default");
-			PlayerCharacter->SetAnimInstance("Default");
+			PlayerCharacter->GetAnimInstance()->ChangeAnimOverride("Default");
 		}
 	}
 }

@@ -14,9 +14,8 @@ class AWEEK_API UAWeekWeaponItem : public UAWeekItemBase
 {
 	GENERATED_BODY()
 
-public:	
-	virtual bool UsePrimary(TObjectPtr<AAWeekPlayerCharacter> Character) override;
-	virtual bool UseSecondary(TObjectPtr<AAWeekPlayerCharacter> Character) override;
+public:
+	
 private:
 	
 };

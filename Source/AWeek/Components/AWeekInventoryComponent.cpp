@@ -124,7 +124,6 @@ bool UAWeekInventoryComponent::TryRemoveAmountOfItem(FName ItemID, int32 Desired
 		}
 		else
 		{
-			// TODO: restore removed items
 			return false;
 		}
 	}
@@ -204,7 +203,7 @@ int32 UAWeekInventoryComponent::HandleStackableItems(UAWeekItemBase* InItem, int
 	int32 AmountToDistribute = RequestedAddAmount;
 
 	// check if the input item already exists in the inventory and is not a full stack
-	int32 ExistingItemStackIndex = FindNextItemByID(InItem->GetID());
+	int32 ExistingItemStackIndex = FindNextPartialStack(InItem->GetID());
 	// FAWeekInventorySlotData* ExistingItemStack = FindNextPartialStackIndex(InItem);
 
 	// distribute item stack over existing stacks
@@ -249,7 +248,7 @@ int32 UAWeekInventoryComponent::HandleStackableItems(UAWeekItemBase* InItem, int
 		}
 
 		// check if there is still another vaild partial stack of the input item
-		ExistingItemStackIndex = FindNextItemByID(InItem->GetID());
+		ExistingItemStackIndex = FindNextPartialStack(InItem->GetID());
 	}
 
 	// no more partial stacks found, check if a new stack can be added
@@ -303,6 +302,7 @@ bool UAWeekInventoryComponent::CanAddItem(const FName ItemID, const int32 ItemSi
 
 FAWeekItemAddResult UAWeekInventoryComponent::HandleAddItem(UAWeekItemBase* InputItem)
 {
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *FString(__FUNCTION__));
 	if (GetOwner())
 	{
 		const int32 InitialRequestedAddAmount = InputItem->GetQuantity();

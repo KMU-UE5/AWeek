@@ -45,10 +45,7 @@ void UAWeekItemSlot::InitializeItemSlot(const FAWeekItemData& ItemData, const in
 }
 
 void UAWeekItemSlot::InitializeItemSlot(const TObjectPtr<UAWeekItemBase> Item)
-{
-	SelectionBorder->SetVisibility(ESlateVisibility::Collapsed);
-	
-	// UE_LOG(LogTemp, Warning, TEXT("%s"), *FString(__FUNCTION__));
+{	
 	if (IsValid(Item))
 	{
 		InitializeItemSlot(Item->GetItemData(), Item->GetQuantity());
@@ -63,13 +60,16 @@ void UAWeekItemSlot::InitializeItemSlot(const TObjectPtr<UAWeekItemBase> Item)
 
 void UAWeekItemSlot::SetHighlight(bool IsHighlighted)
 {
-	if (IsHighlighted)
+	if (SelectionBorder)
 	{
-		SelectionBorder->SetVisibility(ESlateVisibility::Visible);
-	}
-	else
-	{
-		SelectionBorder->SetVisibility(ESlateVisibility::Collapsed);
+		if (IsHighlighted)
+		{
+			SelectionBorder->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			SelectionBorder->SetVisibility(ESlateVisibility::Collapsed);
+		}
 	}
 }
 

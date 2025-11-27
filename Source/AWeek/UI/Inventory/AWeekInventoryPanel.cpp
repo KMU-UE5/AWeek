@@ -104,7 +104,7 @@ void UAWeekInventoryPanel::UnBindInventoryDelegates()
 
 void UAWeekInventoryPanel::OnSlotUpdate(const FAWeekInventorySlotData& SlotData)
 {
-	UE_LOG(LogTemp, Warning, TEXT("%s:Index=%d"), *FString(__FUNCTION__), SlotData.SlotIndex);
+	// UE_LOG(LogTemp, Warning, TEXT("%s:Index=%d"), *FString(__FUNCTION__), SlotData.SlotIndex);
 	InventoryItemSlots[SlotData.SlotIndex]->InitializeInventoryItemSlot(SlotData.Item);
 	UpdateInfoText();
 }

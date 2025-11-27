@@ -22,6 +22,7 @@
 #include "AWeek/Player/AWeekPlayerController.h"
 #include "AWeek/UI/Controller/AWeekInventoryController.h"
 #include "AWeek/Settings/AWeekGameUserSettings.h"
+#include "AWeek/World/AWeekLootChest.h"
 
 DEFINE_LOG_CATEGORY(AWeekPlayerCharacter);
 
@@ -270,12 +271,6 @@ void AAWeekPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 		EnhancedInput->BindAction(InputCDO->mSelectHotBarSlot, ETriggerEvent::Triggered,
 			this, &AAWeekPlayerCharacter::OnHotBarKeyPressed);
-
-		// EnhancedInput->BindAction(InputCDO->mCycleHotBar, ETriggerEvent::Started,
-		// this, &AAWeekPlayerCharacter::OnLeftClick);
-		//
-		// EnhancedInput->BindAction(InputCDO->mCycleHotBar, ETriggerEvent::Started,
-		// this, &AAWeekPlayerCharacter::OnRightClick);
 	}
 }
 
@@ -480,7 +475,7 @@ void AAWeekPlayerCharacter::TakeSomeFood()
 {
 	if (mAnimInst->IsAnyMontagePlaying())
 		return;
-	mAnimInst->PlayMontageByName(TEXT("Drink"));
+	PlayerInventoryComponent->UseSelectedItem(this);
 	//GetCharacterMovement()->MaxWalkSpeed *= mBusySpeedDecRate;
 }
 
@@ -811,17 +806,19 @@ void AAWeekPlayerCharacter::WheelDownPreviewObject()
 void AAWeekPlayerCharacter::AddHealth(float Delta)
 {
 	UE_LOG(LogTemp, Log, TEXT("%s"), *FString(__FUNCTION__));
-	
+	mDamageSystem->Heal(Delta);
 }
 
 void AAWeekPlayerCharacter::AddStamina(float Delta)
 {
 	UE_LOG(LogTemp, Log, TEXT("%s"), *FString(__FUNCTION__));
+	mStamina->ChangeStamina(Delta);
 }
 
 void AAWeekPlayerCharacter::AddHunger(float Delta)
 {
 	UE_LOG(LogTemp, Log, TEXT("%s"), *FString(__FUNCTION__));
+	mHunger->ChangeHunger(Delta);
 }
 
 void AAWeekPlayerCharacter::OnMouseWheel(const FInputActionValue& Value)
@@ -850,11 +847,6 @@ void AAWeekPlayerCharacter::OnHotBarKeyPressed(const FInputActionValue& Value)
 	{
 		PlayerInventoryComponent->SelectItemInHotBar(SlotIndex);
 	}
-}
-
-void AAWeekPlayerCharacter::SetAnimInstance(FName AnimInstanceName)
-{
-	mAnimInst->ChangeAnimOverride(AnimInstanceName);
 }
 
 void AAWeekPlayerCharacter::WheelUpPreviewObject()
