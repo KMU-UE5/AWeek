@@ -70,12 +70,7 @@ void UAWeekItemBase::SetQuantity(const int32 InQuantity)
 	}
 }
 
-bool UAWeekItemBase::UsePrimary(TObjectPtr<AAWeekPlayerCharacter> Character)
-{
-	return false;
-}
-
-bool UAWeekItemBase::UseSecondary(TObjectPtr<AAWeekPlayerCharacter> Character)
+bool UAWeekItemBase::UseItem(TObjectPtr<AAWeekPlayerCharacter> Character)
 {
 	return false;
 }

@@ -16,14 +16,6 @@ class AWEEK_API UAWeekItemBase : public UObject
 	GENERATED_BODY()
 
 public:
-	//================================================================
-	//	PROPERTIES & VARIABLES
-	//================================================================
-
-
-	//================================================================
-	//	FUNCTIONS
-	//================================================================
 	UAWeekItemBase();
 
 	// getters and setters
@@ -57,8 +49,7 @@ public:
 	UFUNCTION(Category = "Item")
 	void SetQuantity(const int32 InQuantity);
 
-	virtual bool UsePrimary(TObjectPtr<AAWeekPlayerCharacter> Character);
-	virtual bool UseSecondary(TObjectPtr<AAWeekPlayerCharacter> Character);
+	virtual bool UseItem(TObjectPtr<AAWeekPlayerCharacter> Character);
 
 	void ResetItemFlags();
 
@@ -66,9 +57,6 @@ public:
 	static UAWeekItemBase* CreateFromRowHandle(const FDataTableRowHandle& RowHandle, int32 InQuantity, UObject* Outer);
 
 protected:
-	//================================================================
-	//	PROPERTIES & VARIABLES
-	//================================================================
 	UPROPERTY(VisibleAnywhere, Category = "Item")
 	FAWeekItemData ItemData;
 	
@@ -77,21 +65,9 @@ protected:
 
 	bool bIsCopy;
 	bool bIsPickup;
-	//================================================================
-	//	FUNCTIONS
-	//================================================================
+
 	bool operator==(const FName& OtherID) const
 	{
 		return ItemData.ID == OtherID;
 	}
-	
-private:
-	//================================================================
-	//	PROPERTIES & VARIABLES
-	//================================================================
-
-	
-	//================================================================
-	//	FUNCTIONS
-	//================================================================
 };

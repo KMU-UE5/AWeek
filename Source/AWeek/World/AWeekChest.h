@@ -21,8 +21,6 @@ class AWEEK_API AAWeekChest : public AActor, public IAWeekInteractionInterface
 
 public:
 	AAWeekChest();
-
-	void InitializeChest();
 	
 	FORCEINLINE UAWeekInventoryComponent* GetInventoryComponent() const { return InventoryComponent;}
 	void BeginFocus() override;
@@ -47,12 +45,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Chest")
 	TObjectPtr<USphereComponent> ChestExitSphere;
 
-	UPROPERTY(EditAnywhere, Category = "Chest | Initialization")
+	UPROPERTY(EditAnywhere, Category = "Chest")
 	float ChestExitRadius;
-
-	UPROPERTY(EditAnywhere, Category = "Loot")
-	FDataTableRowHandle LootTableRowHandle;
-
+	
 	//================================================================
 	//	FUNCTIONS
 	//================================================================
@@ -63,13 +58,4 @@ protected:
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex);
-
-	TArray<FAWeekItemEntry> GenerateRandomLoot();
-private:
-
-
-	//================================================================
-	//	FUNCTIONS
-	//================================================================
-
 };

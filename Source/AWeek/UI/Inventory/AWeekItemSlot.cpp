@@ -45,12 +45,7 @@ void UAWeekItemSlot::InitializeItemSlot(const FAWeekItemData& ItemData, const in
 }
 
 void UAWeekItemSlot::InitializeItemSlot(const TObjectPtr<UAWeekItemBase> Item)
-{
-	if (SelectionBorder)
-	{
-		SelectionBorder->SetVisibility(ESlateVisibility::Collapsed);
-	}
-	
+{	
 	if (IsValid(Item))
 	{
 		InitializeItemSlot(Item->GetItemData(), Item->GetQuantity());

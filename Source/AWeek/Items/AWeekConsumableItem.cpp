@@ -2,7 +2,7 @@
 
 #include "AWeek/Character/AWeekPlayerCharacter.h"
 
-bool UAWeekConsumableItem::UseSecondary(TObjectPtr<AAWeekPlayerCharacter> Character)
+bool UAWeekConsumableItem::UseItem(TObjectPtr<AAWeekPlayerCharacter> Character)
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *FString(__FUNCTION__));
 	const FAWeekConsumableData& ConsumableStats = ItemData.ConsumableData;

@@ -15,8 +15,9 @@ UAWeekCraftingComponent::UAWeekCraftingComponent() : CurrentCraftingLevel(0)
 
 void UAWeekCraftingComponent::InitializeCraftingComponent()
 {
-	LoadCraftingRecipeData();
-	CacheCraftingRecipes();
+	LoadAndCacheRecipes();
+	// LoadCraftingRecipeData();
+	// CacheCraftingRecipes();
 	
 	PlayerCharacter = Cast<AAWeekPlayerCharacter>(GetOwner());
 	PlayerInventoryComponent = PlayerCharacter->GetPlayerInventoryComponent();
@@ -27,11 +28,11 @@ void UAWeekCraftingComponent::InitializeCraftingComponent()
 void UAWeekCraftingComponent::LoadCraftingRecipeData()
 {
 	// UE_LOG(LogTemp, Warning, TEXT("%s"), *FString(__FUNCTION__));
-	if (IsValid(CraftingRecipesTable))
+	if (IsValid(CraftingRecipeTable))
 	{
 		// Access all the rows in the data table
 		TArray<FAWeekItemCraftingRecipe*> CraftingRecipePointers;
-		CraftingRecipesTable->GetAllRows<FAWeekItemCraftingRecipe>(FString(), CraftingRecipePointers);
+		CraftingRecipeTable->GetAllRows<FAWeekItemCraftingRecipe>(FString(), CraftingRecipePointers);
 
 		for (const FAWeekItemCraftingRecipe* Recipe : CraftingRecipePointers)
 		{
@@ -94,14 +95,56 @@ UAWeekItemBase* UAWeekCraftingComponent::CreateCraftedItem(const FAWeekItemEntry
 	return UAWeekItemBase::CreateFromData(CraftedItemEntry.ItemData, CraftedItemEntry.Quantity, this);
 }
 
+void UAWeekCraftingComponent::LoadAndCacheRecipes()
+{
+	UE_LOG(LogTemp, Error, TEXT("%s"), *FString(__FUNCTION__));
+	CachedCraftingRecipes.Empty();
+
+	if (!CraftingRecipeTable || !ItemDataTable)
+	{
+		UE_LOG(LogTemp, Error, TEXT("CraftingRecipeTable or ItemDataTable is null!"));
+		return;
+	}
+
+	TArray<FAWeekItemCraftingRecipeCSV*> AllRecipes;
+	CraftingRecipeTable->GetAllRows<FAWeekItemCraftingRecipeCSV>(TEXT(""), AllRecipes);
+
+	for (const FAWeekItemCraftingRecipeCSV* CSVRecipe : AllRecipes)
+	{
+		if (!CSVRecipe)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Recipe is null"));
+			continue;
+		}
+
+		FAWeekCachedCraftingRecipe CachedRecipe;
+		
+		FAWeekCraftingRecipeParser::ConvertRecipe(
+			*CSVRecipe,
+			CachedRecipe.CraftedItemEntry,
+			CachedRecipe.IngredientItemEntries,
+			ItemDataTable
+		);
+
+		// RequiredCraftingLevel 설정
+		CachedRecipe.RequiredCraftingLevel = CSVRecipe->RequiredCraftingLevel;
+		CachedRecipe.bIsCacheValid = true;
+
+		CachedCraftingRecipes.Add(CachedRecipe);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("Loaded %d crafting recipes"), CachedCraftingRecipes.Num());
+
+}
+
 void UAWeekCraftingComponent::CacheCraftingRecipes()
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *FString(__FUNCTION__));
-	if (IsValid(CraftingRecipesTable))
+	if (IsValid(CraftingRecipeTable))
 	{
 		// Access all the rows in the data table
 		TArray<FAWeekItemCraftingRecipe*> CraftingRecipePointers;
-		CraftingRecipesTable->GetAllRows<FAWeekItemCraftingRecipe>(FString(), CraftingRecipePointers);
+		CraftingRecipeTable->GetAllRows<FAWeekItemCraftingRecipe>(FString(), CraftingRecipePointers);
 		for (const FAWeekItemCraftingRecipe* Recipe : CraftingRecipePointers)
 		{
 			if (Recipe)
@@ -121,7 +164,7 @@ void UAWeekCraftingComponent::CacheCraftingRecipes()
 				CachedCraftingRecipe.OriginalRecipe = *Recipe;
 				CachedCraftingRecipe.CraftedItemEntry = CraftedItemEntry;
 				CachedCraftingRecipe.IngredientItemEntries = IngredientItemEntries;
-				CachedCraftingRecipe.CraftingLevel = Recipe->CraftingLevel;
+				CachedCraftingRecipe.RequiredCraftingLevel = Recipe->CraftingLevel;
 				CachedCraftingRecipe.bIsCacheValid = true;
 
 				CachedCraftingRecipes.Add(CachedCraftingRecipe);
@@ -208,7 +251,7 @@ TArray<int32> UAWeekCraftingComponent::GetAvailableRecipes() const
 	TArray<int32> AvailableIndices;
 	for (int32 i = 0; i < CachedCraftingRecipes.Num(); i++)
 	{
-		if (CachedCraftingRecipes[i].CraftingLevel <= CurrentCraftingLevel)
+		if (CachedCraftingRecipes[i].RequiredCraftingLevel <= CurrentCraftingLevel)
 		{
 			AvailableIndices.Add(i);
 		}

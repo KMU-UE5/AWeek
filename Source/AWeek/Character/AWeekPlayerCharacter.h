@@ -19,10 +19,12 @@
 #include "EnhancedInputSubsystems.h"
 
 #include "Kismet/KismetSystemLibrary.h"
+#include "UniversalObjectLocators/AnimInstanceLocatorFragment.h"
 
 #include "AWeekPlayerCharacter.generated.h"
 
 
+class AAWeekLootChest;
 class UAWeekPlayerInventoryComponent;
 enum class EAWeekInventoryHubPanel : uint8;
 class UAWeekLootComponent;
@@ -295,8 +297,8 @@ public:
 	void OnHotBarKeyPressed(const FInputActionValue& Value);
 
 	/* temporary test */
-	void SetAnimInstance(FName AnimInstanceName);
-	
+
+	FORCEINLINE UAWeekPlayerAnimInstance* GetAnimInstance() { return mAnimInst; }
 	FORCEINLINE UAWeekWeaponComponent* GetWeaponComponent() const { return mWeapon; }
 	
 	void WheelUpPreviewObject();
@@ -312,7 +314,6 @@ public:
 	void BeginInteract();
 	void EndInteract();
 	void Interact();
-
 
 public:
 	UPROPERTY(EditAnywhere)

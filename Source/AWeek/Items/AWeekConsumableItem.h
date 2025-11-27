@@ -15,7 +15,7 @@ class AWEEK_API UAWeekConsumableItem : public UAWeekItemBase
 	GENERATED_BODY()
 
 public:
-	virtual bool UseSecondary(TObjectPtr<AAWeekPlayerCharacter> Character) override;
+	virtual bool UseItem(TObjectPtr<AAWeekPlayerCharacter> Character) override;
 
 private:
 };

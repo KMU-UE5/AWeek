@@ -27,8 +27,7 @@ protected:
 
 public:
 	/* Hot Bar Function */
-	void UseSelectedItemPrimary(TObjectPtr<AAWeekPlayerCharacter> PlayerCharacter);
-	void UseSelectedItemSecondary(TObjectPtr<AAWeekPlayerCharacter> PlayerCharacter);
+	void UseSelectedItem(TObjectPtr<AAWeekPlayerCharacter> PlayerCharacter);
 	
 	void SelectItemInHotBar(const int32 InHotBarIndex);
 	void SelectNextItemInHotBar();

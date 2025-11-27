@@ -40,14 +40,20 @@ struct FAWeekItemCraftingRecipe : public FTableRowBase
 	int32 CraftingLevel;
 };
 
-// USTRUCT()
-// struct FAWeekItemCraftingRecipeCSV
-// {
-// 	GENERATED_BODY()
-//
-// 	UPROPERTY(EditAnywhere, Category = "Crafting Recipe")
-// 	FString CraftedItem;
-// };
+USTRUCT()
+struct FAWeekItemCraftingRecipeCSV : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category = "Crafting Recipe")
+	FString CraftedItem;
+
+	UPROPERTY(EditAnywhere, Category = "Crafting Recipe")
+	FString IngredientItems;
+
+	UPROPERTY(EditAnywhere, Category = "Crafting Recipe")
+	int32 RequiredCraftingLevel;
+};
 
 USTRUCT()
 struct FAWeekCachedCraftingRecipe
@@ -64,7 +70,20 @@ struct FAWeekCachedCraftingRecipe
 	TArray<FAWeekItemEntry> IngredientItemEntries;
 
 	UPROPERTY()
-	int32 CraftingLevel;
+	int32 RequiredCraftingLevel;
 	
 	bool bIsCacheValid = false;
+};
+
+struct AWEEK_API FAWeekCraftingRecipeParser
+{
+	static FAWeekItemEntry ParseItemString(const FString& ItemString, UDataTable* ItemDataTable);
+	static TArray<FAWeekItemEntry> ParseIngredientsString(const FString& IngredientsString, UDataTable* ItemDataTable);
+	
+	static void ConvertRecipe(
+		const FAWeekItemCraftingRecipeCSV& CSVRecipe,
+		FAWeekItemEntry& OutCraftedItem,
+		TArray<FAWeekItemEntry>& OutIngredients,
+		UDataTable* ItemDataTable
+	);
 };

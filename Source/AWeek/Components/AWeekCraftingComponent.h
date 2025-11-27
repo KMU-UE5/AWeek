@@ -15,7 +15,7 @@ class UAWeekInventoryComponent;
 class UAWeekItemBase;
 
 DECLARE_MULTICAST_DELEGATE(FOnCraftingFinished)
-DECLARE_MULTICAST_DELEGATE(FOnCraftingLevelChanged);
+DECLARE_MULTICAST_DELEGATE(FOnCraftingLevelChanged)
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class AWEEK_API UAWeekCraftingComponent : public UActorComponent
@@ -55,9 +55,12 @@ protected:
 	//	PROPERTIES & VARIABLES
 	//================================================================
 	UPROPERTY(EditAnywhere, Category = "Crafting")
-	TObjectPtr<UDataTable> CraftingRecipesTable;
+	TObjectPtr<UDataTable> CraftingRecipeTable;
 
-	UPROPERTY(VisibleAnywhere, Category = "Crafting")
+	UPROPERTY(EditAnywhere, Category = "Crafting")
+	TObjectPtr<UDataTable> ItemDataTable;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Crafting")
 	TArray<FAWeekItemCraftingRecipe> CraftingRecipes;
 
 	UPROPERTY(VisibleAnywhere, Category = "Crafting")
@@ -83,6 +86,7 @@ protected:
 	UAWeekItemBase* CreateCraftedItem(const FAWeekItemEntry& CraftedItemEntry);
 	
 private:
+	void LoadAndCacheRecipes();
 	void CacheCraftingRecipes();
 	void LoadCraftingRecipeData();
 };
