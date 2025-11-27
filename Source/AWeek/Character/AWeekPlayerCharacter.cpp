@@ -408,13 +408,13 @@ void AAWeekPlayerCharacter::SprintStart()
 		mAnimInst->IsAnyMontagePlaying() ||
 		mHunger->IsOnHungerState(EHungerState::Starving))
 		return;
-	GetCharacterMovement()->MaxWalkSpeed *= mSprintSpeedIncRate;
+	GetCharacterMovement()->MaxWalkSpeed = mBaseWalkSpeed * mSprintSpeedIncRate;
 	bSprint = true;
 }
 
 void AAWeekPlayerCharacter::SprintCompleted()
 {
-	GetCharacterMovement()->MaxWalkSpeed = mWalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = mBaseWalkSpeed;
 
 	if (!GetCharacterMovement()->IsFalling() &&
 		bSprint &&
@@ -637,10 +637,14 @@ void AAWeekPlayerCharacter::OnEncumbered(bool bIsEncumbered)
 	if (bIsEncumbered)
 	{
 		// TODO: Player get panelty
+		mBaseWalkSpeed = 250;
+		GetCharacterMovement()->MaxWalkSpeed = mBaseWalkSpeed;
 	}
 	else
 	{
 		// TODO: Player get back to normal
+		mBaseWalkSpeed = 300;
+		GetCharacterMovement()->MaxWalkSpeed = mBaseWalkSpeed;
 	}
 }
 
