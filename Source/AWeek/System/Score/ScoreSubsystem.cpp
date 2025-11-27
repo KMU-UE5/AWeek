@@ -59,6 +59,8 @@ void UScoreSubsystem::ResetCurrentScore()
     CurrentEntry = FCurrentScoreEntry{};
 }
 
+//Save Directory : C:\UEProject\AWeek\Saved\SaveGames
+
 void UScoreSubsystem::SaveRankEntry(const FString& Name)
 {
     URankSaveData* Data = nullptr;
