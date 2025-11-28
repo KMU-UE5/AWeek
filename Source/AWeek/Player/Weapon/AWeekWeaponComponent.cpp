@@ -91,6 +91,7 @@ void UAWeekWeaponComponent::ChangeWeapon(FName WeaponKey)
 	mFireRate = WeaponInfo->FireRate;
 	mFireEffect = WeaponInfo->FireEffect;
 	mReticleDefinition = WeaponInfo->ReticleDefinition;
+	mFireSound = WeaponInfo->FireSound;
 
 	float BaseWalkSpeed = mOwner->GetBaseWalkSpeed();
 
@@ -288,6 +289,8 @@ void UAWeekWeaponComponent::Fire()
 		0,
 		2.0f
 	);
+
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), mFireSound, MuzzleLocation);
 
 	if (bHit)
 	{
