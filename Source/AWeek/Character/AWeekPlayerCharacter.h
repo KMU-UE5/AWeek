@@ -10,17 +10,10 @@
 
 #include "../UI/InGame/Player/AWeekPlayerStateWidget.h"
 #include "NiagaraFunctionLibrary.h"
-#include "../System/GameEventMessageSubsystem.h"
 #include "../System/DamageInfo.h"
 #include "../System/IDamageAble.h"
 
 #include "InputActionValue.h"
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
-
-#include "Kismet/KismetSystemLibrary.h"
-#include "UniversalObjectLocators/AnimInstanceLocatorFragment.h"
-
 #include "AWeekPlayerCharacter.generated.h"
 
 
@@ -90,6 +83,10 @@ protected:
 	/*--------------HUNGER--------------*/
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UAWeekHungerComponent> mHunger;
+
+	/*--------------SOUND--------------*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<class UAWeekSoundComponent> mSound;
 
 	/*--------------HUD--------------*/
 	UPROPERTY(VisibleAnywhere)
@@ -254,8 +251,6 @@ public:
 
 	virtual void VaultStart();
 	virtual void VaultEnd();
-	virtual void LedgeStart();
-	virtual void LedgeEnd();
 	virtual void ClimbStart();
 
 	UFUNCTION(BlueprintCallable)

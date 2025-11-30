@@ -112,6 +112,20 @@ float ABaseEnemy::GetMontagePlayRate_Code() const
     return m_Stat.AnimPlayRate;
 }
 
+void ABaseEnemy::DropItemBox()
+{
+    if (!LootChestClass) return;
+    FVector Offset(0.f, 0.f, -100.f);
+    FVector DropLocation = GetActorLocation() + Offset;
+    AAWeekLootChest* Chest = AAWeekLootChest::SpawnLootChest(
+        LootChestClass,
+        GetWorld(),
+        DropLocation,
+        LootTableRow,
+        30.0f
+    );
+}
+
 void ABaseEnemy::OnLoadFromPool_Implementation()
 {
     m_tryCleanUpCount = 0;
@@ -119,6 +133,7 @@ void ABaseEnemy::OnLoadFromPool_Implementation()
     const FString ClassName = GetClass()->GetName();
 
     const FString EnemyFolder = FString::Printf(TEXT("Pool/%s"), *ClassName);
+#if WITH_EDITOR
     SetFolderPath(FName(*EnemyFolder));
 
     // Controller FolderSetting
@@ -127,6 +142,7 @@ void ABaseEnemy::OnLoadFromPool_Implementation()
         const FString ControllerFolder = FString::Printf(TEXT("Pool/%s/Controller"), *ClassName);
         Controller->SetFolderPath(FName(*ControllerFolder));
     }
+#endif
 }
 
 void ABaseEnemy::OnStoreToPool_Implementation()
@@ -135,7 +151,7 @@ void ABaseEnemy::OnStoreToPool_Implementation()
     {
         OnReturnToSpawner.ExecuteIfBound(this);
     }
-
+#if WITH_EDITOR
     const FString ClassName = GetClass()->GetName();
     const FString EnemyFolder = FString::Printf(TEXT("Pool/%s"), *ClassName);
     SetFolderPath(FName(*EnemyFolder));
@@ -145,4 +161,5 @@ void ABaseEnemy::OnStoreToPool_Implementation()
         const FString ControllerFolder = FString::Printf(TEXT("Pool/%s/Controller"), *ClassName);
         Controller->SetFolderPath(FName(*ControllerFolder));
     }
+#endif
 }

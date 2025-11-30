@@ -2,9 +2,12 @@
 
 
 #include "AWeekPlayerAnimInstance.h"
+
+#include "KismetAnimationLibrary.h"
 #include "../Data/AWeekPlayerAnimInfo.h"
 #include "../Character/AWeekPlayerCharacter.h"
 #include "../AWeekAssetManager.h"
+#include "KismetAnimationLibrary.h"
 #include "../Character/AWeekPlayerCharacter.h"
 
 void UAWeekPlayerAnimInstance::NativeBeginPlay()
@@ -14,7 +17,6 @@ void UAWeekPlayerAnimInstance::NativeBeginPlay()
 	mOwner = Cast<AAWeekPlayerCharacter>(GetOwningActor());
 
 	// �ִϸ��̼� ���������̺� ��ü�� ������
-	UDataTable* AnimInfoDT = UAWeekAssetManager::Get().FindDataTable(TEXT("DT_PlayerAnimInfo"));
 	if (!AnimInfoDT) return;
 
 	// ���������̺��� RowMap�̶�� TMap������ ��ȯ�� (Row�� Ű��, �� ����� ���� ����)
@@ -58,7 +60,7 @@ void UAWeekPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	FVector Velocity = mOwner->GetVelocity();
 	Velocity.Z = 0.0f;
 	float Speed = Velocity.Size();
-	Direction = CalculateDirection(Velocity, mOwner->GetActorRotation());
+	Direction = UKismetAnimationLibrary::CalculateDirection(Velocity, mOwner->GetActorRotation());
 	
 	FRotator ControlRot = Controller->GetControlRotation();
 	ControllerYaw = ControlRot.Yaw;
@@ -144,9 +146,9 @@ void UAWeekPlayerAnimInstance::MontageEnd(UAnimMontage* Montage, bool bInterrupt
 		mOwner->VaultEnd();
 	}
 
-	if (Montage == FindAnimMontage(TEXT("Ledge")))
+	if (Montage == FindAnimMontage(TEXT("Climb")))
 	{
-		mOwner->LedgeEnd();
+		mOwner->ClimbEnd();
 	}
 
 	if (Montage == FindAnimMontage(TEXT("Attack")))

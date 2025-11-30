@@ -60,6 +60,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UParticleSystem* mFireEffect;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<USoundBase> mFireSound;
+
 	/*--------------RANGED WEAPON--------------*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bIsFiring;
@@ -109,6 +112,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSoftObjectPtr<UAWeekReticleDefinition> mReticleDefinition;
 
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UDataTable> WeaponInfoDT;
+	
 private:
 	FRangedWeaponInfo RangedWeaponInfo;
 public:

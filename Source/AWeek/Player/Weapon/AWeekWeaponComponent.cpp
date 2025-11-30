@@ -66,7 +66,6 @@ void UAWeekWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UAWeekWeaponComponent::ChangeWeapon(FName WeaponKey)
 {
-	UDataTable* WeaponInfoDT = UAWeekAssetManager::Get().FindDataTable(TEXT("DT_WeaponInfo"));
 	if (!WeaponInfoDT)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Weapon DataTable Not Found"));
@@ -91,6 +90,7 @@ void UAWeekWeaponComponent::ChangeWeapon(FName WeaponKey)
 	mFireRate = WeaponInfo->FireRate;
 	mFireEffect = WeaponInfo->FireEffect;
 	mReticleDefinition = WeaponInfo->ReticleDefinition;
+	mFireSound = WeaponInfo->FireSound;
 
 	float BaseWalkSpeed = mOwner->GetBaseWalkSpeed();
 
@@ -288,6 +288,8 @@ void UAWeekWeaponComponent::Fire()
 		0,
 		2.0f
 	);
+
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), mFireSound, MuzzleLocation);
 
 	if (bHit)
 	{
