@@ -86,21 +86,22 @@ void AAWeekPlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	PlayerController = Cast<AAWeekPlayerController>(GetController());
-
+	
 	/* Initialize UI Manager */
 	if (UGameInstance* GameInstance = GetGameInstance())
 	{
 		UIManager = GameInstance->GetSubsystem<UAWeekGameUIManager>();
 		UIManager->InitializeUIManager(this);
 	}
-
+	
+	/* Initialize crafting component */
+	CraftingComponent->InitializeCraftingComponent();
+	
 	PlayerInventoryComponent->OnEncumberedStatusChanged.AddUObject(this, &AAWeekPlayerCharacter::OnEncumbered);
 	PlayerInventoryComponent->SelectItemInHotBar(0);
 
 	mAnimInst = Cast<UAWeekPlayerAnimInstance>(GetMesh()->GetAnimInstance());
 	
-	/* Initialize crafting component */
-	CraftingComponent->InitializeCraftingComponent();
 	
 	if (IsValid(PlayerController))
 	{
@@ -648,7 +649,7 @@ void AAWeekPlayerCharacter::FoundInteractable(const TObjectPtr<AActor> NewIntera
 	InteractionData.CurrentInteractable = NewInteractable;
 	TargetInteractable = NewInteractable;
 
-	OnInteractionTargetChanged.Broadcast(&TargetInteractable->InteractableData);
+	OnInteractionTargetChanged.Broadcast(TargetInteractable->GetInteractableData());
 	TargetInteractable->BeginFocus();
 }
 
@@ -666,7 +667,7 @@ void AAWeekPlayerCharacter::NoInteractableFound()
 			TargetInteractable->EndFocus();
 		}
 
-		OnInteractionTargetChanged.Broadcast(nullptr);
+		OnInteractionTargetChanged.Broadcast(FAWeekInteractableData());
 
 		InteractionData.CurrentInteractable = nullptr;
 		TargetInteractable = nullptr;
@@ -685,7 +686,7 @@ void AAWeekPlayerCharacter::BeginInteract()
 		{
 			TargetInteractable->BeginInteract();
 
-			if (FMath::IsNearlyZero(TargetInteractable->InteractableData.InteractionDuration, 0.1f))
+			if (FMath::IsNearlyZero(TargetInteractable->GetInteractableData().InteractionDuration, 0.1f))
 			{
 				Interact();
 			}
@@ -694,7 +695,7 @@ void AAWeekPlayerCharacter::BeginInteract()
 				GetWorldTimerManager().SetTimer(TimerHandle_Interaction,
 					this,
 					&AAWeekPlayerCharacter::Interact,
-					TargetInteractable->InteractableData.InteractionDuration,
+					TargetInteractable->GetInteractableData().InteractionDuration,
 					false);
 			}
 		}
@@ -725,7 +726,7 @@ void AAWeekPlayerCharacter::UpdateInteractionWidget() const
 {
 	if (IsValid(TargetInteractable.GetObject()))
 	{
-		OnInteractionTargetChanged.Broadcast(&TargetInteractable->InteractableData);
+		OnInteractionTargetChanged.Broadcast(TargetInteractable->GetInteractableData());
 	}
 }
 

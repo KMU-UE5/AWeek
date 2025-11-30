@@ -28,7 +28,7 @@ class UAWeekInventoryComponent;
 class UAWeekItemBase;
 struct FAWeekInventorySlotData;
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnInteractionTargetChanged, const FAWeekInteractableData* InteractableData)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnInteractionTargetChanged, const FAWeekInteractableData& InteractableData)
 
 USTRUCT()
 struct FAWeekInteractionData
