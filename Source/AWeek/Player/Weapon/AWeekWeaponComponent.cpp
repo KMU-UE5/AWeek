@@ -239,7 +239,9 @@ void UAWeekWeaponComponent::Fire()
 	FVector CameraLocation;
 	FRotator CameraRotation;
 	PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
-
+	PC->AddPitchInput(ReboundPitch);
+	PC->AddRollInput(ReboundRoll);
+	PC->AddYawInput(ReboundYaw);
 	FVector FireDirection = GetFireDirection();
 
 	// ī�޶� ��ġ���� ���� Ʈ���̽��ؼ� ��ǥ ���� ã��

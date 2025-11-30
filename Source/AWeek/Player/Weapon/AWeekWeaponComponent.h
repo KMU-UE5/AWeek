@@ -114,6 +114,13 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UDataTable> WeaponInfoDT;
+
+	UPROPERTY(EditAnywhere)
+	float ReboundYaw = 0.0f;
+	UPROPERTY(EditAnywhere)
+	float ReboundPitch = 0.0f;
+	UPROPERTY(EditAnywhere)
+	float ReboundRoll = 0.0f;
 	
 private:
 	FRangedWeaponInfo RangedWeaponInfo;
