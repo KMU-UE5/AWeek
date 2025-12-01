@@ -53,7 +53,7 @@ void AFlamethrowerGridPlacedActor::BeginPlay()
 	if (DamageBox)
 	{
 		DamageBox->SetHiddenInGame(false);
-		DamageBox->SetVisibility(true);
+		DamageBox->SetVisibility(false);
 
 		DamageBox->OnComponentBeginOverlap.AddDynamic(
 			this, &AFlamethrowerGridPlacedActor::OnDamageBoxBeginOverlap);
@@ -64,7 +64,7 @@ void AFlamethrowerGridPlacedActor::BeginPlay()
 	if (DetectCapsule)
 	{
 		DetectCapsule->SetHiddenInGame(false);
-		DetectCapsule->SetVisibility(true);
+		DetectCapsule->SetVisibility(false);
 	}
 
 	GetWorldTimerManager().SetTimer(
@@ -155,7 +155,7 @@ void AFlamethrowerGridPlacedActor::TurretLineTrace()
 
 	// 디버그 라인
 	const FColor LineColor = bHit ? FColor::Red : FColor::Green;
-	DrawDebugLine(GetWorld(), Start, End, LineColor, false, 0.5f, 0, 2.f);
+	//DrawDebugLine(GetWorld(), Start, End, LineColor, false, 0.5f, 0, 2.f);
 
 	if (bHit && Hit.GetActor())
 	{
@@ -223,7 +223,7 @@ float AFlamethrowerGridPlacedActor::DoFlameTrace() const
 
 	const float Radius = 20.f;
 	
-	DrawDebugSphere(
+	/*DrawDebugSphere(
 			GetWorld(),
 			Start,
 			Radius,
@@ -259,6 +259,7 @@ float AFlamethrowerGridPlacedActor::DoFlameTrace() const
 		0,
 		2.f
 	);
+	*/
 	
 	
 	
