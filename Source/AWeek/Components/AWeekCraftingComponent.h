@@ -1,0 +1,92 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Components/ActorComponent.h"
+#include "AWeekCraftingComponent.generated.h"
+
+struct FAWeekItemEntry;
+struct FAWeekCachedCraftingRecipe;
+class UAWeekPlayerInventoryComponent;
+class AAWeekPlayerCharacter;
+struct FAWeekItemCraftingRecipe;
+class UAWeekInventoryComponent;
+class UAWeekItemBase;
+
+DECLARE_MULTICAST_DELEGATE(FOnCraftingFinished)
+DECLARE_MULTICAST_DELEGATE(FOnCraftingLevelChanged)
+
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+class AWEEK_API UAWeekCraftingComponent : public UActorComponent
+{
+	GENERATED_BODY()
+
+public:	
+	//================================================================
+	//	PROPERTIES & VARIABLES
+	//================================================================
+	FOnCraftingFinished OnCraftingFinished;
+	FOnCraftingLevelChanged OnCraftingLevelChanged;
+
+	//================================================================
+	//	FUNCTIONS
+	//================================================================
+	UAWeekCraftingComponent();
+
+	void InitializeCraftingComponent();
+
+	FORCEINLINE const TArray<FAWeekCachedCraftingRecipe>& GetCachedCraftingRecipes() const { return CachedCraftingRecipes; }
+	bool GetRecipeAt(int32 RecipeIndex, FAWeekCachedCraftingRecipe& Recipe) const;
+	
+	TArray<int32> GetAvailableRecipes() const;
+	bool TryCraftRecipe(int32 RecipeIndex);
+	
+	bool CanCraft(int32 RecipeIndex);
+	bool CanCraft(const FAWeekItemCraftingRecipe& CraftingRecipe);
+	bool CanCraft(const FAWeekCachedCraftingRecipe& CachedCraftingRecipe);
+
+	void SetCraftingLevel(int32 InCraftingLevel);
+	
+
+	void UpdateInventoryCounts();
+protected:
+	//================================================================
+	//	PROPERTIES & VARIABLES
+	//================================================================
+	UPROPERTY(EditAnywhere, Category = "Crafting")
+	TObjectPtr<UDataTable> CraftingRecipeTable;
+
+	UPROPERTY(EditAnywhere, Category = "Crafting")
+	TObjectPtr<UDataTable> ItemDataTable;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Crafting")
+	TArray<FAWeekItemCraftingRecipe> CraftingRecipes;
+
+	UPROPERTY(VisibleAnywhere, Category = "Crafting")
+	TArray<FAWeekCachedCraftingRecipe> CachedCraftingRecipes;
+	
+	UPROPERTY()
+	int32 CurrentCraftingLevel;
+	
+	// (ItemID, Count)
+	UPROPERTY(VisibleAnywhere, Category = "Crafting")
+	TMap<FName, int32> InventoryItemCounts;
+
+	UPROPERTY(VisibleAnywhere, Category = "Crafting")
+	TObjectPtr<AAWeekPlayerCharacter> PlayerCharacter;
+
+	UPROPERTY(VisibleAnywhere, Category = "Crafting")
+	TObjectPtr<UAWeekPlayerInventoryComponent> PlayerInventoryComponent;
+	
+	//================================================================
+	//	FUNCTIONS
+	//================================================================
+	bool TryConsumeIngredients(const TArray<FAWeekItemEntry>& IngredientItemEntries);
+	UAWeekItemBase* CreateCraftedItem(const FAWeekItemEntry& CraftedItemEntry);
+	
+private:
+	void LoadAndCacheRecipes();
+	void CacheCraftingRecipes();
+	void LoadCraftingRecipeData();
+};

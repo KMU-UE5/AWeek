@@ -3,6 +3,9 @@
 
 #include "AWeekGameStateBase.h"
 
+#include "AWeekExperienceManagerComponent.h"
+
 AAWeekGameStateBase::AAWeekGameStateBase(const FObjectInitializer& ObjectInitializer):Super(ObjectInitializer)
 {
+	ExperienceManagerComponent = CreateDefaultSubobject<UAWeekExperienceManagerComponent>(TEXT("ExperienceManagerComponent"));
 }

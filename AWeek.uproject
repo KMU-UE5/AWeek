@@ -9,7 +9,17 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
-				"Engine"
+				"Engine",
+				"CommonGame",
+				"ModularGameplay",
+				"CommonUI",
+				"UMG",
+				"AIModule",
+				"SettingSystem",
+				"DeveloperSettings",
+				"GameFeatures",
+				"EnhancedInput",
+				"CoreUObject"
 			]
 		}
 	],
@@ -35,6 +45,14 @@
 		},
 		{
 			"Name": "ModularGameplay",
+			"Enabled": true
+		},
+		{
+			"Name": "MotionWarping",
+			"Enabled": true
+		},
+		{
+			"Name": "NiagaraFluids",
 			"Enabled": true
 		}
 	]

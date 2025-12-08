@@ -23,15 +23,32 @@ public class AWeek : ModuleRules
             "ModularGameplay",
             "GameFeatures",
             "CommonUI",
+            "CommonInput",
+            "CommonGame",
+            "UIExtension",
             "UMG",
             "Slate",
             "SlateCore",
+
+            "Niagara",
+            "MotionWarping",
+
+            "AnimGraphRuntime",
+
+            "GeometryCollectionEngine",
+            "FieldSystemEngine",
+            "Chaos",
+            "ChaosSolverEngine",
+            "NavigationSystem",
+            "AIModule",
+            "RHI",
+            "AnimGraphRuntime",
         });
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PrivateDependencyModuleNames.AddRange(new string[] { "SettingSystem", "GameEventMessage", "AnimationSharing" });
 
 		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 		
 		// Uncomment if you are using online features
 		// PrivateDependencyModuleNames.Add("OnlineSubsystem");

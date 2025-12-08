@@ -3,6 +3,18 @@
 
 #include "AWeekPlayerController.h"
 
-AAWeekPlayerController::AAWeekPlayerController(const FObjectInitializer& ObjectInitializer):Super(ObjectInitializer)
+AAWeekPlayerController::AAWeekPlayerController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	PrimaryActorTick.bCanEverTick = true;
 }
+
+void AAWeekPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void AAWeekPlayerController::Tick(float DeltaTime)
+{
+
+}
+
