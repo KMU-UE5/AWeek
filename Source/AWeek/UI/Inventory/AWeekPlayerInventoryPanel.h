@@ -29,7 +29,7 @@ protected:
 	// virtual void BindInventoryDelegates() override;
 	// virtual void UnBindInventoryDelegates() override;
 	virtual void OnSlotUpdate(const FAWeekInventorySlotData& SlotData) override;
-	
+	virtual void UpdateInfoText() const override;
 private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UUniformGridPanel> HotBarGridPanel;

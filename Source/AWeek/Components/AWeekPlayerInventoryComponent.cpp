@@ -91,6 +91,7 @@ void UAWeekPlayerInventoryComponent::ClearTrashCanSlot()
 {
 	if (IsValidItemSlotIndex(TrashCanSlotIndex))
 	{
+		UpdateInventoryTotalWeight(-InventoryContents[TrashCanSlotIndex].Item->GetItemStackWeight());
 		ClearItemSlot(InventoryContents[TrashCanSlotIndex]);
 		OnTrashCanItemDiscarded.Broadcast();
 	}

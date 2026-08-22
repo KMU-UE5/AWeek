@@ -50,13 +50,10 @@ protected:
 	TObjectPtr<UTextBlock> CapacityInfo;
 
 	UPROPERTY()
-	TArray<UAWeekInventoryItemSlot*> InventoryItemSlots;
-	
-	UPROPERTY()
-	AAWeekPlayerCharacter* PlayerCharacter;
+	TArray<TObjectPtr<UAWeekInventoryItemSlot>> InventoryItemSlots;
 
 	UPROPERTY()
-	UAWeekInventoryComponent* InventoryComponent;
+	TObjectPtr<UAWeekInventoryComponent> InventoryComponent;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UAWeekInventoryItemSlot> InventorySlotClass;
@@ -66,7 +63,7 @@ protected:
 
 	virtual void NativeOnInitialized() override;
 	
-	void UpdateInfoText() const;
+	virtual void UpdateInfoText() const;
 
 	virtual void RefreshInventoryPanel();
 	virtual void InitializeGridPanel();
@@ -80,7 +77,5 @@ protected:
 	void OnEncumberedStatusChanged(bool bIsEncumbered) const;
 
 private:
-
-
 	bool bIsLinkedToInventory;
 };
