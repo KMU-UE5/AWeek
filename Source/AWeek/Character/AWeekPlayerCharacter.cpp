@@ -528,7 +528,7 @@ void AAWeekPlayerCharacter::AttackImpact()
 		FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel5,
 		FCollisionShape::MakeSphere(100), param);
 
-	DrawDebugSphere(GetWorld(), Center, 100, 20, FColor::Red, false, 0.5f);
+	// DrawDebugSphere(GetWorld(), Center, 100, 20, FColor::Red, false, 0.5f);
 
 	if (Collision)
 	{
@@ -573,7 +573,7 @@ void AAWeekPlayerCharacter::OnEncumbered(bool bIsEncumbered)
 	if (bIsEncumbered)
 	{
 		// TODO: Player get panelty
-		mBaseWalkSpeed = 250;
+		mBaseWalkSpeed = 100;
 		GetCharacterMovement()->MaxWalkSpeed = mBaseWalkSpeed;
 	}
 	else
@@ -598,7 +598,7 @@ void AAWeekPlayerCharacter::PerformInteractionCheck()
 	float LookDirection = FVector::DotProduct(GetActorForwardVector(), GetViewRotation().Vector());
 	if (LookDirection > 0)
 	{
-		DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 1.0f, 0, 2.0f);
+		// DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 1.0f, 0, 2.0f);
 
 		FCollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActor(this);

@@ -6,6 +6,7 @@
 #include "AWeekInventoryItemSlot.h"
 #include "AWeekItemSlot.h"
 #include "AWeek/Components/AWeekPlayerInventoryComponent.h"
+#include "Components/TextBlock.h"
 #include "Components/UniformGridPanel.h"
 #include "Components/UniformGridSlot.h"
 
@@ -77,14 +78,19 @@ void UAWeekPlayerInventoryPanel::OnSlotUpdate(const FAWeekInventorySlotData& Slo
 	UpdateInfoText();
 }
 
-// void UAWeekPlayerInventoryPanel::BindInventoryDelegates()
-// {
-// 	InventoryComponent->OnSlotUpdated.AddUObject(this, &UAWeekPlayerInventoryPanel::OnSlotUpdate);
-// 	InventoryComponent->OnEncumberedStatusChanged.AddUObject(this, &UAWeekInventoryPanel::OnEncumberedStatusChanged);
-// }
-//
-// void UAWeekPlayerInventoryPanel::UnBindInventoryDelegates()
-// {
-// 	InventoryComponent->OnSlotUpdated.RemoveAll(this);
-// 	InventoryComponent->OnEncumberedStatusChanged.RemoveAll(this);
-// }
+void UAWeekPlayerInventoryPanel::UpdateInfoText() const
+{
+	const FString WeightInfoValue = FString::Printf(
+		TEXT("Weight: %.1f/%.1f"),
+		InventoryComponent->GetWeightCapacity(),
+		InventoryComponent->GetInventoryTotalWeight()
+	);
+	const FString CapacityInfoValue = FString::Printf(
+		TEXT("Capacity: %d/%d"),
+		InventoryComponent->GetSlotsCapacity() - InventoryComponent->GetEmptySlotsNum(),
+		InventoryComponent->GetSlotsCapacity()
+	);
+
+	WeightInfo->SetText(FText::FromString(WeightInfoValue));
+	CapacityInfo->SetText(FText::FromString(CapacityInfoValue));
+}

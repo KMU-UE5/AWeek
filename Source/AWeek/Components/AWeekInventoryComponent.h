@@ -207,8 +207,8 @@ protected:
 	int32 CalculateWeightAddAmount(UAWeekItemBase* ItemIn, int32 RequestedAddAmount);
 	int32 CalculateNumberForFullStack(UAWeekItemBase* StackableItem, int32 InitialRequestedAddAmount);
 	
+	void UpdateInventoryTotalWeight(float DeltaWeight);	
 	virtual int AddNewItem(UAWeekItemBase* Item, const int32 AmountToAdd, int32 TargetIndex = -1);
 private:
 	void SetItemQuantity(FAWeekInventorySlotData& ItemSlot, const int32 Quantity);
-	void UpdateInventoryTotalWeight(float DeltaWeight);
 };

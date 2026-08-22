@@ -8,6 +8,7 @@
 #include "CommonUIExtensions.h"
 
 // engine
+#include "AWeek/Components/AWeekPlayerInventoryComponent.h"
 #include "Components/TextBlock.h"
 #include "Components/UniformGridPanel.h"
 
@@ -50,6 +51,7 @@ void UAWeekInventoryPanel::LinkToInventory(const TObjectPtr<UAWeekInventoryCompo
 	
 	// update the panel text and display its contents
 	UpdateInfoText();
+	
 	bIsLinkedToInventory = true;
 
 	BindInventoryDelegates();
@@ -117,13 +119,16 @@ void UAWeekInventoryPanel::RefreshInventory()
 
 void UAWeekInventoryPanel::UpdateInfoText() const
 {
-	const FString WeightInfoValue =
-		FString::SanitizeFloat(InventoryComponent->GetInventoryTotalWeight()) + "/"
-		+ FString::SanitizeFloat(InventoryComponent->GetWeightCapacity());
+	const FString WeightInfoValue = FString::Printf(
+		TEXT("Weight: %.1f"),
+		InventoryComponent->GetInventoryTotalWeight()
+	);
 
-	const FString CapacityInfoValue =
-		FString::FromInt(InventoryComponent->GetSlotsCapacity() - InventoryComponent->GetEmptySlotsNum()) + "/"
-		+ FString::FromInt(InventoryComponent->GetSlotsCapacity());
+	const FString CapacityInfoValue = FString::Printf(
+		TEXT("Capacity: %d/%d"),
+		InventoryComponent->GetSlotsCapacity() - InventoryComponent->GetEmptySlotsNum(),
+		InventoryComponent->GetSlotsCapacity()
+	);
 
 	WeightInfo->SetText(FText::FromString(WeightInfoValue));
 	CapacityInfo->SetText(FText::FromString(CapacityInfoValue));

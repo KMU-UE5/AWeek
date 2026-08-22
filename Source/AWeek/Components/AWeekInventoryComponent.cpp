@@ -141,6 +141,11 @@ UAWeekItemBase* UAWeekInventoryComponent::ReleaseItemAt(int32 TargetItemSlotInde
 
 void UAWeekInventoryComponent::SplitExistingStack(FAWeekInventorySlotData& ItemSlot, const int32 AmountToSplit)
 {
+	if (ItemSlot.IsEmpty() || AmountToSplit <= 0 || GetEmptySlotsNum() == 0)
+	{
+		return;
+	}
+	
 	if (GetEmptySlotsNum() > 0)
 	{
 		RemoveAmountOfItem(ItemSlot, AmountToSplit);
@@ -373,17 +378,22 @@ void UAWeekInventoryComponent::PlaceItemAt(TObjectPtr<UAWeekItemBase> InputItem,
 void UAWeekInventoryComponent::TransferItem(const FAWeekInventorySlotData& FromItemSlot, TObjectPtr<UAWeekInventoryComponent> TargetInventory)
 {
 	int32 DesiredAddAmount = FromItemSlot.Item->GetQuantity();
-	FAWeekItemAddResult AddResult = TargetInventory->HandleAddItem(FromItemSlot.Item);
-	if (AddResult.ActualAmountAdded == DesiredAddAmount)
+	FAWeekItemAddResult AddResult = TargetInventory->HandleAddItem(FromItemSlot.Item->CreateItemCopy());
+	
+	if (AddResult.ActualAmountAdded > 0)
 	{
-		// item pointer is moved to target inventory or item quantity is 0
-		ReleaseItemAt(FromItemSlot.SlotIndex);
+		RemoveAmountOfItem(FromItemSlot.SlotIndex, AddResult.ActualAmountAdded);
 	}
-	else
-	{
-		// clicked item quantity changed
-		OnSlotUpdated.Broadcast(FromItemSlot);
-	}
+	// if (AddResult.ActualAmountAdded == DesiredAddAmount)
+	// {
+	// 	// item pointer is moved to target inventory or item quantity is 0
+	// 	ReleaseItemAt(FromItemSlot.SlotIndex);
+	// }
+	// else
+	// {
+	// 	// clicked item quantity changed
+	// 	OnSlotUpdated.Broadcast(FromItemSlot);
+	// }
 }
 
 TMap<FName, int32> UAWeekInventoryComponent::GetInventoryItemCounts() const
@@ -428,6 +438,7 @@ int32 UAWeekInventoryComponent::FindFirstEmptySlot()
 
 void UAWeekInventoryComponent::UpdateInventoryTotalWeight(float DeltaWeight)
 {
+	// UE_LOG(LogTemp, Log, TEXT("UpdateInventoryTotalWeight: Delta = %f"), DeltaWeight);
 	bool bIsEncumbered = InventoryTotalWeight > InventoryWeightCapacity;
 	InventoryTotalWeight += DeltaWeight;
 	bool bNewIsEncumbered =  InventoryTotalWeight > InventoryWeightCapacity;
